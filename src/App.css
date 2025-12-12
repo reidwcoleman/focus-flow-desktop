@@ -1,0 +1,249 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Fly-away animation for completed items - Ultra smooth and clear */
+@keyframes fly-away {
+  0% {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1) rotate(0deg);
+    filter: brightness(1) blur(0px);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+  10% {
+    transform: translateX(0) translateY(-3px) scale(1.03) rotate(0deg);
+    box-shadow: 0 4px 15px 0 rgba(16, 185, 129, 0.3);
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(8px) translateY(-5px) scale(1.02) rotate(1deg);
+    filter: brightness(1.15) blur(0px);
+    box-shadow: 0 6px 20px 2px rgba(16, 185, 129, 0.4);
+  }
+  35% {
+    opacity: 0.95;
+    transform: translateX(25px) translateY(-12px) scale(1.0) rotate(3deg);
+    filter: brightness(1.2) blur(0px);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translateX(50px) translateY(-20px) scale(0.95) rotate(5deg);
+    filter: brightness(1.15) blur(0.3px);
+  }
+  65% {
+    opacity: 0.65;
+    transform: translateX(80px) translateY(-30px) scale(0.88) rotate(8deg);
+    filter: brightness(1.1) blur(0.5px);
+  }
+  80% {
+    opacity: 0.4;
+    transform: translateX(110px) translateY(-38px) scale(0.75) rotate(12deg);
+    filter: brightness(1.05) blur(1px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(150%) translateY(-45px) scale(0.6) rotate(18deg);
+    filter: brightness(1.3) blur(2px);
+    box-shadow: 0 10px 40px 5px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes success-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+  30% {
+    box-shadow: 0 0 25px 8px rgba(16, 185, 129, 0.5), 0 0 40px 12px rgba(16, 185, 129, 0.2);
+  }
+  60% {
+    box-shadow: 0 0 20px 6px rgba(16, 185, 129, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes particle-trail {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+.animate-fly-away {
+  animation: fly-away 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  will-change: transform, opacity, filter;
+  z-index: 100;
+  position: relative;
+}
+
+.success-flash {
+  animation: success-glow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* =============================================
+   FLASHCARD ANIMATIONS - Tinder-style swipes
+   ============================================= */
+
+/* Card fly-out right (mastered) - follows natural swipe momentum */
+@keyframes card-exit-right {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(40px) rotate(6deg) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120%) rotate(22deg) scale(0.85);
+    opacity: 0;
+  }
+}
+
+/* Card fly-out left (needs work) - mirrors right animation */
+@keyframes card-exit-left {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(-40px) rotate(-6deg) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-120%) rotate(-22deg) scale(0.85);
+    opacity: 0;
+  }
+}
+
+/* New card entrance - spring-like bounce from below */
+@keyframes card-enter-spring {
+  0% {
+    transform: translateY(60px) scale(0.88);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-8px) scale(1.02);
+    opacity: 1;
+  }
+  75% {
+    transform: translateY(3px) scale(0.99);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-card-exit-right {
+  animation: card-exit-right 0.38s cubic-bezier(0.32, 0, 0.67, 0) forwards;
+  pointer-events: none;
+}
+
+.animate-card-exit-left {
+  animation: card-exit-left 0.38s cubic-bezier(0.32, 0, 0.67, 0) forwards;
+  pointer-events: none;
+}
+
+.animate-card-enter-spring {
+  animation: card-enter-spring 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+/* =============================================
+   OPAL-STYLE ANIMATIONS - Focus Mode
+   ============================================= */
+
+/* 1. Timer Pulse Glow - Breathing animation for active timer */
+@keyframes timer-pulse-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(78, 48, 189, 0.3),
+      0 0 40px rgba(78, 48, 189, 0.15);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 35px rgba(124, 92, 255, 0.5),
+      0 0 60px rgba(124, 92, 255, 0.25);
+    transform: scale(1.02);
+  }
+}
+
+/* 2. Progress Ring Glow - Pulsing glow behind the SVG ring */
+@keyframes ring-glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(78, 48, 189, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(124, 92, 255, 0.7));
+  }
+}
+
+/* 3. Card Entrance - Fade up with scale */
+@keyframes opal-card-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 4. Checkmark Pop - When app is selected */
+@keyframes opal-checkmark-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 5. Gradient Text Animation - Moving gradient for headers */
+@keyframes opal-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animation Utility Classes */
+.animate-timer-pulse {
+  animation: timer-pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-ring-glow {
+  animation: ring-glow-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-opal-card-enter {
+  animation: opal-card-enter 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  opacity: 0;
+}
+
+.animate-opal-checkmark {
+  animation: opal-checkmark-pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.animate-opal-gradient {
+  background-size: 200% 200%;
+  animation: opal-gradient-shift 4s ease infinite;
+}
