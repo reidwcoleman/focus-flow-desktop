@@ -10,16 +10,13 @@ import calendarService from './calendarService'
 
 const AI_CONFIG = {
   // Supabase Edge Function URL
-  // Replace with your actual Supabase project URL
-  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL',
-  anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-  edgeFunctionUrl: import.meta.env.VITE_SUPABASE_URL
-    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`
-    : null,
+  supabaseUrl: 'https://uhlgppoylqeiirpfhhqm.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobGdwcG95bHFlaWlycGZoaHFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMDI4OTEsImV4cCI6MjA4MDg3ODg5MX0.DCW8hcNJ-6Aq_nxt05IU6ogOb69V-oqUNnNhnKiaSvw',
+  edgeFunctionUrl: 'https://uhlgppoylqeiirpfhhqm.supabase.co/functions/v1/ai-chat',
 
   // Fallback: Direct Groq API (for local development)
-  useDirectApi: import.meta.env.VITE_USE_DIRECT_API === 'true',
-  groqApiKey: import.meta.env.VITE_GROQ_API_KEY || '',
+  useDirectApi: false,
+  groqApiKey: '', // API key should be stored in Supabase Edge Function
 }
 
 // Usage limits
