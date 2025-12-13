@@ -1,40 +1,52 @@
 /**
  * Vision AI Service for Focus Flow
- * Handles OCR and image analysis using Groq Llama 4 Scout via Supabase Edge Function
+ * Handles OCR and image analysis using Groq Vision API (Direct)
  */
 
-import supabase from '../lib/supabase'
-
 const VISION_CONFIG = {
-  useEdgeFunction: true, // Use Supabase Edge Function for secure API calls
-  edgeFunctionUrl: null, // Will be set dynamically from Supabase client
-  visionModel: 'meta-llama/llama-4-scout-17b-16e-instruct',
+  groqApiKey: import.meta.env.VITE_GROQ_API_KEY || '',
+  groqEndpoint: 'https://api.groq.com/openai/v1/chat/completions',
+  visionModel: 'meta-llama/llama-4-scout-17b-16e-instruct', // Llama 4 Scout - Latest vision model
   maxTokens: 2000,
-  temperature: 0.3, // Lower for more consistent extraction
+  temperature: 0.2, // Lower for more consistent extraction
 }
 
 class VisionService {
   constructor() {
-    // Always use edge function (API key is stored securely in Supabase)
-    this.isConfigured = true
-    this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    this.isConfigured = !!VISION_CONFIG.groqApiKey
+    console.log('🔍 Vision Service:', this.isConfigured ? 'Configured with API key' : 'No API key found')
   }
 
   /**
-   * Call Supabase Edge Function for vision tasks
+   * Call Groq Vision API directly
    * @private
    */
-  async _callEdgeFunction(prompt, base64Image) {
+  async _callGroqVision(prompt, base64Image) {
+    if (!this.isConfigured) {
+      throw new Error('Groq API key not configured. Add VITE_GROQ_API_KEY to .env file')
+    }
+
     const cleanBase64 = this._cleanBase64(base64Image)
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: {
+      console.log('📤 Calling Groq Vision API...')
+
+      const response = await fetch(VISION_CONFIG.groqEndpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${VISION_CONFIG.groqApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: VISION_CONFIG.visionModel,
           messages: [
             {
               role: 'user',
               content: [
-                { type: 'text', text: prompt },
+                {
+                  type: 'text',
+                  text: prompt
+                },
                 {
                   type: 'image_url',
                   image_url: {
@@ -44,21 +56,23 @@ class VisionService {
               ]
             }
           ],
-          useVision: true
-        }
+          max_tokens: VISION_CONFIG.maxTokens,
+          temperature: VISION_CONFIG.temperature
+        })
       })
 
-      if (error) {
-        throw new Error(error.message || 'Edge function error')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('❌ Groq API error:', errorData)
+        throw new Error(errorData.error?.message || `Groq API error: ${response.status}`)
       }
 
-      if (!data || !data.message) {
-        throw new Error('Invalid response from edge function')
-      }
+      const data = await response.json()
+      console.log('✅ Groq Vision API success')
 
-      return data.message
+      return data.choices[0].message.content
     } catch (error) {
-      console.error('Edge function call failed:', error)
+      console.error('❌ Groq Vision API failed:', error)
       throw error
     }
   }
@@ -72,7 +86,7 @@ class VisionService {
     const prompt = this._getHandwritingPrompt()
 
     try {
-      const aiResponse = await this._callEdgeFunction(prompt, base64Image)
+      const aiResponse = await this._callGroqVision(prompt, base64Image)
       return this._parseNotesResponse(aiResponse)
     } catch (error) {
       console.error('Vision service error (handwriting):', error)
@@ -89,7 +103,7 @@ class VisionService {
     const prompt = this._getFlashcardPrompt()
 
     try {
-      const aiResponse = await this._callEdgeFunction(prompt, base64Image)
+      const aiResponse = await this._callGroqVision(prompt, base64Image)
       return this._parseFlashcardsResponse(aiResponse)
     } catch (error) {
       console.error('Vision service error (flashcards):', error)
@@ -106,7 +120,7 @@ class VisionService {
     const prompt = this._getHomeworkPrompt()
 
     try {
-      const aiResponse = await this._callEdgeFunction(prompt, base64Image)
+      const aiResponse = await this._callGroqVision(prompt, base64Image)
       return this._parseHomeworkResponse(aiResponse)
     } catch (error) {
       console.error('Vision service error (homework):', error)
@@ -123,7 +137,7 @@ class VisionService {
     const prompt = 'Extract all text from this image. Return only the text, preserving line breaks and formatting.'
 
     try {
-      const text = await this._callEdgeFunction(prompt, base64Image)
+      const text = await this._callGroqVision(prompt, base64Image)
       return {
         text: text,
         confidence: 0.85 // Groq doesn't provide confidence, using estimate
