@@ -164,6 +164,11 @@ export default {
         '112': '28rem',
         '128': '32rem',
       },
+      maxWidth: {
+        'desktop': '1400px',
+        'desktop-content': '1200px',
+        'desktop-card': '500px',
+      },
       animation: {
         'fadeIn': 'fadeIn 0.3s ease-out',
         'fadeInUp': 'fadeInUp 0.4s ease-out',

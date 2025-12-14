@@ -201,7 +201,7 @@ function App() {
 
   return (
     <StudyProvider>
-      <div className="min-h-screen max-w-full overflow-x-hidden bg-gradient-to-br from-dark-bg-primary via-dark-bg-surface to-dark-navy-dark">
+      <div className="min-h-screen max-w-full overflow-x-hidden bg-gradient-to-br from-dark-bg-primary via-dark-bg-surface to-dark-navy-dark flex">
         {/* Scanner Modal */}
         {showScanner && (
           <Scanner
@@ -213,38 +213,100 @@ function App() {
           />
         )}
 
-        {/* Main Content - Keep all components mounted for instant switching */}
-        <div className="max-w-md mx-auto w-full px-5 pt-6 pb-24 overflow-y-auto overflow-x-hidden">
-          <div className="relative w-full">
-            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'dashboard' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-              <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
-            </div>
-            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'planner' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-              <Planner />
-            </div>
-            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'tutor' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-              <AITutor />
-            </div>
-            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'analytics' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-              <Analytics />
-            </div>
-            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'study' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-              <StudyHub />
-            </div>
-            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'focus' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-              <FocusMode />
-            </div>
-            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'canvas' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-              <CanvasHub />
-            </div>
-            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'account' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-              <Account />
+        {/* Left Sidebar Navigation - Desktop Style */}
+        <aside className="hidden md:flex md:flex-col md:w-64 lg:w-72 bg-dark-bg-secondary border-r border-dark-border-glow shadow-dark-soft-lg fixed left-0 top-0 bottom-0 z-40">
+          {/* Logo / Brand */}
+          <div className="p-6 border-b border-dark-border-glow">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-accent-cyan bg-clip-text text-transparent">
+              Focus Flow
+            </h1>
+            <p className="text-sm text-dark-text-muted mt-1">Your Academic OS</p>
+          </div>
+
+          {/* Navigation Items */}
+          <nav className="flex-1 py-6 px-3 overflow-y-auto">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id
+              const isCenter = tab.isCenter
+
+              // Special scan button
+              if (isCenter) {
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setShowScanner(true)
+                      setActiveTab('dashboard')
+                    }}
+                    className="w-full mb-2 px-4 py-3.5 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg hover:shadow-glow-cyan-lg transition-all duration-200 flex items-center gap-3 text-white font-semibold"
+                  >
+                    <div className="w-6 h-6">
+                      {getIcon(tab.icon, true, false)}
+                    </div>
+                    <span className="text-base">{tab.label}</span>
+                  </button>
+                )
+              }
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => tab.id !== activeTab && setActiveTab(tab.id)}
+                  className={`w-full mb-2 px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
+                    isActive
+                      ? 'bg-dark-bg-surface text-primary-500 shadow-rim-light'
+                      : 'text-dark-text-muted hover:bg-dark-bg-surface/50 hover:text-dark-text-secondary'
+                  }`}
+                >
+                  <div className={`w-6 h-6 ${isActive ? 'drop-shadow-[0_0_8px_rgba(88,166,255,0.5)]' : ''}`}>
+                    {getIcon(tab.icon, isActive, false)}
+                  </div>
+                  <span className={`text-base font-medium ${isActive ? 'font-semibold' : ''}`}>
+                    {tab.label}
+                  </span>
+                  {isActive && tab.id === 'tutor' && (
+                    <div className="ml-auto w-2 h-2 rounded-full bg-accent-purple animate-pulse"></div>
+                  )}
+                </button>
+              )
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Content Area - Desktop optimized */}
+        <main className="flex-1 md:ml-64 lg:ml-72 px-6 md:px-8 lg:px-12 py-8 overflow-y-auto overflow-x-hidden pb-24 md:pb-8">
+          <div className="max-w-desktop mx-auto w-full">
+            <div className="relative w-full">
+              <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'dashboard' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+                <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
+              </div>
+              <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'planner' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+                <Planner />
+              </div>
+              <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'tutor' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+                <AITutor />
+              </div>
+              <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'analytics' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+                <Analytics />
+              </div>
+              <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'study' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+                <StudyHub />
+              </div>
+              <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'focus' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+                <FocusMode />
+              </div>
+              <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'canvas' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+                <CanvasHub />
+              </div>
+              <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'account' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+                <Account />
+              </div>
             </div>
           </div>
-        </div>
+        </main>
 
-        {/* Bottom Navigation - Premium iOS Style with Center Scan Button */}
-        <div className="fixed bottom-0 left-0 right-0 flex justify-center">
+        {/* Bottom Navigation - Mobile only (hidden on desktop) */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 flex justify-center">
           <nav className="max-w-md w-full bg-dark-bg-secondary border-t border-dark-border-glow safe-area-inset-bottom shadow-dark-soft-lg backdrop-blur-xl">
             <div className="flex justify-around items-end px-1 relative">
           {tabs.map((tab) => {

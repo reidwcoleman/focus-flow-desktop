@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Docs build output with embedded secrets (will be built by CI/CD or locally)
+docs/assets/*.js
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,18 +30,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Environment variables
-.env
-.env.local
-.env.production
-
-# Build output
-dist/
-
-# Cache
-.cache
-.vite
-
-# Docs build output with secrets (will be built by GitHub Actions)
-docs/assets/*.js
