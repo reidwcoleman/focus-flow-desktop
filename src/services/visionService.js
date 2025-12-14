@@ -161,52 +161,56 @@ class VisionService {
    * Prompt for handwriting extraction and organization
    */
   _getHandwritingPrompt() {
-    return `You are an expert at reading handwritten notes and organizing them into clean, beautifully formatted documents.
+    return `You are an expert at reading handwritten notes and converting them into clean, plain text.
 
-Analyze this handwritten image and convert it into clean, organized notes.
+Analyze this handwritten image and extract all the text from it.
 
-FORMAT YOUR RESPONSE AS CLEAN PLAIN TEXT:
-- Use # for main title
-- Use ## for section headings
-- Use - (dash) for bullet points ONLY
+FORMAT YOUR RESPONSE AS COMPLETELY PLAIN TEXT:
+- NO markdown formatting symbols at all
+- NO hashtags (#, ##, ###)
+- NO asterisks (*, **)
+- NO dashes or special bullet points
+- NO LaTeX formatting (no $ symbols)
+- NO backslashes (\)
+- NO curly braces ({})
+- NO square brackets ([])
+- Just write the text exactly as it appears in the image
+- Use blank lines to separate sections
 - Write clear, complete sentences
 - Organize related information together
 - Remove any artifacts, scribbles, or unclear marks
 
-IMPORTANT - NO FORMATTING SYMBOLS:
-- DO NOT use asterisks (*) anywhere in the output
-- DO NOT use **bold** or *italic* formatting
-- DO NOT use LaTeX formatting (no $ symbols for math)
-- DO NOT use markdown math notation (no $$, $...$, etc.)
+IMPORTANT - PURE PLAIN TEXT ONLY:
+- DO NOT use any markdown, LaTeX, or formatting symbols
 - Write ALL math equations and formulas in PLAIN TEXT
-- For example: "x^2 + 3x - 5 = 0" NOT "$x^2 + 3x - 5 = 0$"
-- Use simple text formatting: "E = mc^2" NOT "$E = mc^2$"
+- For example: "x^2 + 3x - 5 = 0" (plain text, no symbols)
+- Use simple text: "E = mc^2" (no formatting symbols)
 - If you see math symbols in the image, write them as plain Unicode characters
+- Just read what you see and write it as plain text
 
 DO NOT include JSON, code blocks, or technical formatting.
 DO NOT add meta-commentary like "Here are the notes" or "This is about..."
-DO NOT add any symbols ($, *, \, {}, etc.) that are not in the original image.
-JUST provide the clean, formatted notes directly.
+DO NOT add any formatting symbols that are not in the original image.
+JUST provide the clean text directly.
 
 Example format:
-# Cell Biology Notes
 
-## Cell Structure
-The cell is the basic unit of life. Key components include:
-- Nucleus: Contains genetic material (DNA)
-- Mitochondria: Powerhouse of the cell
-- Cell membrane: Controls what enters and exits
+Cell Biology Notes
 
-## Cell Functions
+Cell Structure
+The cell is the basic unit of life. Key components include nucleus which contains genetic material (DNA), mitochondria which is the powerhouse of the cell, and cell membrane which controls what enters and exits.
+
+Cell Functions
 Cells perform three main functions...
 
 For math notes example:
-# Quadratic Equations
 
-## Standard Form
-The standard form is: ax^2 + bx + c = 0
+Quadratic Equations
 
-## Quadratic Formula
+Standard Form
+The standard form is ax^2 + bx + c = 0
+
+Quadratic Formula
 x = (-b ± √(b^2 - 4ac)) / 2a
 
 Be thorough but concise. Make it look professional and easy to read.`
@@ -301,15 +305,12 @@ BE ACCURATE with dates - if you see "Due: 12/15", convert it to proper YYYY-MM-D
    */
   _parseNotesResponse(aiResponse) {
     try {
-      // Clean the response
+      // Clean the response (it's plain text now, no markdown)
       let cleanResponse = aiResponse.trim()
 
-      // Remove any code block markers if present
-      cleanResponse = cleanResponse.replace(/```markdown\s*/g, '').replace(/```\s*/g, '')
-
-      // Extract title from first # heading
-      const titleMatch = cleanResponse.match(/^#\s+(.+)$/m)
-      const title = titleMatch ? titleMatch[1].trim() : 'Untitled Notes'
+      // Extract title from first line
+      const lines = cleanResponse.split('\n').filter(line => line.trim())
+      const title = lines.length > 0 ? lines[0].trim() : 'Untitled Notes'
 
       // Detect subject from title or content
       const subjectKeywords = {
@@ -330,9 +331,13 @@ BE ACCURATE with dates - if you see "Due: 12/15", convert it to proper YYYY-MM-D
         }
       }
 
-      // Extract keywords from headings only (no bold formatting used)
-      const headings = [...cleanResponse.matchAll(/##\s+([^\n]+)/g)].map(m => m[1])
-      const tags = [...new Set(headings)]
+      // Extract keywords from short lines that look like section headings
+      // (standalone lines with 2-5 words, not full sentences)
+      const potentialHeadings = lines.filter(line => {
+        const words = line.trim().split(/\s+/)
+        return words.length >= 2 && words.length <= 5 && !line.endsWith('.')
+      })
+      const tags = [...new Set(potentialHeadings)]
         .slice(0, 5)
         .map(tag => tag.trim())
 
@@ -469,25 +474,19 @@ BE ACCURATE with dates - if you see "Due: 12/15", convert it to proper YYYY-MM-D
    * Demo mode response for notes
    */
   _getDemoNotesResponse() {
-    const demoContent = `# Chemistry Notes - Acid-Base Reactions
+    const demoContent = `Chemistry Notes - Acid-Base Reactions
 
-## Definition
+Definition
 An acid-base reaction involves the transfer of a proton (H+) from one species to another.
 
-## Key Concepts
-- Bronsted-Lowry acids are proton donors
-- Bases are proton acceptors
-- Conjugate acid-base pairs differ by one proton
+Key Concepts
+Bronsted-Lowry acids are proton donors. Bases are proton acceptors. Conjugate acid-base pairs differ by one proton.
 
-## pH Scale
-- pH < 7: acidic
-- pH = 7: neutral
-- pH > 7: basic
+pH Scale
+pH < 7 is acidic. pH = 7 is neutral. pH > 7 is basic.
 
-## Common Acids
-- HCl (hydrochloric acid)
-- H₂SO₄ (sulfuric acid)
-- CH₃COOH (acetic acid)`
+Common Acids
+HCl (hydrochloric acid), H₂SO₄ (sulfuric acid), CH₃COOH (acetic acid)`
 
     return {
       rawText: demoContent,
