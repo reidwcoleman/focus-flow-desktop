@@ -30,6 +30,7 @@ const AITutor = () => {
   })
   const [ultraThinkEnabled, setUltraThinkEnabled] = useState(aiService.isUltraThinkEnabled())
   const [deepResearchEnabled, setDeepResearchEnabled] = useState(aiService.isDeepResearchEnabled())
+  const [modeExplanation, setModeExplanation] = useState(null) // For showing mode info
   const lastMessageRef = useRef(null)
   const textareaRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -304,16 +305,49 @@ const AITutor = () => {
     "Quiz me",
   ]
 
+  const setRegularChat = () => {
+    aiService.setRegularMode()
+    setUltraThinkEnabled(false)
+    setDeepResearchEnabled(false)
+    // Show explanation
+    setModeExplanation({
+      title: '💬 Regular Chat Mode',
+      description: 'Quick and efficient responses for straightforward questions. Perfect for homework help, quick explanations, and general tutoring.',
+      tokens: '2,000 tokens',
+      features: ['Fast responses', 'Clear and concise', 'Great for homework help', 'Quick concept explanations']
+    })
+  }
+
   const toggleUltraThink = () => {
     const newState = aiService.toggleUltraThink()
     setUltraThinkEnabled(newState)
     setDeepResearchEnabled(false) // They're mutually exclusive
+
+    // Show explanation when enabling
+    if (newState) {
+      setModeExplanation({
+        title: '🧠 UltraThink Mode',
+        description: 'Advanced reasoning mode that provides comprehensive, step-by-step explanations with deep analysis. Perfect for complex problems and thorough understanding.',
+        tokens: '8,000 tokens',
+        features: ['Detailed step-by-step reasoning', 'Multiple approaches explained', 'In-depth concept breakdowns', 'Practice problems included']
+      })
+    }
   }
 
   const toggleDeepResearch = () => {
     const newState = aiService.toggleDeepResearch()
     setDeepResearchEnabled(newState)
     setUltraThinkEnabled(false) // They're mutually exclusive
+
+    // Show explanation when enabling
+    if (newState) {
+      setModeExplanation({
+        title: '📚 Deep Research Mode',
+        description: 'Comprehensive academic research mode that provides extensive analysis with multiple perspectives, historical context, and scholarly depth. Ideal for research papers and in-depth study.',
+        tokens: '12,000 tokens',
+        features: ['Extensive multi-perspective analysis', 'Historical context and evolution', 'Academic rigor and citations', 'Critical analysis of concepts']
+      })
+    }
   }
 
   const formatMessageContent = (content) => {
@@ -785,6 +819,22 @@ const AITutor = () => {
             onChange={handleImageUpload}
             className="hidden"
           />
+
+          {/* Regular Chat Mode button */}
+          <button
+            onClick={setRegularChat}
+            disabled={isLoading}
+            className={`flex-shrink-0 w-9 h-9 rounded-lg border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center ${
+              !ultraThinkEnabled && !deepResearchEnabled
+                ? 'bg-gradient-to-br from-green-500/30 to-emerald-600/30 border-green-500 shadow-glow-green'
+                : 'bg-dark-bg-tertiary border-dark-border-glow hover:border-green-500/50 hover:bg-green-500/10'
+            }`}
+            title={!ultraThinkEnabled && !deepResearchEnabled ? 'Regular Chat: Standard mode active' : 'Switch to Regular Chat mode'}
+          >
+            <svg className={`w-5 h-5 ${!ultraThinkEnabled && !deepResearchEnabled ? 'text-green-400' : 'text-dark-text-muted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </button>
 
           {/* Image upload button */}
           <button
