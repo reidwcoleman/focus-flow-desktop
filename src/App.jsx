@@ -312,8 +312,8 @@ function App() {
         </aside>
 
         {/* Main Content Area - Desktop optimized */}
-        <main className="flex-1 md:ml-72 lg:ml-80 xl:ml-96 px-6 md:px-10 lg:px-16 xl:px-20 py-6 md:py-10 xl:py-12 overflow-y-auto overflow-x-hidden pb-24 md:pb-12">
-          <div className="max-w-desktop mx-auto w-full">
+        <main className="flex-1 md:ml-72 lg:ml-80 xl:ml-96 px-4 md:px-6 lg:px-8 xl:px-10 py-4 md:py-6 xl:py-8 overflow-y-auto overflow-x-hidden pb-24 md:pb-12">
+          <div className="max-w-[1800px] mx-auto w-full">
             <div className="relative w-full">
               <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'dashboard' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
                 <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
