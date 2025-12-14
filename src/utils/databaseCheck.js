@@ -3,14 +3,9 @@
  * Checks if all required tables exist in Supabase
  */
 
-import supabase, { isDemoMode } from '../lib/supabase'
+import supabase from '../lib/supabase'
 
 export const checkDatabaseTables = async () => {
-  // Skip checks in demo mode
-  if (isDemoMode) {
-    return {}
-  }
-
   const tables = [
     'assignments',
     'calendar_activities',
@@ -54,12 +49,6 @@ export const checkDatabaseTables = async () => {
 }
 
 export const printDatabaseStatus = async () => {
-  // Skip in demo mode
-  if (isDemoMode) {
-    console.log('📦 Demo mode - database checks skipped')
-    return true
-  }
-
   console.log('🔍 Checking database tables...')
   const results = await checkDatabaseTables()
 

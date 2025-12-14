@@ -5,11 +5,12 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase credentials - safe to expose publicly (protected by RLS)
-const supabaseUrl = 'https://uhlgppoylqeiirpfhhqm.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobGdwcG95bHFlaWlycGZoaHFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMDI4OTEsImV4cCI6MjA4MDg3ODg5MX0.DCW8hcNJ-6Aq_nxt05IU6ogOb69V-oqUNnNhnKiaSvw'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const isDemoMode = false
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables')
+}
 
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {

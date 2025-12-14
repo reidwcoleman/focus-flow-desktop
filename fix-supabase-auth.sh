@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Fix Supabase Auth Configuration for GitHub Pages
+# This script updates your Supabase project to allow authentication from GitHub Pages
+
+PROJECT_REF="uhlgppoylqeiirpfhhqm"
+GITHUB_PAGES_URL="https://reidwcoleman.github.io/focus-flow-ai/"
+
+echo "🔧 Fixing Supabase authentication for GitHub Pages..."
+echo ""
+echo "To fix the authentication errors, you need to add your GitHub Pages URL"
+echo "to Supabase's allowed redirect URLs."
+echo ""
+echo "📋 Steps to fix:"
+echo ""
+echo "1. Go to: https://supabase.com/dashboard/project/${PROJECT_REF}/auth/url-configuration"
+echo ""
+echo "2. Update these settings:"
+echo "   - Site URL: ${GITHUB_PAGES_URL}"
+echo ""
+echo "3. Add to 'Redirect URLs' (one per line):"
+echo "   ${GITHUB_PAGES_URL}"
+echo "   https://reidwcoleman.github.io"
+echo "   http://localhost:5173"
+echo ""
+echo "4. Go to: https://supabase.com/dashboard/project/${PROJECT_REF}/auth/providers"
+echo ""
+echo "5. Under 'Email' settings, DISABLE these for easier testing:"
+echo "   ❌ Enable email confirmations (turn OFF)"
+echo "   ❌ Secure email change (turn OFF)"
+echo ""
+echo "6. Click 'Save' and wait 30 seconds for changes to apply"
+echo ""
+echo "Then test your app at: ${GITHUB_PAGES_URL}"
+echo ""
+echo "✅ Once configured, you should be able to sign up and login!"

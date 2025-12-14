@@ -205,7 +205,10 @@ class ActivityParserService {
   async parseActivity(userInput) {
     try {
       // Use Supabase Edge Function for AI parsing
-      const supabaseUrl = 'https://uhlgppoylqeiirpfhhqm.supabase.co'
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      if (!supabaseUrl) {
+        throw new Error('Supabase URL not configured')
+      }
 
       // Generate fresh prompt with current date/time context
       const contextualPrompt = getActivityParserPrompt()
@@ -224,7 +227,7 @@ class ActivityParserService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobGdwcG95bHFlaWlycGZoaHFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMDI4OTEsImV4cCI6MjA4MDg3ODg5MX0.DCW8hcNJ-6Aq_nxt05IU6ogOb69V-oqUNnNhnKiaSvw',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           messages: [{ role: 'user', content: userInput }],

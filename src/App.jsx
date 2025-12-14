@@ -201,95 +201,130 @@ function App() {
 
   return (
     <StudyProvider>
-      <div className="min-h-screen flex bg-gradient-to-br from-dark-bg-primary via-dark-bg-surface to-dark-navy-dark">
+      <div className="min-h-screen max-w-full overflow-x-hidden bg-gradient-to-br from-dark-bg-primary via-dark-bg-surface to-dark-navy-dark">
         {/* Scanner Modal */}
         {showScanner && (
           <Scanner
             onClose={() => {
               setShowScanner(false)
-              setDashboardKey(prev => prev + 1)
+              setDashboardKey(prev => prev + 1) // Refresh dashboard when scanner closes
             }}
             onCapture={handleCaptureAssignment}
           />
         )}
 
-        {/* Desktop Sidebar Navigation */}
-        <aside className="w-64 min-h-screen bg-dark-bg-secondary border-r border-dark-border-glow flex flex-col">
-          {/* Logo/Brand */}
-          <div className="p-6 border-b border-dark-border-subtle">
-            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-accent-cyan">
-              Focus Flow
-            </h1>
-            <p className="text-xs text-dark-text-muted mt-1">Desktop Edition</p>
+        {/* Main Content - Keep all components mounted for instant switching */}
+        <div className="max-w-md mx-auto w-full px-5 pt-6 pb-24 overflow-y-auto overflow-x-hidden">
+          <div className="relative w-full">
+            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'dashboard' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+              <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
+            </div>
+            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'planner' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+              <Planner />
+            </div>
+            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'tutor' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+              <AITutor />
+            </div>
+            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'analytics' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+              <Analytics />
+            </div>
+            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'study' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+              <StudyHub />
+            </div>
+            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'focus' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+              <FocusMode />
+            </div>
+            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'canvas' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+              <CanvasHub />
+            </div>
+            <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'account' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+              <Account />
+            </div>
           </div>
+        </div>
 
-          {/* Navigation Items */}
-          <nav className="flex-1 p-4 space-y-2">
-            {tabs.filter(tab => !tab.isCenter).map((tab) => {
-              const isActive = activeTab === tab.id
+        {/* Bottom Navigation - Premium iOS Style with Center Scan Button */}
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center">
+          <nav className="max-w-md w-full bg-dark-bg-secondary border-t border-dark-border-glow safe-area-inset-bottom shadow-dark-soft-lg backdrop-blur-xl">
+            <div className="flex justify-around items-end px-1 relative">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id
+            const isCenter = tab.isCenter
+
+            // Center scan button gets special treatment
+            if (isCenter) {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                    isActive
-                      ? 'bg-gradient-to-r from-primary-500/20 to-accent-cyan/20 text-primary-400 shadow-glow-cyan border border-primary-500/30'
-                      : 'text-dark-text-muted hover:text-dark-text-primary hover:bg-dark-bg-tertiary'
-                  }`}
+                  onClick={() => {
+                    setShowScanner(true)
+                    setActiveTab('dashboard') // Go back to dashboard after opening scanner
+                  }}
+                  className="relative flex-1 flex flex-col items-center -mt-8 transition-all duration-200 active:scale-95"
                 >
-                  <div className={isActive ? 'drop-shadow-[0_0_8px_rgba(88,166,255,0.5)]' : ''}>
-                    {getIcon(tab.icon, isActive, false)}
+                  {/* Large Cyan Square Container */}
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg flex items-center justify-center mb-1 border-4 border-dark-bg-secondary">
+                    <div className="text-white">
+                      {getIcon(tab.icon, true, true)}
+                    </div>
                   </div>
-                  <span className="font-semibold text-sm">{tab.label}</span>
-                  {isActive && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-primary-500 shadow-glow-cyan"></div>
-                  )}
+
+                  {/* Label */}
+                  <span className="text-[11px] font-semibold tracking-tight text-primary-500">
+                    {tab.label}
+                  </span>
                 </button>
               )
-            })}
+            }
 
-            {/* Scanner Button */}
-            <button
-              onClick={() => setShowScanner(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-accent-cyan text-white shadow-glow-cyan-lg hover:shadow-glow-cyan-xl transition-all duration-200 mt-4"
-            >
-              {getIcon('camera', true, false)}
-              <span className="font-semibold text-sm">Scan Assignment</span>
-            </button>
-          </nav>
-        </aside>
+            // Regular nav buttons
+            const handleTabClick = () => {
+              if (tab.id !== activeTab) {
+                setActiveTab(tab.id) // Switch immediately so data starts loading
+              }
+            }
 
-        {/* Main Content Area - Desktop Optimized */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto w-full px-8 py-6">
-            <div className="relative w-full">
-              <div className={`transition-opacity duration-200 ${activeTab === 'dashboard' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-                <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
-              </div>
-              <div className={`transition-opacity duration-200 ${activeTab === 'planner' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-                <Planner />
-              </div>
-              <div className={`transition-opacity duration-200 ${activeTab === 'tutor' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-                <AITutor />
-              </div>
-              <div className={`transition-opacity duration-200 ${activeTab === 'analytics' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-                <Analytics />
-              </div>
-              <div className={`transition-opacity duration-200 ${activeTab === 'study' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-                <StudyHub />
-              </div>
-              <div className={`transition-opacity duration-200 ${activeTab === 'focus' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-                <FocusMode />
-              </div>
-              <div className={`transition-opacity duration-200 ${activeTab === 'canvas' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-                <CanvasHub />
-              </div>
-              <div className={`transition-opacity duration-200 ${activeTab === 'account' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
-                <Account />
-              </div>
+            return (
+              <button
+                key={tab.id}
+                onClick={handleTabClick}
+                className={`relative flex-1 py-2.5 flex flex-col items-center gap-1 transition-all duration-200 ${
+                  isActive ? 'scale-105' : 'scale-100 active:scale-95'
+                }`}
+              >
+                {/* Active Indicator with Cyan Glow */}
+                {isActive && (
+                  <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-primary-500 to-accent-cyan rounded-full shadow-glow-cyan"></div>
+                )}
+
+                {/* Icon Container */}
+                <div className={`transition-all duration-200 ${
+                  isActive
+                    ? 'text-primary-500 drop-shadow-[0_0_8px_rgba(88,166,255,0.5)]'
+                    : 'text-dark-text-muted active:text-dark-text-secondary'
+                }`}>
+                  {getIcon(tab.icon, isActive, false)}
+                </div>
+
+                {/* Label */}
+                <span className={`text-[11px] font-semibold tracking-tight transition-all duration-200 ${
+                  isActive
+                    ? 'text-primary-500'
+                    : 'text-dark-text-muted'
+                }`}>
+                  {tab.label}
+                </span>
+
+                {/* Glow Effect for AI Tab */}
+                {isActive && tab.id === 'tutor' && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-accent-purple/10 to-transparent rounded-2xl pointer-events-none"></div>
+                )}
+              </button>
+            )
+          })}
             </div>
-          </div>
-        </main>
+          </nav>
+        </div>
       </div>
     </StudyProvider>
   )

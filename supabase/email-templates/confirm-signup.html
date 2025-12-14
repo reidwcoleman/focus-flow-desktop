@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Your Focus Flow AI Account</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #0d1117; color: #e6edf3;">
+
+  <!-- Email Container -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #0d1117; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+
+        <!-- Content Card -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; background: linear-gradient(135deg, #161b22 0%, #1c2128 100%); border-radius: 24px; border: 1px solid rgba(48, 151, 209, 0.2); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);">
+
+          <!-- Header with Logo -->
+          <tr>
+            <td style="padding: 48px 40px 32px; text-align: center;">
+              <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(6, 182, 212, 0.4);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <h1 style="margin: 0; font-size: 32px; font-weight: 700; color: #e6edf3; letter-spacing: -0.02em;">Focus Flow AI</h1>
+              <p style="margin: 8px 0 0; font-size: 16px; color: #7d8590; font-weight: 500;">AI-Powered Study Companion</p>
+            </td>
+          </tr>
+
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 0 40px 40px;">
+
+              <!-- Welcome Message -->
+              <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px; padding: 32px; margin-bottom: 32px;">
+                <h2 style="margin: 0 0 16px; font-size: 24px; font-weight: 600; color: #e6edf3;">Welcome to Focus Flow! 🎉</h2>
+                <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #c9d1d9;">
+                  Thanks for signing up! You're one step away from unlocking AI-powered studying with smart flashcards, note scanning, and personalized learning.
+                </p>
+              </div>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
+                <tr>
+                  <td align="center">
+                    <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 18px 48px; background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; border-radius: 12px; box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4); transition: all 0.2s;">
+                      ✨ Confirm Your Account
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Alternative Link -->
+              <div style="background: rgba(125, 133, 144, 0.06); border: 1px solid rgba(125, 133, 144, 0.15); border-radius: 12px; padding: 20px; margin-bottom: 32px;">
+                <p style="margin: 0 0 12px; font-size: 14px; color: #7d8590; font-weight: 600;">Button not working? Copy and paste this link:</p>
+                <p style="margin: 0; font-size: 13px; color: #539bf5; word-break: break-all; font-family: 'Monaco', 'Courier New', monospace;">
+                  {{ .ConfirmationURL }}
+                </p>
+              </div>
+
+              <!-- What's Next -->
+              <div style="border-top: 1px solid rgba(125, 133, 144, 0.15); padding-top: 28px;">
+                <h3 style="margin: 0 0 20px; font-size: 18px; font-weight: 600; color: #e6edf3;">What's waiting for you:</h3>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 12px 0;">
+                      <span style="display: inline-block; width: 32px; height: 32px; background: rgba(6, 182, 212, 0.15); border-radius: 8px; text-align: center; line-height: 32px; margin-right: 12px; font-size: 18px;">📸</span>
+                      <span style="font-size: 15px; color: #c9d1d9; font-weight: 500;">AI-powered note scanning & OCR</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0;">
+                      <span style="display: inline-block; width: 32px; height: 32px; background: rgba(139, 92, 246, 0.15); border-radius: 8px; text-align: center; line-height: 32px; margin-right: 12px; font-size: 18px;">🎯</span>
+                      <span style="font-size: 15px; color: #c9d1d9; font-weight: 500;">Smart flashcards with spaced repetition</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0;">
+                      <span style="display: inline-block; width: 32px; height: 32px; background: rgba(59, 130, 246, 0.15); border-radius: 8px; text-align: center; line-height: 32px; margin-right: 12px; font-size: 18px;">🤖</span>
+                      <span style="font-size: 15px; color: #c9d1d9; font-weight: 500;">AI tutor for instant answers</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0;">
+                      <span style="display: inline-block; width: 32px; height: 32px; background: rgba(16, 185, 129, 0.15); border-radius: 8px; text-align: center; line-height: 32px; margin-right: 12px; font-size: 18px;">📊</span>
+                      <span style="font-size: 15px; color: #c9d1d9; font-weight: 500;">Study analytics & progress tracking</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 32px 40px; background: rgba(13, 17, 23, 0.6); border-top: 1px solid rgba(125, 133, 144, 0.15); border-radius: 0 0 24px 24px;">
+              <p style="margin: 0 0 16px; font-size: 13px; color: #7d8590; text-align: center; line-height: 1.5;">
+                This link will expire in <strong style="color: #c9d1d9;">24 hours</strong>.<br>
+                If you didn't create an account, you can safely ignore this email.
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #484f58; text-align: center;">
+                © 2024 Focus Flow AI. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

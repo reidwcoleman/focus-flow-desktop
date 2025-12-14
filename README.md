@@ -1,216 +1,177 @@
-# Focus Flow - Desktop Edition
+# Supabase CLI
 
-A premium, AI-powered student productivity app optimized for desktop screens. Built with a clean, minimalist, Apple-like aesthetic that feels like Notion × macOS × Cal AI.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-**Core Promise:** "The AI that runs your school life automatically - now optimized for your desktop."
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-**Desktop Features:** Sidebar navigation, multi-column layouts, larger cards and fonts, and expanded screen real estate for maximum productivity.
+This repository contains all the functionality for Supabase CLI.
 
-## Features
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-### 🏠 Smart Dashboard (Desktop-Optimized)
-- **2-column layout**: Assignments on left, stats sidebar on right
-- **4-column quick stats grid** for at-a-glance insights
-- Larger cards (p-7/p-8) with enhanced readability
-- AI-powered homework cards with priority indicators
-- Auto-captured assignments from screenshots
-- Canvas LMS integration for automatic sync
-- Real-time progress tracking with beautiful gradients
-- Sticky sidebar with persistent quick access
-- Subject-based color coding with larger badges
+## Getting started
 
-### 🤖 AI Tutor (Desktop-Optimized)
-- **Wide-screen layout**: max-w-5xl for comfortable reading
-- **Larger message bubbles**: Enhanced padding (px-6 py-5)
-- **LaTeX math support**: Inline ($...$) and display ($$...$$) equations rendered beautifully
-- **Real AI Integration**: OpenAI, Anthropic Claude, or Groq support
-- **Lightning Fast**: Instant responses with typing indicators
-- Interactive chat with smooth animations
-- Markdown formatting with code blocks and lists
-- Auto-resizing input (up to 150px)
-- Chat history with auto-save
-- Image upload and analysis capabilities
-- Quick question shortcuts
-- Beautiful gradient message bubbles
-- Context-aware with access to your assignments and schedule
+### Install the CLI
 
-### 📅 Smart Study Planner
-- AI-optimized daily study schedule
-- Timeline view with current activity highlighting
-- Break recommendations based on focus patterns
-- Progress tracking throughout the day
-- AI insights for peak productivity times
-- One-tap session start
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
-### 📊 Advanced Analytics
-- Grade tracking and predictions
-- Performance trends by subject
-- Weekly activity charts
-- Focus score monitoring
-- Strengths and improvement areas
-- AI-powered recommendations for GPA improvement
+```bash
+npm i supabase --save-dev
+```
 
-## Tech Stack
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-- React 18
-- Vite 5
-- Tailwind CSS
-- Mobile-first responsive design
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
 
-## Getting Started
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-### Prerequisites
-- Node.js 18.20+ (currently using 18.20.4)
-- npm 9.2+
+<details>
+  <summary><b>macOS</b></summary>
 
-### Installation
+  Available via [Homebrew](https://brew.sh). To install:
 
-1. Install dependencies:
-\`\`\`bash
-npm install
-\`\`\`
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-2. (Optional) Set up AI Tutor with real AI - **100% FREE & BLAZING FAST**:
-\`\`\`bash
-# Copy the example env file
-cp .env.example .env
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-# Edit .env and add your FREE Groq API key (takes 30 seconds!)
-# Get your key from: https://console.groq.com/keys
-# VITE_GROQ_API_KEY=gsk_your-key-here
-\`\`\`
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-3. Start the development server:
-\`\`\`bash
-npm run dev
-\`\`\`
+<details>
+  <summary><b>Windows</b></summary>
 
-4. Open your browser and navigate to:
-\`\`\`
-http://localhost:5173/
-\`\`\`
+  Available via [Scoop](https://scoop.sh). To install:
 
-**Note**: AI Tutor works in Demo Mode without an API key, but you can get **REAL AI tutoring 100% FREE** with Groq!
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
-### Why Groq?
-- ✅ **Completely FREE** - No credit card required
-- ✅ **LIGHTNING FAST** - 100+ tokens/second (instant responses!)
-- ✅ **Generous limits** - 30 requests/min, 14,400/day
-- ✅ **High quality** - Powered by Meta's Llama 3.1 70B
-- ✅ **Perfect for students** - Best free AI for learning
+  To upgrade:
 
-### Build for Production
+  ```powershell
+  scoop update supabase
+  ```
+</details>
 
-\`\`\`bash
-npm run build
-\`\`\`
+<details>
+  <summary><b>Linux</b></summary>
 
-The production build will be output to the \`dist\` folder.
+  Available via [Homebrew](https://brew.sh) and Linux packages.
 
-### Preview Production Build
+  #### via Homebrew
 
-\`\`\`bash
-npm run preview
-\`\`\`
+  To install:
 
-## Desktop Features
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-- **Sidebar Navigation**: Persistent left sidebar (264px) with all app sections
-- **Wide Screen Support**: Optimized for monitors up to 1800px
-- **Multi-Column Layouts**: Efficient 2-4 column grids throughout
-- **Larger Fonts**: Increased text sizes (text-4xl headers, text-xl body)
-- **Enhanced Spacing**: Generous padding (p-7 to p-12) and gaps (gap-6 to gap-8)
-- **Sticky Elements**: Persistent sidebars and quick access panels
-- **Keyboard Shortcuts**: Coming soon (Ctrl+K for search, etc.)
-- **Smooth Animations**: All mobile animations preserved and enhanced
+  To upgrade:
 
-## Design Philosophy
+  ```sh
+  brew upgrade supabase
+  ```
 
-- **Minimalist & Futuristic:** Apple-like clarity with smooth gradients
-- **Trustworthy:** Academically serious yet youthful
-- **Premium Feel:** Soft glows, cool blues, and neutral tones
-- **Modern Stack:** React 18 + Vite + Tailwind CSS 3
+  #### via Linux packages
 
-## Project Structure
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
 
-\`\`\`
-focus-flow-desktop/
-├── src/
-│   ├── components/
-│   │   ├── Dashboard.jsx       # 2-column dashboard (desktop-optimized)
-│   │   ├── AITutor.jsx         # Wide-screen AI chat (max-w-5xl)
-│   │   ├── Planner.jsx         # Calendar + task list (2-column)
-│   │   ├── FocusMode.jsx       # Opal-style focus timer (4-col grid)
-│   │   ├── StudyHub.jsx        # Large flashcard display
-│   │   ├── Analytics.jsx       # 4-column stats dashboard
-│   │   └── ...                 # Other components
-│   ├── services/               # API and data services
-│   ├── contexts/               # React context providers
-│   ├── utils/                  # Helper functions
-│   ├── App.jsx                 # Main app with sidebar navigation
-│   ├── App.css                 # Animations and custom styles
-│   ├── index.css               # Tailwind imports
-│   └── main.jsx                # React entry point
-├── index.html                  # HTML template
-├── tailwind.config.js          # Desktop-optimized design system
-└── vite.config.js              # Vite configuration
-\`\`\`
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
 
-## Mobile Version
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
 
-Looking for the mobile-optimized version with bottom tab navigation? Check out the [Mobile App](https://github.com/reidwcoleman/focus-flow-ai/tree/main/mobile-app).
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
 
-## Customization
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
 
-### Premium Design System
-The app uses a carefully crafted design system in \`tailwind.config.js\`:
+<details>
+  <summary><b>Other Platforms</b></summary>
 
-\`\`\`js
-colors: {
-  primary: { /* Blue shades 50-900 */ },
-  accent: { purple, pink, cyan },
-  neutral: { /* Slate shades 50-950 */ },
-}
-boxShadow: {
-  'soft': 'Subtle elevated shadows',
-  'glow': 'AI feature highlights',
-  'glow-lg': 'Active state emphasis',
-}
-\`\`\`
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
 
-### Component Customization
-Each component features:
-- Smooth gradient backgrounds
-- Glassmorphism effects
-- AI-powered badges and indicators
-- Responsive touch interactions
-- Premium micro-animations
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
 
-## Browser Support
+  Add a symlink to the binary in `$PATH` for easier access:
 
-- Chrome (mobile & desktop)
-- Safari (iOS & macOS)
-- Firefox (mobile & desktop)
-- Edge
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
 
-## Future Enhancements
+  This works on other non-standard Linux distros.
+</details>
 
-- [ ] Screenshot-to-assignment AI capture
-- [ ] Google Classroom API integration
-- [ ] Email assignment parsing
-- [ ] Real AI tutoring backend
-- [ ] Grade prediction algorithms
-- [ ] Parent dashboard (Ultra tier)
-- [ ] ADHD-friendly customizations
-- [ ] Offline PWA support
-- [ ] Push notifications
-- [ ] Dark mode
-- [ ] Streak tracking and gamification
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
 
-## License
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
 
-MIT
+  ```bash
+  pkgx install supabase
+  ```
 
-## Contributing
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Run the CLI
+
+```bash
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
+```

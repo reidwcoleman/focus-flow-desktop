@@ -410,13 +410,13 @@ const AITutor = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] relative max-w-5xl mx-auto w-full">
+    <div className="flex flex-col h-[calc(100vh-10rem)] relative">
       {/* Clean Minimal Header */}
-      <div className="flex-shrink-0 mb-6">
+      <div className="flex-shrink-0 mb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-dark-text-primary tracking-tight">AI Tutor</h2>
-            <p className="text-base text-dark-text-secondary mt-1">
+            <h2 className="text-2xl font-bold text-dark-text-primary tracking-tight">AI Tutor</h2>
+            <p className="text-sm text-dark-text-secondary mt-0.5">
               {aiService.isConfigured() ? (
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse-soft shadow-glow-cyan"></span>
@@ -457,12 +457,12 @@ const AITutor = () => {
         </div>
 
         {/* Usage Counter */}
-        <div className="mt-4 flex items-center justify-between px-4 py-3 bg-primary-500/10 rounded-xl border border-primary-500/30 shadow-dark-soft">
+        <div className="mt-3 flex items-center justify-between px-3 py-2 bg-primary-500/10 rounded-xl border border-primary-500/30 shadow-dark-soft">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span className="text-base font-medium text-dark-text-primary">
+            <span className="text-sm font-medium text-dark-text-primary">
               {authService.isPro()
                 ? `${usageCount}/250 AI chats`
                 : `${aiService.getLimits().free - usageCount} free chats left`
@@ -472,7 +472,7 @@ const AITutor = () => {
           {!authService.isPro() && (
             <button
               onClick={() => setShowUpgradeModal(true)}
-              className="text-sm font-semibold text-accent-purple hover:text-accent-purple-light transition-colors"
+              className="text-xs font-semibold text-accent-purple hover:text-accent-purple-light transition-colors"
             >
               Upgrade
             </button>
@@ -481,16 +481,16 @@ const AITutor = () => {
 
         {/* AI Data Access Info Banner */}
         {showDataInfo && (
-          <div className="mt-4 p-4 bg-gradient-to-r from-accent-cyan/10 to-primary-500/10 rounded-xl border border-accent-cyan/30 shadow-dark-soft animate-fadeIn">
-            <div className="flex items-start justify-between gap-3">
+          <div className="mt-3 p-3 bg-gradient-to-r from-accent-cyan/10 to-primary-500/10 rounded-xl border border-accent-cyan/30 shadow-dark-soft animate-fadeIn">
+            <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <svg className="w-4 h-4 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h4 className="text-sm font-bold text-dark-text-primary">I have access to your data!</h4>
+                  <h4 className="text-xs font-bold text-dark-text-primary">I have access to your data!</h4>
                 </div>
-                <p className="text-sm text-dark-text-secondary leading-relaxed">
+                <p className="text-[11px] text-dark-text-secondary leading-relaxed">
                   I can see your <span className="font-semibold text-accent-cyan">assignments</span>, <span className="font-semibold text-accent-cyan">calendar</span>, <span className="font-semibold text-accent-cyan">study hours</span>, <span className="font-semibold text-accent-cyan">notes</span>, and <span className="font-semibold text-accent-cyan">streak</span>. Ask me about your schedule, what's due, or study advice!
                 </p>
               </div>
@@ -542,13 +542,13 @@ const AITutor = () => {
       )}
 
       {/* Quick Questions */}
-      <div className="flex-shrink-0 mb-5">
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+      <div className="flex-shrink-0 mb-4">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
           {quickQuestions.map((question, index) => (
             <button
               key={index}
               onClick={() => handleQuickQuestion(question)}
-              className="flex-shrink-0 px-5 py-2.5 bg-dark-bg-secondary border border-dark-border-glow hover:border-accent-purple hover:bg-accent-purple/10 rounded-full text-base font-medium text-dark-text-primary hover:text-accent-purple-light transition-all duration-200 active:scale-95 shadow-dark-soft"
+              className="flex-shrink-0 px-3.5 py-2 bg-dark-bg-secondary border border-dark-border-glow hover:border-accent-purple hover:bg-accent-purple/10 rounded-full text-sm font-medium text-dark-text-primary hover:text-accent-purple-light transition-all duration-200 active:scale-95 shadow-dark-soft"
             >
               {question}
             </button>
@@ -557,19 +557,19 @@ const AITutor = () => {
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto space-y-4 mb-5 scroll-smooth scrollbar-thin">
+      <div className="flex-1 overflow-y-auto space-y-3 mb-4 scroll-smooth scrollbar-thin">
         {messages.map((message, index) => (
           <div
             key={message.id}
             ref={index === messages.length - 1 ? lastMessageRef : null}
-            className={`flex gap-3.5 ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fadeInUp`}
+            className={`flex gap-2.5 ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fadeInUp`}
             style={{ animationDelay: `${index * 0.02}s` }}
           >
             {/* Assistant Avatar */}
             {message.role === 'assistant' && (
               <div className="flex-shrink-0 mt-1">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-soft">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-soft">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
@@ -577,13 +577,13 @@ const AITutor = () => {
             )}
 
             {/* Message Content */}
-            <div className={`flex flex-col max-w-[75%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+            <div className={`flex flex-col max-w-[85%] ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div className={`rounded-2xl ${
                 message.role === 'assistant'
                   ? message.isError
-                    ? 'bg-red-900/20 border border-red-700/40 shadow-dark-soft px-6 py-4'
-                    : 'bg-dark-bg-secondary border border-dark-border-glow shadow-dark-soft-md px-6 py-5'
-                  : 'bg-gradient-to-br from-accent-purple via-accent-purple-dark to-accent-purple-dark text-white shadow-glow-purple px-5 py-4'
+                    ? 'bg-red-900/20 border border-red-700/40 shadow-dark-soft px-5 py-3.5'
+                    : 'bg-dark-bg-secondary border border-dark-border-glow shadow-dark-soft-md px-5 py-4'
+                  : 'bg-gradient-to-br from-accent-purple via-accent-purple-dark to-accent-purple-dark text-white shadow-glow-purple px-4 py-3'
               }`}>
                 {/* Show image if message has one */}
                 {message.image && (
@@ -597,16 +597,16 @@ const AITutor = () => {
                   className={`${
                     message.role === 'assistant'
                       ? message.isError
-                        ? 'text-red-400 text-base leading-[1.7]'
-                        : 'text-dark-text-primary text-base leading-[1.7]'
-                      : 'text-white text-base leading-relaxed'
+                        ? 'text-red-400 text-[15px] leading-[1.7]'
+                        : 'text-dark-text-primary text-[15px] leading-[1.7]'
+                      : 'text-white text-[15px] leading-relaxed'
                   }`}
                   dangerouslySetInnerHTML={{
                     __html: formatMessageContent(message.content)
                   }}
                 />
               </div>
-              <div className={`mt-2 px-2 text-xs text-dark-text-muted font-medium`}>
+              <div className={`mt-1.5 px-2 text-[11px] text-dark-text-muted font-medium`}>
                 {message.timestamp.toLocaleTimeString([], {
                   hour: 'numeric',
                   minute: '2-digit'
@@ -617,8 +617,8 @@ const AITutor = () => {
             {/* User Avatar */}
             {message.role === 'user' && (
               <div className="flex-shrink-0 mt-1">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -629,19 +629,19 @@ const AITutor = () => {
 
         {/* Typing Indicator */}
         {isTyping && (
-          <div ref={lastMessageRef} className="flex gap-3.5 animate-fadeInUp">
+          <div ref={lastMessageRef} className="flex gap-2.5 animate-fadeInUp">
             <div className="flex-shrink-0 mt-1">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-glow-purple">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-glow-purple">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
             </div>
-            <div className="bg-dark-bg-secondary border border-dark-border-glow rounded-2xl px-5 py-4 shadow-dark-soft-md">
-              <div className="flex gap-1.5">
-                <div className="w-2.5 h-2.5 bg-primary-500 rounded-full animate-bounce"></div>
-                <div className="w-2.5 h-2.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
-                <div className="w-2.5 h-2.5 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+            <div className="bg-dark-bg-secondary border border-dark-border-glow rounded-2xl px-4 py-3 shadow-dark-soft-md">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
               </div>
             </div>
           </div>
@@ -650,13 +650,13 @@ const AITutor = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="flex-shrink-0 mb-4 p-4 bg-red-900/20 border border-red-700/40 rounded-xl animate-fadeIn shadow-dark-soft">
-          <p className="text-base text-red-400 font-medium">{error}</p>
+        <div className="flex-shrink-0 mb-3 p-3 bg-red-900/20 border border-red-700/40 rounded-xl animate-fadeIn shadow-dark-soft">
+          <p className="text-sm text-red-400 font-medium">{error}</p>
         </div>
       )}
 
       {/* Premium Input Area */}
-      <div className="flex-shrink-0 bg-dark-bg-secondary rounded-2xl p-4 shadow-dark-soft-md border border-dark-border-glow focus-within:border-accent-purple focus-within:shadow-glow-purple transition-all duration-200">
+      <div className="flex-shrink-0 bg-dark-bg-secondary rounded-2xl p-3 shadow-dark-soft-md border border-dark-border-glow focus-within:border-accent-purple focus-within:shadow-glow-purple transition-all duration-200">
         {/* Image Preview */}
         {uploadedImage && (
           <div className="mb-3 relative inline-block animate-fadeIn">
@@ -676,7 +676,7 @@ const AITutor = () => {
           </div>
         )}
 
-        <div className="flex items-end gap-3">
+        <div className="flex items-end gap-2.5">
           {/* Hidden file input */}
           <input
             ref={fileInputRef}
@@ -691,10 +691,10 @@ const AITutor = () => {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
-            className="flex-shrink-0 w-11 h-11 rounded-lg bg-dark-bg-tertiary hover:bg-primary-500/20 border border-dark-border-glow hover:border-primary-500/50 flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+            className="flex-shrink-0 w-9 h-9 rounded-lg bg-dark-bg-tertiary hover:bg-primary-500/20 border border-dark-border-glow hover:border-primary-500/50 flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
             title="Upload or scan image"
           >
-            <svg className="w-6 h-6 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </button>
@@ -710,21 +710,21 @@ const AITutor = () => {
               }
             }}
             placeholder={uploadedImage ? "Ask about this image..." : "Ask me anything..."}
-            className="flex-1 resize-none bg-transparent text-dark-text-primary placeholder:text-dark-text-muted focus:outline-none py-2.5 text-base leading-relaxed"
+            className="flex-1 resize-none bg-transparent text-dark-text-primary placeholder:text-dark-text-muted focus:outline-none py-2 text-[15px] leading-relaxed"
             rows={1}
             disabled={isLoading}
-            style={{ maxHeight: '150px' }}
+            style={{ maxHeight: '120px' }}
           />
 
           <button
             onClick={handleSend}
             disabled={(!inputValue.trim() && !uploadedImage) || isLoading}
-            className="flex-shrink-0 w-11 h-11 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark hover:from-accent-purple-dark hover:to-accent-purple-dark disabled:from-dark-bg-tertiary disabled:to-dark-navy-dark flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed active:scale-95 shadow-glow-purple disabled:shadow-none"
+            className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark hover:from-accent-purple-dark hover:to-accent-purple-dark disabled:from-dark-bg-tertiary disabled:to-dark-navy-dark flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed active:scale-95 shadow-glow-purple disabled:shadow-none"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
               </svg>
             )}

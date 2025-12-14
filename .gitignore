@@ -34,3 +34,6 @@ dist/
 # Cache
 .cache
 .vite
+
+# Docs build output with secrets (will be built by GitHub Actions)
+docs/assets/*.js

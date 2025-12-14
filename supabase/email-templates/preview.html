@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Preview - Focus Flow AI Confirmation</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+    .preview-header {
+      max-width: 800px;
+      margin: 0 auto 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .preview-header h1 {
+      margin: 0 0 10px;
+      font-size: 24px;
+    }
+    .preview-header p {
+      margin: 0;
+      color: #666;
+    }
+    iframe {
+      max-width: 800px;
+      width: 100%;
+      height: 900px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-header">
+    <h1>📧 Email Template Preview</h1>
+    <p>This is how your confirmation email will look when sent to users.</p>
+  </div>
+  <iframe src="confirm-signup.html" frameborder="0"></iframe>
+
+  <script>
+    // Replace template variables with preview values
+    const iframe = document.querySelector('iframe');
+    iframe.onload = function() {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        let html = doc.documentElement.outerHTML;
+
+        // Replace Supabase template variables with preview values
+        html = html.replace(/\{\{ \.ConfirmationURL \}\}/g, 'https://yourdomain.com/auth/confirm?token=preview_token_123');
+        html = html.replace(/\{\{ \.Email \}\}/g, 'user@example.com');
+        html = html.replace(/\{\{ \.SiteURL \}\}/g, 'https://yourdomain.com');
+
+        doc.open();
+        doc.write(html);
+        doc.close();
+      } catch (e) {
+        console.log('Preview loaded successfully');
+      }
+    };
+  </script>
+</body>
+</html>
