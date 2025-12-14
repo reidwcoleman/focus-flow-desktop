@@ -720,22 +720,6 @@ const Dashboard = ({ onOpenScanner }) => {
                     {assignment.completed ? 'Completed' : 'Mark as done'}
                   </span>
                 </div>
-
-                {/* Progress Bar */}
-                {!assignment.completed && (
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                      <span className="text-xs md:text-sm font-semibold text-dark-text-secondary tracking-tight">Progress</span>
-                      <span className="text-xs md:text-sm font-bold text-primary-500">{assignment.progress}%</span>
-                    </div>
-                    <div className="w-full h-2 md:h-3 bg-dark-bg-primary rounded-full overflow-hidden shadow-dark-inner">
-                      <div
-                        className="h-full bg-gradient-to-r from-primary-500 to-accent-cyan rounded-full transition-all duration-500 shadow-glow-cyan"
-                        style={{ width: `${assignment.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           ))}
