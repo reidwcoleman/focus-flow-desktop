@@ -87,13 +87,13 @@ serve(async (req) => {
       model = 'meta-llama/llama-4-scout-17b-16e-instruct'
       maxTokens = 800
     } else if (useDeepResearch) {
-      model = 'llama-3.3-70b-specdec' // Upgraded: Speculative decoding for faster, better research
+      model = 'llama-3.3-70b-versatile' // Best model for comprehensive research
       maxTokens = 12000
     } else if (useUltraThink) {
-      model = 'llama-3.3-70b-versatile' // Replaced decommissioned deepseek-r1
+      model = 'llama-3.3-70b-versatile' // Best model for deep thinking
       maxTokens = 8000
     } else {
-      model = 'llama-3.3-70b-versatile'
+      model = 'llama-3.3-70b-versatile' // Best model for standard chat
       maxTokens = 2000 // Upgraded from 300 to 2000 for better responses
     }
 

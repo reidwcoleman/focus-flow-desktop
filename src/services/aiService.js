@@ -640,11 +640,11 @@ When students ask:
   getProviderName() {
     let modelName
     if (this.useDeepResearch) {
-      modelName = 'Llama 3.3 70B SpecDec (Research)'
+      modelName = 'Llama 3.3 70B (Research)'
     } else if (this.useUltraThink) {
       modelName = 'Llama 3.3 70B (UltraThink)'
     } else {
-      modelName = 'Llama 3.3 70B'
+      modelName = 'Llama 3.3 70B (Chat)'
     }
 
     if (AI_CONFIG.edgeFunctionUrl) {
@@ -654,6 +654,15 @@ When students ask:
       return `${modelName} (Direct)`
     }
     return 'Demo Mode'
+  }
+
+  /**
+   * Set regular chat mode (disable all special modes)
+   */
+  setRegularMode() {
+    this.useUltraThink = false
+    this.useDeepResearch = false
+    console.log('💬 Regular chat mode enabled')
   }
 
   /**
@@ -862,16 +871,16 @@ When students ask:
         }
       })
 
-      // Use vision model if image, upgraded models for each mode
+      // Use vision model if image, best available models for each mode
       let modelToUse
       if (imageData) {
         modelToUse = 'meta-llama/llama-4-scout-17b-16e-instruct'
       } else if (this.useDeepResearch) {
-        modelToUse = 'llama-3.3-70b-specdec' // Upgraded: Speculative decoding for faster inference
+        modelToUse = 'llama-3.3-70b-versatile' // Best model for comprehensive research
       } else if (this.useUltraThink) {
-        modelToUse = 'llama-3.3-70b-versatile' // Replaced decommissioned deepseek-r1
+        modelToUse = 'llama-3.3-70b-versatile' // Best model for deep thinking
       } else {
-        modelToUse = 'llama-3.3-70b-versatile'
+        modelToUse = 'llama-3.3-70b-versatile' // Best model for standard chat
       }
 
       const modeLabel = this.useDeepResearch ? '(Research Mode)' : (this.useUltraThink ? '(UltraThink Mode)' : '')
