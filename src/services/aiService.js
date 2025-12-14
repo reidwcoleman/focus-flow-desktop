@@ -31,6 +31,38 @@ class AIService {
     this.conversationHistory = []
     this.userContext = null
     this.useUltraThink = true // Enable advanced reasoning mode for desktop
+    this.useDeepResearch = false // Enable deep research mode
+
+    // Deep Research mode prompt - comprehensive research with sources
+    this.deepResearchPrompt = `You are an expert research assistant for students on a desktop app. Your role is to provide comprehensive, well-researched information with academic rigor.
+
+DEEP RESEARCH MODE - Comprehensive analysis:
+- Provide EXTENSIVE research with multiple perspectives
+- Present information in structured, academic format
+- Cover historical context, current understanding, and future implications
+- Include relevant theories, frameworks, and methodologies
+- Compare and contrast different viewpoints
+- Cite specific concepts, principles, and established knowledge
+- Provide comprehensive bibliographic context where applicable
+
+Structure your research:
+1. **Overview**: Brief introduction to the topic
+2. **Historical Context**: Evolution of understanding
+3. **Key Concepts**: Detailed explanations with examples
+4. **Multiple Perspectives**: Different schools of thought
+5. **Current Applications**: Real-world usage and relevance
+6. **Critical Analysis**: Strengths, limitations, debates
+7. **Further Research**: Related topics to explore
+
+Guidelines:
+- Be thorough and comprehensive (5-10+ paragraphs)
+- Use academic tone and structure
+- Present multiple viewpoints objectively
+- Include specific examples and case studies
+- Suggest primary sources and seminal works
+- Explain complex relationships between concepts
+
+Remember: This is DEEP RESEARCH - be comprehensive, scholarly, and multi-faceted!`
 
     // UltraThink mode prompt - comprehensive and detailed
     this.ultraThinkPrompt = `You are an expert AI tutor for students on a desktop app. Your role is to help with homework, concepts, and studying.
@@ -86,8 +118,15 @@ When students ask:
    * Get system prompt with user context
    */
   getSystemPrompt() {
-    // Choose base prompt based on UltraThink mode
-    const basePrompt = this.useUltraThink ? this.ultraThinkPrompt : this.standardPrompt
+    // Choose base prompt based on mode (Research > UltraThink > Standard)
+    let basePrompt
+    if (this.useDeepResearch) {
+      basePrompt = this.deepResearchPrompt
+    } else if (this.useUltraThink) {
+      basePrompt = this.ultraThinkPrompt
+    } else {
+      basePrompt = this.standardPrompt
+    }
 
     if (!this.userContext) {
       return basePrompt
@@ -443,7 +482,15 @@ When students ask:
    * Get the current provider name for display
    */
   getProviderName() {
-    const modelName = this.useUltraThink ? 'DeepSeek R1 UltraThink' : 'Llama 3.3 70B'
+    let modelName
+    if (this.useDeepResearch) {
+      modelName = 'Llama 3.3 70B Research'
+    } else if (this.useUltraThink) {
+      modelName = 'DeepSeek R1 UltraThink'
+    } else {
+      modelName = 'Llama 3.3 70B'
+    }
+
     if (AI_CONFIG.edgeFunctionUrl) {
       return `${modelName} (Secure)`
     }
@@ -458,8 +505,25 @@ When students ask:
    */
   toggleUltraThink() {
     this.useUltraThink = !this.useUltraThink
+    // Disable research mode when enabling UltraThink
+    if (this.useUltraThink) {
+      this.useDeepResearch = false
+    }
     console.log('🧠 UltraThink mode:', this.useUltraThink ? 'ENABLED' : 'DISABLED')
     return this.useUltraThink
+  }
+
+  /**
+   * Toggle Deep Research mode
+   */
+  toggleDeepResearch() {
+    this.useDeepResearch = !this.useDeepResearch
+    // Disable UltraThink when enabling Research
+    if (this.useDeepResearch) {
+      this.useUltraThink = false
+    }
+    console.log('📚 Deep Research mode:', this.useDeepResearch ? 'ENABLED' : 'DISABLED')
+    return this.useDeepResearch
   }
 
   /**
@@ -467,6 +531,13 @@ When students ask:
    */
   isUltraThinkEnabled() {
     return this.useUltraThink
+  }
+
+  /**
+   * Get Deep Research status
+   */
+  isDeepResearchEnabled() {
+    return this.useDeepResearch
   }
 
   /**
@@ -545,6 +616,7 @@ When students ask:
           systemPrompt: this.getSystemPrompt(),
           useVision: !!imageData, // Tell backend to use vision model
           useUltraThink: this.useUltraThink, // Enable advanced reasoning model
+          useDeepResearch: this.useDeepResearch, // Enable deep research mode
         }),
       })
 
@@ -634,12 +706,20 @@ When students ask:
         }
       })
 
-      // Use vision model if image is provided, DeepSeek R1 for ultrathink reasoning
-      const modelToUse = imageData
-        ? 'meta-llama/llama-4-scout-17b-16e-instruct'
-        : (this.useUltraThink ? 'deepseek-r1-distill-llama-70b' : 'llama-3.3-70b-versatile')
+      // Use vision model if image, DeepSeek R1 for ultrathink, Llama for research/standard
+      let modelToUse
+      if (imageData) {
+        modelToUse = 'meta-llama/llama-4-scout-17b-16e-instruct'
+      } else if (this.useDeepResearch) {
+        modelToUse = 'llama-3.3-70b-versatile' // Research uses standard model with special prompt
+      } else if (this.useUltraThink) {
+        modelToUse = 'deepseek-r1-distill-llama-70b'
+      } else {
+        modelToUse = 'llama-3.3-70b-versatile'
+      }
 
-      console.log('🔍 Using model:', modelToUse, this.useUltraThink ? '(UltraThink Mode)' : '')
+      const modeLabel = this.useDeepResearch ? '(Research Mode)' : (this.useUltraThink ? '(UltraThink Mode)' : '')
+      console.log('🔍 Using model:', modelToUse, modeLabel)
       console.log('📨 Sending to AI:', {
         hasImage: !!imageData,
         messageCount: messagesForAPI.length,
@@ -656,7 +736,7 @@ When students ask:
           model: modelToUse,
           messages: messagesForAPI,
           temperature: 0.7,
-          max_tokens: imageData ? 800 : (this.useUltraThink ? 8000 : 300), // Much more tokens for ultrathink
+          max_tokens: imageData ? 800 : (this.useDeepResearch ? 12000 : (this.useUltraThink ? 8000 : 300)), // 12k for research, 8k for ultrathink, 300 standard
           top_p: 1,
         }),
       })

@@ -28,6 +28,7 @@ const AITutor = () => {
     return !localStorage.getItem('ai_data_info_dismissed')
   })
   const [ultraThinkEnabled, setUltraThinkEnabled] = useState(aiService.isUltraThinkEnabled())
+  const [deepResearchEnabled, setDeepResearchEnabled] = useState(aiService.isDeepResearchEnabled())
   const lastMessageRef = useRef(null)
   const textareaRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -277,7 +278,12 @@ const AITutor = () => {
     textareaRef.current?.focus()
   }
 
-  const quickQuestions = ultraThinkEnabled ? [
+  const quickQuestions = deepResearchEnabled ? [
+    "Research the history of calculus",
+    "Compare quantum mechanics interpretations",
+    "Analyze the causes of World War I",
+    "Explore theories of human consciousness",
+  ] : ultraThinkEnabled ? [
     "Explain quantum mechanics with deep reasoning",
     "Break down calculus concepts step-by-step",
     "What assignments should I prioritize and why?",
@@ -292,6 +298,13 @@ const AITutor = () => {
   const toggleUltraThink = () => {
     const newState = aiService.toggleUltraThink()
     setUltraThinkEnabled(newState)
+    setDeepResearchEnabled(false) // They're mutually exclusive
+  }
+
+  const toggleDeepResearch = () => {
+    const newState = aiService.toggleDeepResearch()
+    setDeepResearchEnabled(newState)
+    setUltraThinkEnabled(false) // They're mutually exclusive
   }
 
   const formatMessageContent = (content) => {
@@ -451,6 +464,14 @@ const AITutor = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
                 <span className="text-xs font-semibold text-purple-400 animate-pulse-soft">UltraThink Mode Active</span>
+              </div>
+            )}
+            {deepResearchEnabled && (
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <span className="text-xs font-semibold text-blue-400 animate-pulse-soft">Deep Research Mode Active</span>
               </div>
             )}
           </div>
@@ -745,6 +766,34 @@ const AITutor = () => {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-sm animate-pulse-soft"></div>
                 <div className="relative bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg whitespace-nowrap">
+                  NEW
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Deep Research toggle - NEW FEATURE */}
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={toggleDeepResearch}
+              disabled={isLoading}
+              className={`relative w-9 h-9 rounded-lg border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center ${
+                deepResearchEnabled
+                  ? 'bg-gradient-to-br from-blue-500/30 to-cyan-600/30 border-blue-500 shadow-glow-cyan'
+                  : 'bg-dark-bg-tertiary border-dark-border-glow hover:border-blue-500/50 hover:bg-blue-500/10'
+              }`}
+              title={deepResearchEnabled ? 'Deep Research: Comprehensive research mode enabled' : 'Enable Deep Research for extensive analysis'}
+            >
+              <svg className={`w-5 h-5 ${deepResearchEnabled ? 'text-blue-400 animate-pulse-soft' : 'text-dark-text-muted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </button>
+
+            {/* NEW FEATURE badge with pointer */}
+            <div className="absolute -top-2 -right-2 flex items-center gap-1 animate-bounce-slow">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-sm animate-pulse-soft"></div>
+                <div className="relative bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg whitespace-nowrap">
                   NEW
                 </div>
               </div>

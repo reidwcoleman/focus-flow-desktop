@@ -19,6 +19,7 @@ interface ChatRequest {
   systemPrompt?: string
   useVision?: boolean
   useUltraThink?: boolean
+  useDeepResearch?: boolean
 }
 
 serve(async (req) => {
@@ -55,7 +56,7 @@ serve(async (req) => {
     // }
 
     // Parse request body
-    const { messages, systemPrompt, useVision, useUltraThink }: ChatRequest = await req.json()
+    const { messages, systemPrompt, useVision, useUltraThink, useDeepResearch }: ChatRequest = await req.json()
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -78,13 +79,16 @@ serve(async (req) => {
     // Add conversation messages
     groqMessages.push(...messages)
 
-    // Select model: Vision > UltraThink > Standard
+    // Select model: Vision > Research > UltraThink > Standard
     let model: string
     let maxTokens: number
 
     if (useVision) {
       model = 'meta-llama/llama-4-scout-17b-16e-instruct'
       maxTokens = 800
+    } else if (useDeepResearch) {
+      model = 'llama-3.3-70b-versatile'
+      maxTokens = 12000
     } else if (useUltraThink) {
       model = 'deepseek-r1-distill-llama-70b'
       maxTokens = 8000
@@ -93,7 +97,7 @@ serve(async (req) => {
       maxTokens = 300
     }
 
-    console.log('🔍 Using model:', model, 'Vision:', useVision, 'UltraThink:', useUltraThink)
+    console.log('🔍 Using model:', model, 'Vision:', useVision, 'UltraThink:', useUltraThink, 'Research:', useDeepResearch)
 
     // Call Groq API
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
