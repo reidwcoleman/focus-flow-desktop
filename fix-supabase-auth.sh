@@ -4,7 +4,7 @@
 # This script updates your Supabase project to allow authentication from GitHub Pages
 
 PROJECT_REF="uhlgppoylqeiirpfhhqm"
-GITHUB_PAGES_URL="https://reidwcoleman.github.io/focus-flow-ai/"
+GITHUB_PAGES_URL="https://reidwcoleman.github.io/focus-flow-desktop/"
 
 echo "🔧 Fixing Supabase authentication for GitHub Pages..."
 echo ""

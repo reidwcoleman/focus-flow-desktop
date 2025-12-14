@@ -9,10 +9,10 @@ You're getting **400** and **422** errors because Supabase is blocking GitHub Pa
 
 **Changes needed:**
 ```
-Site URL: https://reidwcoleman.github.io/focus-flow-ai/
+Site URL: https://reidwcoleman.github.io/focus-flow-desktop/
 
 Additional Redirect URLs (add all these):
-https://reidwcoleman.github.io/focus-flow-ai/
+https://reidwcoleman.github.io/focus-flow-desktop/
 https://reidwcoleman.github.io
 http://localhost:5173
 ```
@@ -39,7 +39,7 @@ http://localhost:5173
 1. Click **"Save"** in each section
 2. Wait **1 minute** for changes to propagate
 3. Clear browser cache: `Ctrl+Shift+R` (or `Cmd+Shift+R` on Mac)
-4. Try signup/login again at: https://reidwcoleman.github.io/focus-flow-ai/
+4. Try signup/login again at: https://reidwcoleman.github.io/focus-flow-desktop/
 
 ---
 
