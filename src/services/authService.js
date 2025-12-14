@@ -353,6 +353,61 @@ class AuthService {
       return { profile: null, error }
     }
   }
+
+  /**
+   * Check if user has seen a mode explanation
+   * @param {string} mode - Mode name: 'regular', 'ultrathink', or 'deepresearch'
+   * @returns {Promise<boolean>}
+   */
+  async hasSeenModeExplanation(mode) {
+    try {
+      if (!this.isAuthenticated()) return false
+
+      // Reload profile to get latest data
+      await this._loadUserProfile()
+
+      if (!this.userProfile) return false
+
+      switch (mode) {
+        case 'regular':
+          return this.userProfile.mode_explained_regular || false
+        case 'ultrathink':
+          return this.userProfile.mode_explained_ultrathink || false
+        case 'deepresearch':
+          return this.userProfile.mode_explained_deepresearch || false
+        default:
+          return false
+      }
+    } catch (error) {
+      console.error('Error checking mode explanation:', error)
+      return false
+    }
+  }
+
+  /**
+   * Mark a mode explanation as seen
+   * @param {string} mode - Mode name: 'regular', 'ultrathink', or 'deepresearch'
+   * @returns {Promise<boolean>} Success status
+   */
+  async markModeExplanationSeen(mode) {
+    try {
+      if (!this.isAuthenticated()) return false
+
+      const { error } = await supabase.rpc('mark_mode_explained', {
+        user_uuid: this.currentUser.id,
+        mode_name: mode
+      })
+
+      if (error) throw error
+
+      // Reload profile to update local cache
+      await this._loadUserProfile()
+      return true
+    } catch (error) {
+      console.error('Error marking mode explanation:', error)
+      return false
+    }
+  }
 }
 
 // Export singleton instance

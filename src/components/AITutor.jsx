@@ -305,13 +305,14 @@ const AITutor = () => {
     "Quiz me",
   ]
 
-  const setRegularChat = () => {
+  const setRegularChat = async () => {
     aiService.setRegularMode()
     setUltraThinkEnabled(false)
     setDeepResearchEnabled(false)
 
-    // Show explanation only if not seen before
-    if (!localStorage.getItem('ai_mode_explained_regular')) {
+    // Show explanation only if not seen before (check Supabase)
+    const hasSeen = await authService.hasSeenModeExplanation('regular')
+    if (!hasSeen) {
       setModeExplanation({
         mode: 'regular',
         title: '💬 Regular Chat Mode',
@@ -322,43 +323,50 @@ const AITutor = () => {
     }
   }
 
-  const toggleUltraThink = () => {
+  const toggleUltraThink = async () => {
     const newState = aiService.toggleUltraThink()
     setUltraThinkEnabled(newState)
     setDeepResearchEnabled(false) // They're mutually exclusive
 
-    // Show explanation when enabling, only if not seen before
-    if (newState && !localStorage.getItem('ai_mode_explained_ultrathink')) {
-      setModeExplanation({
-        mode: 'ultrathink',
-        title: '🧠 UltraThink Mode',
-        description: 'Advanced reasoning mode that provides comprehensive, step-by-step explanations with deep analysis. Perfect for complex problems and thorough understanding.',
-        tokens: '8,000 tokens',
-        features: ['Detailed step-by-step reasoning', 'Multiple approaches explained', 'In-depth concept breakdowns', 'Practice problems included']
-      })
+    // Show explanation when enabling, only if not seen before (check Supabase)
+    if (newState) {
+      const hasSeen = await authService.hasSeenModeExplanation('ultrathink')
+      if (!hasSeen) {
+        setModeExplanation({
+          mode: 'ultrathink',
+          title: '🧠 UltraThink Mode',
+          description: 'Advanced reasoning mode that provides comprehensive, step-by-step explanations with deep analysis. Perfect for complex problems and thorough understanding.',
+          tokens: '8,000 tokens',
+          features: ['Detailed step-by-step reasoning', 'Multiple approaches explained', 'In-depth concept breakdowns', 'Practice problems included']
+        })
+      }
     }
   }
 
-  const toggleDeepResearch = () => {
+  const toggleDeepResearch = async () => {
     const newState = aiService.toggleDeepResearch()
     setDeepResearchEnabled(newState)
     setUltraThinkEnabled(false) // They're mutually exclusive
 
-    // Show explanation when enabling, only if not seen before
-    if (newState && !localStorage.getItem('ai_mode_explained_deepresearch')) {
-      setModeExplanation({
-        mode: 'deepresearch',
-        title: '📚 Deep Research Mode',
-        description: 'Comprehensive academic research mode that provides extensive analysis with multiple perspectives, historical context, and scholarly depth. Ideal for research papers and in-depth study.',
-        tokens: '12,000 tokens',
-        features: ['Extensive multi-perspective analysis', 'Historical context and evolution', 'Academic rigor and citations', 'Critical analysis of concepts']
-      })
+    // Show explanation when enabling, only if not seen before (check Supabase)
+    if (newState) {
+      const hasSeen = await authService.hasSeenModeExplanation('deepresearch')
+      if (!hasSeen) {
+        setModeExplanation({
+          mode: 'deepresearch',
+          title: '📚 Deep Research Mode',
+          description: 'Comprehensive academic research mode that provides extensive analysis with multiple perspectives, historical context, and scholarly depth. Ideal for research papers and in-depth study.',
+          tokens: '12,000 tokens',
+          features: ['Extensive multi-perspective analysis', 'Historical context and evolution', 'Academic rigor and citations', 'Critical analysis of concepts']
+        })
+      }
     }
   }
 
-  const closeModeExplanation = () => {
+  const closeModeExplanation = async () => {
     if (modeExplanation?.mode) {
-      localStorage.setItem(`ai_mode_explained_${modeExplanation.mode}`, 'true')
+      // Save to Supabase instead of localStorage
+      await authService.markModeExplanationSeen(modeExplanation.mode)
     }
     setModeExplanation(null)
   }
