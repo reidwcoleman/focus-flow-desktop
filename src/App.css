@@ -75,11 +75,25 @@
   }
 }
 
+/* Slow bounce animation for NEW feature badge */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
 .animate-fly-away {
   animation: fly-away 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   will-change: transform, opacity, filter;
   z-index: 100;
   position: relative;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
 }
 
 .success-flash {
