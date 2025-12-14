@@ -174,8 +174,17 @@ FORMAT YOUR RESPONSE AS CLEAN MARKDOWN:
 - Organize related information together
 - Remove any artifacts, scribbles, or unclear marks
 
+IMPORTANT - PLAIN TEXT MATH:
+- DO NOT use LaTeX formatting (no $ symbols for math)
+- DO NOT use markdown math notation (no $$, $...$, etc.)
+- Write ALL math equations and formulas in PLAIN TEXT
+- For example: "x^2 + 3x - 5 = 0" NOT "$x^2 + 3x - 5 = 0$"
+- Use simple text formatting: "E = mc^2" NOT "$E = mc^2$"
+- If you see math symbols in the image, write them as plain Unicode characters
+
 DO NOT include JSON, code blocks, or technical formatting.
 DO NOT add meta-commentary like "Here are the notes" or "This is about..."
+DO NOT add any symbols ($, \, {}, etc.) that are not in the original image.
 JUST provide the clean, formatted notes directly.
 
 Example format:
@@ -189,6 +198,15 @@ The cell is the basic unit of life. Key components include:
 
 ## Cell Functions
 Cells perform three main functions...
+
+For math notes example:
+# Quadratic Equations
+
+## Standard Form
+The standard form is: ax^2 + bx + c = 0
+
+## Quadratic Formula
+x = (-b ± √(b^2 - 4ac)) / 2a
 
 Be thorough but concise. Make it look professional and easy to read.`
   }
