@@ -87,8 +87,8 @@ serve(async (req) => {
       model = 'meta-llama/llama-4-scout-17b-16e-instruct'
       maxTokens = 800
     } else if (useDeepResearch) {
-      model = 'llama-3.3-70b-versatile' // Best model for ultra-comprehensive research
-      maxTokens = 16000 // Upgraded for maximum depth
+      model = 'llama-3.3-70b-versatile' // Best model for MAXIMUM comprehensive research
+      maxTokens = 32000 // ABSOLUTE MAXIMUM depth - encyclopedic responses
     } else if (useUltraThink) {
       model = 'llama-3.3-70b-versatile' // Best model for thoughtful reasoning
       maxTokens = 5000 // Balanced for clarity

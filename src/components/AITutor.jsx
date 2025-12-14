@@ -354,10 +354,10 @@ const AITutor = () => {
       if (!hasSeen) {
         setModeExplanation({
           mode: 'deepresearch',
-          title: '📚 Deep Research Mode',
-          description: 'ULTRA-COMPREHENSIVE academic research mode providing exhaustive, encyclopedic analysis with maximum scholarly depth. Delivers extensive multi-perspective investigation, complete historical context, theoretical frameworks, and interdisciplinary connections. Perfect for research papers, thesis work, and advanced academic study.',
-          tokens: '16,000 tokens',
-          features: ['Exhaustive multi-perspective analysis', 'Complete historical development', 'Theoretical frameworks and paradigms', 'Interdisciplinary connections', 'Extensive case studies and examples', 'Critical debates and controversies', 'Scholarly rigor and depth']
+          title: '📚 Deep Research Mode - MAXIMUM',
+          description: 'ABSOLUTE MAXIMUM comprehensive academic research mode with 32,000 token capacity. Provides encyclopedic, graduate-level analysis rivaling book chapters and research papers. Includes complete historical evolution, all theoretical frameworks, comprehensive methodologies, extensive case studies, interdisciplinary connections, and cutting-edge developments. Think PhD-level research in a single response.',
+          tokens: '32,000 tokens (MAXIMUM)',
+          features: ['Book-chapter length responses (20-40+ paragraphs)', 'Graduate/PhD-level academic rigor', 'Complete historical development and evolution', 'All major theoretical frameworks and paradigms', 'Comprehensive methodological analysis', 'Extensive empirical evidence and case studies', 'Deep interdisciplinary connections', 'Critical debates and future directions', 'Scholarly citations and references', 'Absolute maximum depth possible']
         })
       }
     }
@@ -610,9 +610,9 @@ const AITutor = () => {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm md:text-base font-bold text-blue-200">📚 Deep Research Active</h3>
+                    <h3 className="text-sm md:text-base font-bold text-blue-200">📚 Deep Research - MAXIMUM MODE</h3>
                   </div>
-                  <p className="text-xs text-blue-300/80 hidden md:block">Comprehensive analysis enabled</p>
+                  <p className="text-xs text-blue-300/80 hidden md:block">Encyclopedic 32,000-token PhD-level research active</p>
                 </div>
               </div>
               <button
