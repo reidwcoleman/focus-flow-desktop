@@ -165,28 +165,28 @@ export default function Account() {
   }
 
   return (
-    <div className="space-y-6 animate-fadeIn pb-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan-lg">
-          <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-8 lg:pb-12">
+      {/* Header - Desktop Optimized */}
+      <div className="text-center mb-8 lg:mb-12">
+        <div className="w-20 h-20 lg:w-32 lg:h-32 mx-auto mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan-lg">
+          <svg className="w-10 h-10 lg:w-16 lg:h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-dark-text-primary mb-1">Account Settings</h1>
-        <p className="text-dark-text-muted text-sm">{user?.email}</p>
+        <h1 className="text-2xl lg:text-4xl font-bold text-dark-text-primary mb-1 lg:mb-3">Account Settings</h1>
+        <p className="text-dark-text-muted text-sm lg:text-lg">{user?.email}</p>
       </div>
 
-      {/* Success/Error Messages */}
+      {/* Success/Error Messages - Desktop Optimized */}
       {success && (
-        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 animate-fadeIn">
-          <p className="text-green-400 text-sm text-center">{success}</p>
+        <div className="bg-green-500/10 border border-green-500/30 rounded-xl lg:rounded-2xl p-4 lg:p-6 animate-fadeIn">
+          <p className="text-green-400 text-sm lg:text-base text-center">{success}</p>
         </div>
       )}
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 animate-fadeIn">
-          <p className="text-red-400 text-sm text-center">{error}</p>
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl lg:rounded-2xl p-4 lg:p-6 animate-fadeIn">
+          <p className="text-red-400 text-sm lg:text-base text-center">{error}</p>
         </div>
       )}
 

@@ -554,6 +554,7 @@ const FocusMode = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
