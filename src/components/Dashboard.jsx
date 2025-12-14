@@ -3,6 +3,7 @@ import canvasService from '../services/canvasService'
 import authService from '../services/authService'
 import assignmentsService from '../services/assignmentsService'
 import streakService from '../services/streakService'
+import assignmentParserService from '../services/assignmentParserService'
 import StreakCalendar from './StreakCalendar'
 
 const Dashboard = ({ onOpenScanner }) => {
@@ -15,6 +16,11 @@ const Dashboard = ({ onOpenScanner }) => {
   const [streak, setStreak] = useState({ currentStreak: 0, longestStreak: 0, isNewStreak: false })
   const [showStreakCelebration, setShowStreakCelebration] = useState(false)
   const [flyingAwayItems, setFlyingAwayItems] = useState(new Set())
+  const [aiInput, setAiInput] = useState('')
+  const [aiProcessing, setAiProcessing] = useState(false)
+  const [aiError, setAiError] = useState('')
+  const [aiSuccess, setAiSuccess] = useState('')
+  const [showExamples, setShowExamples] = useState(false)
   const [newAssignment, setNewAssignment] = useState({
     title: '',
     subject: '',
@@ -79,7 +85,7 @@ const Dashboard = ({ onOpenScanner }) => {
     }
 
     try {
-      const { data, error } = await assignmentsService.createAssignment({
+      const { data, error} = await assignmentsService.createAssignment({
         title: newAssignment.title,
         subject: newAssignment.subject,
         dueDate: newAssignment.dueDate || null,
@@ -105,6 +111,45 @@ const Dashboard = ({ onOpenScanner }) => {
     } catch (error) {
       console.error('Failed to create assignment:', error)
       alert('Failed to create assignment')
+    }
+  }
+
+  const handleAiCreateAssignment = async () => {
+    if (!aiInput.trim()) return
+
+    setAiProcessing(true)
+    setAiError('')
+    setAiSuccess('')
+
+    try {
+      // Parse assignment with AI
+      const assignmentData = await assignmentParserService.parseAssignment(aiInput)
+
+      // Create assignment in database
+      const { data, error } = await assignmentsService.createAssignment({
+        title: assignmentData.title,
+        subject: assignmentData.subject,
+        dueDate: assignmentData.dueDate,
+        priority: assignmentData.priority,
+        timeEstimate: assignmentData.timeEstimate,
+        source: 'ai',
+      })
+
+      if (error) throw error
+
+      // Reload assignments
+      await loadAssignments()
+
+      // Show success
+      setAiSuccess(`Created: ${assignmentData.title}`)
+      setAiInput('')
+      setTimeout(() => setAiSuccess(''), 3000)
+    } catch (err) {
+      console.error('Failed to create assignment:', err)
+      setAiError('Failed to create assignment. Try being more specific.')
+      setTimeout(() => setAiError(''), 5000)
+    } finally {
+      setAiProcessing(false)
     }
   }
 

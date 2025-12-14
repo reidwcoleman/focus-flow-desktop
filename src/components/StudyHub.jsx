@@ -301,26 +301,26 @@ const StudyHub = () => {
         {/* Note Viewer Modal (reuse existing one) */}
         {selectedNote && (
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-6 lg:p-8 animate-fadeIn"
             onClick={() => setSelectedNote(null)}
           >
             <div
-              className="bg-dark-bg-secondary rounded-3xl shadow-2xl border border-dark-border-glow max-w-2xl w-full flex flex-col animate-fadeInUp"
+              className="bg-dark-bg-secondary rounded-3xl shadow-2xl border border-dark-border-glow max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl w-full flex flex-col animate-fadeInUp"
               style={{ maxHeight: '85vh' }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-dark-border-subtle flex-shrink-0">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 flex-shrink-0 rounded-xl bg-accent-purple/20 flex items-center justify-center border border-accent-purple/30">
-                      <svg className="w-5 h-5 text-accent-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-6 md:p-8 lg:p-10 border-b border-dark-border-subtle flex-shrink-0">
+                <div className="flex items-start justify-between gap-4 md:gap-6">
+                  <div className="flex items-start gap-4 md:gap-5 flex-1 min-w-0">
+                    <div className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex-shrink-0 rounded-xl bg-accent-purple/20 flex items-center justify-center border border-accent-purple/30">
+                      <svg className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-accent-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
                       {isEditingTitle ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 md:gap-3">
                           <input
                             type="text"
                             value={editedTitle}
@@ -329,58 +329,58 @@ const StudyHub = () => {
                               if (e.key === 'Enter') saveTitle()
                               if (e.key === 'Escape') cancelEditTitle()
                             }}
-                            className="flex-1 px-3 py-1.5 text-lg font-bold text-dark-text-primary bg-dark-bg-tertiary border-2 border-accent-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-purple/20"
+                            className="flex-1 px-4 py-2 md:py-2.5 text-lg md:text-xl lg:text-2xl font-bold text-dark-text-primary bg-dark-bg-tertiary border-2 border-accent-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-purple/20"
                             autoFocus
                           />
                           <button
                             onClick={saveTitle}
-                            className="p-2 rounded-lg bg-accent-purple text-white hover:bg-accent-purple-dark transition-all active:scale-95"
+                            className="p-2.5 md:p-3 rounded-lg bg-accent-purple text-white hover:bg-accent-purple-dark transition-all active:scale-95"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                           </button>
                           <button
                             onClick={cancelEditTitle}
-                            className="p-2 rounded-lg bg-dark-bg-tertiary text-dark-text-secondary hover:bg-dark-navy-dark transition-all active:scale-95"
+                            className="p-2.5 md:p-3 rounded-lg bg-dark-bg-tertiary text-dark-text-secondary hover:bg-dark-navy-dark transition-all active:scale-95"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-bold text-dark-text-primary truncate">{selectedNote.title}</h3>
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-dark-text-primary truncate">{selectedNote.title}</h3>
                           <button
                             onClick={startEditingTitle}
-                            className="p-1.5 rounded-lg hover:bg-dark-bg-tertiary transition-all active:scale-95 flex-shrink-0"
+                            className="p-2 md:p-2.5 rounded-lg hover:bg-dark-bg-tertiary transition-all active:scale-95 flex-shrink-0"
                             title="Rename note"
                           >
-                            <svg className="w-4 h-4 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 md:w-6 md:h-6 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
                           </button>
                         </div>
                       )}
-                      <p className="text-sm text-dark-text-secondary mt-1">{selectedNote.subject}</p>
+                      <p className="text-base md:text-lg lg:text-xl text-dark-text-secondary mt-2 md:mt-3">{selectedNote.subject}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
                     <button
                       onClick={() => setShowDeleteConfirm(true)}
-                      className="w-10 h-10 rounded-full hover:bg-red-900/20 flex items-center justify-center transition-all active:scale-95"
+                      className="w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full hover:bg-red-900/20 flex items-center justify-center transition-all active:scale-95"
                       title="Delete note"
                     >
-                      <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 md:w-7 md:h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
                     <button
                       onClick={() => setSelectedNote(null)}
-                      className="w-10 h-10 rounded-full hover:bg-dark-bg-tertiary flex items-center justify-center transition-all active:scale-95"
+                      className="w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full hover:bg-dark-bg-tertiary flex items-center justify-center transition-all active:scale-95"
                     >
-                      <svg className="w-5 h-5 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 md:w-7 md:h-7 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -389,11 +389,11 @@ const StudyHub = () => {
               </div>
 
               {/* Modal Content - Scrollable */}
-              <div className="p-6 overflow-y-auto flex-1 scrollbar-thin scroll-smooth">
+              <div className="p-6 md:p-8 lg:p-12 overflow-y-auto flex-1 scrollbar-thin scroll-smooth">
                 {/* Note Content with Enhanced Typography */}
-                <div className="mb-6">
+                <div className="mb-8 md:mb-10 lg:mb-12">
                   <div
-                    className="text-white leading-relaxed text-base prose prose-invert max-w-none"
+                    className="text-white leading-relaxed text-base md:text-lg lg:text-xl prose prose-invert max-w-none"
                     style={{
                       whiteSpace: 'pre-wrap',
                       wordWrap: 'break-word',
@@ -430,22 +430,22 @@ const StudyHub = () => {
                         if (cleanLine.startsWith('## ')) {
                           const headerText = cleanLine.replace(/^## /, '').replace(/\*\*/g, '')
                           return (
-                            <div key={index} className="relative mt-8 mb-4 first:mt-0">
-                              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-accent-cyan">
+                            <div key={index} className="relative mt-8 md:mt-10 lg:mt-12 mb-4 md:mb-5 lg:mb-6 first:mt-0">
+                              <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-accent-cyan">
                                 {headerText}
                               </h3>
-                              <div className="h-0.5 w-16 bg-gradient-to-r from-primary-500 to-transparent mt-2 rounded-full"></div>
+                              <div className="h-0.5 md:h-1 w-16 md:w-20 lg:w-24 bg-gradient-to-r from-primary-500 to-transparent mt-2 md:mt-3 rounded-full"></div>
                             </div>
                           )
                         }
                         if (cleanLine.startsWith('# ')) {
                           const headerText = cleanLine.replace(/^# /, '').replace(/\*\*/g, '')
                           return (
-                            <div key={index} className="relative mt-10 mb-6 first:mt-0">
-                              <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-300 to-accent-cyan tracking-tight">
+                            <div key={index} className="relative mt-10 md:mt-12 lg:mt-16 mb-6 md:mb-8 lg:mb-10 first:mt-0">
+                              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-300 to-accent-cyan tracking-tight">
                                 {headerText}
                               </h2>
-                              <div className="h-1 w-24 bg-gradient-to-r from-primary-500 via-accent-cyan to-transparent mt-3 rounded-full"></div>
+                              <div className="h-1 md:h-1.5 w-24 md:w-28 lg:w-32 bg-gradient-to-r from-primary-500 via-accent-cyan to-transparent mt-3 md:mt-4 rounded-full"></div>
                             </div>
                           )
                         }
@@ -850,11 +850,11 @@ const StudyHub = () => {
       {/* Note Viewer Modal */}
       {selectedNote && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-6 lg:p-8 animate-fadeIn"
           onClick={() => setSelectedNote(null)}
         >
           <div
-            className="bg-dark-bg-secondary rounded-3xl shadow-2xl border border-dark-border-glow max-w-2xl w-full flex flex-col animate-fadeInUp"
+            className="bg-dark-bg-secondary rounded-3xl shadow-2xl border border-dark-border-glow max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl w-full flex flex-col animate-fadeInUp"
             style={{ maxHeight: '85vh' }}
             onClick={(e) => e.stopPropagation()}
           >

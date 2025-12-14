@@ -93,7 +93,7 @@ const AuthScreen = ({ onAuthSuccess }) => {
           {isSignUp && (
             <div>
               <label className="block text-dark-text-primary text-sm font-semibold mb-2">
-                Your Name
+                Your Name *
               </label>
               <input
                 type="text"

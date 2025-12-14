@@ -37,7 +37,7 @@ const FlashCard = ({ card, className = '', showDifficulty = false }) => {
     <div className={`perspective-1000 ${className}`}>
       <div
         onClick={handleFlip}
-        className={`relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[5/6] lg:aspect-square transition-transform duration-500 preserve-3d cursor-pointer ${
+        className={`relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/3] lg:aspect-[16/10] xl:aspect-[16/9] transition-transform duration-500 preserve-3d cursor-pointer ${
           isFlipped ? 'rotate-y-180' : ''
         }`}
         style={{
@@ -47,24 +47,24 @@ const FlashCard = ({ card, className = '', showDifficulty = false }) => {
       >
         {/* Front Side */}
         <div
-          className="absolute inset-0 backface-hidden bg-gradient-to-br from-dark-bg-secondary via-dark-bg-secondary to-dark-bg-tertiary rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-10 lg:p-12 shadow-dark-soft-md border border-dark-border-glow ring-1 ring-white/5 flex flex-col"
+          className="absolute inset-0 backface-hidden bg-gradient-to-br from-dark-bg-secondary via-dark-bg-secondary to-dark-bg-tertiary rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 shadow-dark-soft-md border border-dark-border-glow ring-1 ring-white/5 flex flex-col"
           style={{ backfaceVisibility: 'hidden' }}
         >
           {/* Difficulty Badge */}
           {showDifficulty && card.difficulty && (
-            <div className="absolute top-4 md:top-6 right-4 md:right-6">
-              <div className={`px-2.5 md:px-3 py-1 md:py-1.5 rounded-full ${difficultyConfig.bg} ${difficultyConfig.text} text-[10px] md:text-xs font-bold uppercase tracking-wide`}>
+            <div className="absolute top-6 md:top-8 lg:top-10 right-6 md:right-8 lg:right-10">
+              <div className={`px-3 md:px-4 lg:px-5 py-1.5 md:py-2 lg:py-2.5 rounded-full ${difficultyConfig.bg} ${difficultyConfig.text} text-xs md:text-sm lg:text-base font-bold uppercase tracking-wide`}>
                 {difficultyConfig.label}
               </div>
             </div>
           )}
 
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center max-w-2xl">
-              <div className="text-dark-text-secondary text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider mb-2 sm:mb-3 md:mb-4">
+            <div className="text-center max-w-4xl">
+              <div className="text-dark-text-secondary text-xs sm:text-sm md:text-base lg:text-lg font-bold uppercase tracking-wider mb-3 sm:mb-4 md:mb-6 lg:mb-8">
                 Question
               </div>
-              <p className="text-dark-text-primary text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold leading-relaxed">
+              <p className="text-dark-text-primary text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold leading-relaxed">
                 {card.front}
               </p>
             </div>
@@ -72,34 +72,34 @@ const FlashCard = ({ card, className = '', showDifficulty = false }) => {
 
           {/* Hint Badge */}
           {card.hint && (
-            <div className="mt-4 px-3 md:px-4 py-2 md:py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
-              <span className="text-yellow-400 text-xs md:text-sm">💡 Hint available</span>
+            <div className="mt-4 md:mt-6 lg:mt-8 px-4 md:px-6 lg:px-8 py-3 md:py-4 lg:py-5 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
+              <span className="text-yellow-400 text-sm md:text-base lg:text-lg">💡 Hint available</span>
             </div>
           )}
 
           {/* Flip Indicator */}
-          <div className="mt-4 flex items-center justify-center gap-2 text-dark-text-muted">
-            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mt-4 md:mt-6 lg:mt-8 flex items-center justify-center gap-2 md:gap-3 text-dark-text-muted">
+            <svg className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
-            <span className="text-xs md:text-sm font-medium">Tap to flip</span>
+            <span className="text-sm md:text-base lg:text-lg font-medium">Click to flip</span>
           </div>
         </div>
 
         {/* Back Side */}
         <div
-          className="absolute inset-0 backface-hidden bg-gradient-to-br from-primary-500 via-primary-500 to-primary-600 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-10 lg:p-12 shadow-soft-xl ring-1 ring-white/10 flex flex-col text-white"
+          className="absolute inset-0 backface-hidden bg-gradient-to-br from-primary-500 via-primary-500 to-primary-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 shadow-soft-xl ring-1 ring-white/10 flex flex-col text-white"
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'
           }}
         >
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center max-w-2xl">
-              <div className="text-white/80 text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider mb-2 sm:mb-3 md:mb-4">
+            <div className="text-center max-w-4xl">
+              <div className="text-white/80 text-xs sm:text-sm md:text-base lg:text-lg font-bold uppercase tracking-wider mb-3 sm:mb-4 md:mb-6 lg:mb-8">
                 Answer
               </div>
-              <p className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold leading-relaxed">
+              <p className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold leading-relaxed">
                 {card.back}
               </p>
             </div>
@@ -107,17 +107,17 @@ const FlashCard = ({ card, className = '', showDifficulty = false }) => {
 
           {/* Hint */}
           {card.hint && (
-            <div className="mt-4 px-3 md:px-4 py-2 md:py-3 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30">
-              <span className="text-white/90 text-xs md:text-sm">💡 {card.hint}</span>
+            <div className="mt-4 md:mt-6 lg:mt-8 px-4 md:px-6 lg:px-8 py-3 md:py-4 lg:py-5 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30">
+              <span className="text-white/90 text-sm md:text-base lg:text-lg">💡 {card.hint}</span>
             </div>
           )}
 
           {/* Flip Indicator */}
-          <div className="mt-4 flex items-center justify-center gap-2 text-white/70">
-            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mt-4 md:mt-6 lg:mt-8 flex items-center justify-center gap-2 md:gap-3 text-white/70">
+            <svg className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
-            <span className="text-xs md:text-sm font-medium">Tap to flip</span>
+            <span className="text-sm md:text-base lg:text-lg font-medium">Click to flip</span>
           </div>
         </div>
       </div>

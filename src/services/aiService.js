@@ -30,23 +30,27 @@ class AIService {
   constructor() {
     this.conversationHistory = []
     this.userContext = null
+    this.useUltraThink = true // Enable advanced reasoning mode for desktop
     // Base system prompt (will be enhanced with user context)
-    this.baseSystemPrompt = `You are an expert AI tutor for students on a mobile app. Your role is to help with homework, concepts, and studying.
+    this.baseSystemPrompt = `You are an expert AI tutor for students on a desktop app. Your role is to help with homework, concepts, and studying.
 
-CRITICAL - Mobile optimization rules:
-- Keep responses BRIEF (1-2 short paragraphs max, 3-5 sentences)
-- Use bullet points and lists for clarity
-- Be direct and to-the-point
-- Avoid lengthy explanations unless specifically asked
-- Use simple formatting (**, -, numbers only)
+DESKTOP ULTRATHINK MODE - Advanced reasoning rules:
+- Provide COMPREHENSIVE, detailed explanations with deep reasoning
+- Show your thought process and step-by-step logic
+- Use rich formatting: headings, bullet points, code blocks, LaTeX math
+- Include examples, diagrams (in text), and visual explanations
+- Break down complex topics into detailed sections
+- Provide multiple approaches when applicable
+- Include practice problems and verification steps
 
 Guidelines:
-- Answer the specific question asked
-- Give examples when helpful
-- Be encouraging but concise
-- If topic is complex, give overview first, offer to elaborate
+- Think deeply about the question and show your reasoning
+- Explain WHY things work, not just HOW
+- Build intuition with analogies and examples
+- Encourage critical thinking with follow-up questions
+- Use academic rigor appropriate for desktop studying
 
-Remember: Students are on mobile - keep it SHORT and scannable!
+Remember: Students are on desktop - provide THOROUGH, thoughtful responses!
 
 **UNDERSTANDING THE APP:**
 The student has access to two main organizational systems:
@@ -417,13 +421,30 @@ When students ask:
    * Get the current provider name for display
    */
   getProviderName() {
+    const modelName = this.useUltraThink ? 'DeepSeek R1 UltraThink' : 'Llama 3.3 70B'
     if (AI_CONFIG.edgeFunctionUrl) {
-      return 'Groq Llama 3.1 (Secure)'
+      return `${modelName} (Secure)`
     }
     if (AI_CONFIG.useDirectApi && AI_CONFIG.groqApiKey) {
-      return 'Groq Llama 3.1 (Direct)'
+      return `${modelName} (Direct)`
     }
     return 'Demo Mode'
+  }
+
+  /**
+   * Toggle UltraThink mode
+   */
+  toggleUltraThink() {
+    this.useUltraThink = !this.useUltraThink
+    console.log('🧠 UltraThink mode:', this.useUltraThink ? 'ENABLED' : 'DISABLED')
+    return this.useUltraThink
+  }
+
+  /**
+   * Get UltraThink status
+   */
+  isUltraThinkEnabled() {
+    return this.useUltraThink
   }
 
   /**
@@ -501,6 +522,7 @@ When students ask:
           messages: messagesForAPI,
           systemPrompt: this.getSystemPrompt(),
           useVision: !!imageData, // Tell backend to use vision model
+          useUltraThink: this.useUltraThink, // Enable advanced reasoning model
         }),
       })
 
@@ -590,10 +612,12 @@ When students ask:
         }
       })
 
-      // Use vision model if image is provided (same as scanner)
-      const modelToUse = imageData ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile'
+      // Use vision model if image is provided, DeepSeek R1 for ultrathink reasoning
+      const modelToUse = imageData
+        ? 'meta-llama/llama-4-scout-17b-16e-instruct'
+        : (this.useUltraThink ? 'deepseek-r1-distill-llama-70b' : 'llama-3.3-70b-versatile')
 
-      console.log('🔍 Using model:', modelToUse)
+      console.log('🔍 Using model:', modelToUse, this.useUltraThink ? '(UltraThink Mode)' : '')
       console.log('📨 Sending to AI:', {
         hasImage: !!imageData,
         messageCount: messagesForAPI.length,
@@ -610,7 +634,7 @@ When students ask:
           model: modelToUse,
           messages: messagesForAPI,
           temperature: 0.7,
-          max_tokens: imageData ? 800 : 300, // More tokens for vision responses
+          max_tokens: imageData ? 800 : (this.useUltraThink ? 8000 : 300), // Much more tokens for ultrathink
           top_p: 1,
         }),
       })
