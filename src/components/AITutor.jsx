@@ -309,13 +309,17 @@ const AITutor = () => {
     aiService.setRegularMode()
     setUltraThinkEnabled(false)
     setDeepResearchEnabled(false)
-    // Show explanation
-    setModeExplanation({
-      title: '💬 Regular Chat Mode',
-      description: 'Quick and efficient responses for straightforward questions. Perfect for homework help, quick explanations, and general tutoring.',
-      tokens: '2,000 tokens',
-      features: ['Fast responses', 'Clear and concise', 'Great for homework help', 'Quick concept explanations']
-    })
+
+    // Show explanation only if not seen before
+    if (!localStorage.getItem('ai_mode_explained_regular')) {
+      setModeExplanation({
+        mode: 'regular',
+        title: '💬 Regular Chat Mode',
+        description: 'Quick and efficient responses for straightforward questions. Perfect for homework help, quick explanations, and general tutoring.',
+        tokens: '2,000 tokens',
+        features: ['Fast responses', 'Clear and concise', 'Great for homework help', 'Quick concept explanations']
+      })
+    }
   }
 
   const toggleUltraThink = () => {
@@ -323,9 +327,10 @@ const AITutor = () => {
     setUltraThinkEnabled(newState)
     setDeepResearchEnabled(false) // They're mutually exclusive
 
-    // Show explanation when enabling
-    if (newState) {
+    // Show explanation when enabling, only if not seen before
+    if (newState && !localStorage.getItem('ai_mode_explained_ultrathink')) {
       setModeExplanation({
+        mode: 'ultrathink',
         title: '🧠 UltraThink Mode',
         description: 'Advanced reasoning mode that provides comprehensive, step-by-step explanations with deep analysis. Perfect for complex problems and thorough understanding.',
         tokens: '8,000 tokens',
@@ -339,15 +344,23 @@ const AITutor = () => {
     setDeepResearchEnabled(newState)
     setUltraThinkEnabled(false) // They're mutually exclusive
 
-    // Show explanation when enabling
-    if (newState) {
+    // Show explanation when enabling, only if not seen before
+    if (newState && !localStorage.getItem('ai_mode_explained_deepresearch')) {
       setModeExplanation({
+        mode: 'deepresearch',
         title: '📚 Deep Research Mode',
         description: 'Comprehensive academic research mode that provides extensive analysis with multiple perspectives, historical context, and scholarly depth. Ideal for research papers and in-depth study.',
         tokens: '12,000 tokens',
         features: ['Extensive multi-perspective analysis', 'Historical context and evolution', 'Academic rigor and citations', 'Critical analysis of concepts']
       })
     }
+  }
+
+  const closeModeExplanation = () => {
+    if (modeExplanation?.mode) {
+      localStorage.setItem(`ai_mode_explained_${modeExplanation.mode}`, 'true')
+    }
+    setModeExplanation(null)
   }
 
   const formatMessageContent = (content) => {
@@ -1057,7 +1070,7 @@ const AITutor = () => {
       {modeExplanation && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
-          onClick={() => setModeExplanation(null)}
+          onClick={closeModeExplanation}
         >
           <div
             className="bg-dark-bg-secondary border border-dark-border-glow rounded-2xl p-6 max-w-md w-full shadow-2xl animate-slideUp"
@@ -1090,7 +1103,7 @@ const AITutor = () => {
             </div>
 
             <button
-              onClick={() => setModeExplanation(null)}
+              onClick={closeModeExplanation}
               className="w-full py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-semibold transition-colors"
             >
               Got it!
