@@ -1016,6 +1016,52 @@ const AITutor = () => {
         </div>
       )}
 
+      {/* Mode Explanation Modal */}
+      {modeExplanation && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setModeExplanation(null)}
+        >
+          <div
+            className="bg-dark-bg-secondary border border-dark-border-glow rounded-2xl p-6 max-w-md w-full shadow-2xl animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="text-3xl">{modeExplanation.title.split(' ')[0]}</div>
+              <h3 className="text-xl font-bold text-dark-text-primary">{modeExplanation.title.substring(2)}</h3>
+            </div>
+
+            <p className="text-dark-text-secondary mb-4 leading-relaxed">
+              {modeExplanation.description}
+            </p>
+
+            <div className="bg-dark-bg-tertiary rounded-lg p-3 mb-4">
+              <div className="text-xs text-dark-text-muted font-semibold mb-1">Max Response Length</div>
+              <div className="text-primary-500 font-bold">{modeExplanation.tokens}</div>
+            </div>
+
+            <div className="space-y-2 mb-4">
+              <div className="text-xs text-dark-text-muted font-semibold">Features:</div>
+              {modeExplanation.features.map((feature, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm text-dark-text-secondary">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setModeExplanation(null)}
+              className="w-full py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-semibold transition-colors"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Upgrade Modal */}
       {showUpgradeModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
