@@ -606,14 +606,14 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
           {assignments.map((assignment) => (
             <div
               key={assignment.id}
-              className={`relative overflow-hidden rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 transition-all active:scale-[0.99] ${
+              className={`relative overflow-hidden rounded-2xl md:rounded-3xl transition-all active:scale-[0.99] ${
                 assignment.aiCaptured
-                  ? 'bg-gradient-to-br from-primary-500/15 via-dark-bg-secondary to-accent-purple/15 border-2 border-primary-500/40 shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-[0_0_40px_rgba(59,130,246,0.5)] hover:border-primary-500/60 ring-1 ring-primary-500/20'
-                  : `${getSubjectBgColor(assignment.subject)} border border-dark-border-glow shadow-dark-soft-md hover:shadow-rim-light`
+                  ? 'bg-gradient-to-br from-primary-500/12 via-dark-bg-secondary to-accent-purple/12 border-2 border-primary-500/50 shadow-[0_0_25px_rgba(59,130,246,0.25)] hover:shadow-[0_0_35px_rgba(59,130,246,0.4)] hover:border-primary-500/70 ring-2 ring-primary-500/10 p-6 md:p-7 lg:p-8'
+                  : `${getSubjectBgColor(assignment.subject)} border border-dark-border-glow shadow-dark-soft-md hover:shadow-rim-light p-4 md:p-5 lg:p-6`
               } ${
                 flyingAwayItems.has(assignment.id)
                   ? 'animate-fly-away'
@@ -626,19 +626,14 @@ const Dashboard = ({ onOpenScanner }) => {
                   : ''
               }`}
             >
-              {/* AI Assignment Premium Decorations */}
+              {/* AI Assignment Premium Decorations - Minimal & Clean */}
               {assignment.aiCaptured && (
                 <>
-                  {/* Animated shimmer bar across top */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-400 to-transparent animate-shimmer"></div>
+                  {/* Animated shimmer bar - subtle accent */}
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary-500/60 to-transparent animate-shimmer"></div>
 
-                  {/* Glowing orbs for depth */}
-                  <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
-                  <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-accent-purple/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style={{ animationDelay: '1.5s' }}></div>
-
-                  {/* Sparkle accents in corners */}
-                  <div className="absolute top-4 left-4 w-2 h-2 bg-primary-400 rounded-full shadow-lg shadow-primary-500/50 animate-pulse" style={{ animationDuration: '2s' }}></div>
-                  <div className="absolute bottom-4 right-4 w-1.5 h-1.5 bg-accent-cyan rounded-full shadow-lg shadow-accent-cyan/50 animate-pulse" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}></div>
+                  {/* Single background glow - cleaner */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-purple/5 rounded-2xl md:rounded-3xl pointer-events-none"></div>
                 </>
               )}
 
