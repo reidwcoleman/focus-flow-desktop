@@ -165,16 +165,17 @@ class VisionService {
 
 Analyze this handwritten image and convert it into clean, organized notes.
 
-FORMAT YOUR RESPONSE AS CLEAN MARKDOWN:
+FORMAT YOUR RESPONSE AS CLEAN PLAIN TEXT:
 - Use # for main title
 - Use ## for section headings
-- Use **bold** for key terms and important concepts
-- Use - or * for bullet points
+- Use - (dash) for bullet points ONLY
 - Write clear, complete sentences
 - Organize related information together
 - Remove any artifacts, scribbles, or unclear marks
 
-IMPORTANT - PLAIN TEXT MATH:
+IMPORTANT - NO FORMATTING SYMBOLS:
+- DO NOT use asterisks (*) anywhere in the output
+- DO NOT use **bold** or *italic* formatting
 - DO NOT use LaTeX formatting (no $ symbols for math)
 - DO NOT use markdown math notation (no $$, $...$, etc.)
 - Write ALL math equations and formulas in PLAIN TEXT
@@ -184,7 +185,7 @@ IMPORTANT - PLAIN TEXT MATH:
 
 DO NOT include JSON, code blocks, or technical formatting.
 DO NOT add meta-commentary like "Here are the notes" or "This is about..."
-DO NOT add any symbols ($, \, {}, etc.) that are not in the original image.
+DO NOT add any symbols ($, *, \, {}, etc.) that are not in the original image.
 JUST provide the clean, formatted notes directly.
 
 Example format:
@@ -192,9 +193,9 @@ Example format:
 
 ## Cell Structure
 The cell is the basic unit of life. Key components include:
-- **Nucleus**: Contains genetic material (DNA)
-- **Mitochondria**: Powerhouse of the cell
-- **Cell membrane**: Controls what enters and exits
+- Nucleus: Contains genetic material (DNA)
+- Mitochondria: Powerhouse of the cell
+- Cell membrane: Controls what enters and exits
 
 ## Cell Functions
 Cells perform three main functions...
@@ -329,10 +330,9 @@ BE ACCURATE with dates - if you see "Due: 12/15", convert it to proper YYYY-MM-D
         }
       }
 
-      // Extract keywords (words in bold or headings)
-      const boldWords = [...cleanResponse.matchAll(/\*\*([^*]+)\*\*/g)].map(m => m[1])
+      // Extract keywords from headings only (no bold formatting used)
       const headings = [...cleanResponse.matchAll(/##\s+([^\n]+)/g)].map(m => m[1])
-      const tags = [...new Set([...boldWords, ...headings])]
+      const tags = [...new Set(headings)]
         .slice(0, 5)
         .map(tag => tag.trim())
 
@@ -472,17 +472,17 @@ BE ACCURATE with dates - if you see "Due: 12/15", convert it to proper YYYY-MM-D
     const demoContent = `# Chemistry Notes - Acid-Base Reactions
 
 ## Definition
-An **acid-base reaction** involves the transfer of a **proton (H+)** from one species to another.
+An acid-base reaction involves the transfer of a proton (H+) from one species to another.
 
 ## Key Concepts
-- **Bronsted-Lowry acids** are proton donors
-- **Bases** are proton acceptors
-- **Conjugate acid-base pairs** differ by one proton
+- Bronsted-Lowry acids are proton donors
+- Bases are proton acceptors
+- Conjugate acid-base pairs differ by one proton
 
 ## pH Scale
-- pH < 7: **acidic**
-- pH = 7: **neutral**
-- pH > 7: **basic**
+- pH < 7: acidic
+- pH = 7: neutral
+- pH > 7: basic
 
 ## Common Acids
 - HCl (hydrochloric acid)
