@@ -473,7 +473,7 @@ const AITutor = () => {
 
     // Inline code (`code`) - use function to avoid $ interpretation issues
     text = text.replace(/`([^`]+)`/g, (match, code) => {
-      return '<code class="px-1.5 py-0.5 rounded bg-dark-bg-tertiary text-accent-cyan font-mono text-[13px] border border-dark-border-subtle">' + code + '</code>'
+      return '<code class="px-1.5 py-0.5 rounded bg-dark-bg-tertiary text-accent-cyan font-mono text-xs md:text-sm lg:text-base border border-dark-border-subtle">' + code + '</code>'
     })
 
     // Bold + Italic (***text***)
