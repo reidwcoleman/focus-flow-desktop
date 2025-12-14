@@ -640,9 +640,9 @@ When students ask:
   getProviderName() {
     let modelName
     if (this.useDeepResearch) {
-      modelName = 'Llama 3.3 70B Research'
+      modelName = 'Llama 3.3 70B SpecDec (Research)'
     } else if (this.useUltraThink) {
-      modelName = 'DeepSeek R1 UltraThink'
+      modelName = 'Llama 3.3 70B (UltraThink)'
     } else {
       modelName = 'Llama 3.3 70B'
     }
@@ -862,14 +862,14 @@ When students ask:
         }
       })
 
-      // Use vision model if image, DeepSeek R1 for ultrathink, Llama for research/standard
+      // Use vision model if image, upgraded models for each mode
       let modelToUse
       if (imageData) {
         modelToUse = 'meta-llama/llama-4-scout-17b-16e-instruct'
       } else if (this.useDeepResearch) {
-        modelToUse = 'llama-3.3-70b-versatile' // Research uses standard model with special prompt
+        modelToUse = 'llama-3.3-70b-specdec' // Upgraded: Speculative decoding for faster inference
       } else if (this.useUltraThink) {
-        modelToUse = 'deepseek-r1-distill-llama-70b'
+        modelToUse = 'llama-3.3-70b-versatile' // Replaced decommissioned deepseek-r1
       } else {
         modelToUse = 'llama-3.3-70b-versatile'
       }
@@ -892,7 +892,7 @@ When students ask:
           model: modelToUse,
           messages: messagesForAPI,
           temperature: 0.7,
-          max_tokens: imageData ? 800 : (this.useDeepResearch ? 12000 : (this.useUltraThink ? 8000 : 300)), // 12k for research, 8k for ultrathink, 300 standard
+          max_tokens: imageData ? 800 : (this.useDeepResearch ? 12000 : (this.useUltraThink ? 8000 : 2000)), // 12k for research, 8k for ultrathink, 2k standard
           top_p: 1,
         }),
       })

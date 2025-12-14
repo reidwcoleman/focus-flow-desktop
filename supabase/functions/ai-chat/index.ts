@@ -87,14 +87,14 @@ serve(async (req) => {
       model = 'meta-llama/llama-4-scout-17b-16e-instruct'
       maxTokens = 800
     } else if (useDeepResearch) {
-      model = 'llama-3.3-70b-versatile'
+      model = 'llama-3.3-70b-specdec' // Upgraded: Speculative decoding for faster, better research
       maxTokens = 12000
     } else if (useUltraThink) {
-      model = 'deepseek-r1-distill-llama-70b'
+      model = 'llama-3.3-70b-versatile' // Replaced decommissioned deepseek-r1
       maxTokens = 8000
     } else {
       model = 'llama-3.3-70b-versatile'
-      maxTokens = 300
+      maxTokens = 2000 // Upgraded from 300 to 2000 for better responses
     }
 
     console.log('🔍 Using model:', model, 'Vision:', useVision, 'UltraThink:', useUltraThink, 'Research:', useDeepResearch)
