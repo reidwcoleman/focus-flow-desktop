@@ -612,33 +612,109 @@ const AITutor = () => {
           </div>
         )}
 
-        {/* AI Data Access Info Banner */}
+        {/* ULTRA PROMINENT AI Data Access Info Banner */}
         {showDataInfo && (
-          <div className="mt-3 p-3 bg-gradient-to-r from-accent-cyan/10 to-primary-500/10 rounded-xl border border-accent-cyan/30 shadow-dark-soft animate-fadeIn">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <svg className="w-4 h-4 text-accent-cyan flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <h4 className="text-xs font-bold text-dark-text-primary">I have access to your data!</h4>
+          <div className="mt-3 p-4 md:p-5 lg:p-6 bg-gradient-to-br from-primary-500/20 via-accent-cyan/20 to-accent-purple/20 rounded-2xl md:rounded-3xl border-2 border-primary-500/50 shadow-[0_0_30px_rgba(59,130,246,0.3)] animate-fadeIn relative overflow-hidden">
+            {/* Animated shimmer effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-300/20 to-transparent translate-x-[-100%] animate-shimmer"></div>
+
+            <div className="relative z-10">
+              {/* Header with dismiss button */}
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan animate-pulse-soft border-2 border-primary-300">
+                    <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-base md:text-lg lg:text-xl font-extrabold text-primary-100 mb-0.5">🔓 Full Data Access Enabled</h4>
+                    <p className="text-xs md:text-sm text-primary-200 font-medium">I can see everything to help you better</p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-dark-text-secondary leading-relaxed">
-                  I can see your <span className="font-semibold text-accent-cyan">assignments</span>, <span className="font-semibold text-accent-cyan">calendar</span>, <span className="font-semibold text-accent-cyan">study hours</span>, <span className="font-semibold text-accent-cyan">notes</span>, and <span className="font-semibold text-accent-cyan">streak</span>. Ask me about your schedule, what's due, or study advice!
+                <button
+                  onClick={() => {
+                    setShowDataInfo(false)
+                    localStorage.setItem('ai_data_info_dismissed', 'true')
+                  }}
+                  className="flex-shrink-0 p-1.5 md:p-2 rounded-lg hover:bg-dark-bg-tertiary/50 transition-all active:scale-95 border border-primary-500/30"
+                  title="Dismiss"
+                >
+                  <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-300 hover:text-primary-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Data sources grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                {/* Canvas Assignments */}
+                <div className="flex items-center gap-2 p-2 md:p-3 bg-amber-500/20 rounded-xl border border-amber-500/40 backdrop-blur-sm">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-amber-500/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs md:text-sm font-bold text-amber-100">Canvas Assignments</span>
+                </div>
+
+                {/* Calendar */}
+                <div className="flex items-center gap-2 p-2 md:p-3 bg-purple-500/20 rounded-xl border border-purple-500/40 backdrop-blur-sm">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-purple-500/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs md:text-sm font-bold text-purple-100">Your Calendar</span>
+                </div>
+
+                {/* Study Schedule */}
+                <div className="flex items-center gap-2 p-2 md:p-3 bg-cyan-500/20 rounded-xl border border-cyan-500/40 backdrop-blur-sm">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs md:text-sm font-bold text-cyan-100">Study Schedule</span>
+                </div>
+
+                {/* Notes */}
+                <div className="flex items-center gap-2 p-2 md:p-3 bg-pink-500/20 rounded-xl border border-pink-500/40 backdrop-blur-sm">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-pink-500/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-pink-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs md:text-sm font-bold text-pink-100">Your Notes</span>
+                </div>
+
+                {/* Flashcards */}
+                <div className="flex items-center gap-2 p-2 md:p-3 bg-green-500/20 rounded-xl border border-green-500/40 backdrop-blur-sm">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-green-500/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                  <span className="text-xs md:text-sm font-bold text-green-100">Flashcards</span>
+                </div>
+
+                {/* Study Streak */}
+                <div className="flex items-center gap-2 p-2 md:p-3 bg-orange-500/20 rounded-xl border border-orange-500/40 backdrop-blur-sm">
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-orange-500/30 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs md:text-sm font-bold text-orange-100">Study Streak</span>
+                </div>
+              </div>
+
+              {/* Call to action */}
+              <div className="mt-4 p-3 bg-primary-500/10 rounded-xl border border-primary-500/30 backdrop-blur-sm">
+                <p className="text-xs md:text-sm text-primary-100 text-center font-semibold">
+                  💬 Ask me anything about your schedule, what's due, study tips, or personalized advice!
                 </p>
               </div>
-              <button
-                onClick={() => {
-                  setShowDataInfo(false)
-                  localStorage.setItem('ai_data_info_dismissed', 'true')
-                }}
-                className="flex-shrink-0 p-1 rounded-lg hover:bg-dark-bg-tertiary transition-all active:scale-95"
-                title="Dismiss"
-              >
-                <svg className="w-3.5 h-3.5 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
             </div>
           </div>
         )}
