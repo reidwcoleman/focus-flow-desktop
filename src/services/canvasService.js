@@ -61,6 +61,13 @@ export const canvasService = {
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
     const proxyUrl = `${SUPABASE_URL}/functions/v1/canvas-proxy`
 
+    console.log('📡 Making Canvas API request:', {
+      endpoint,
+      url: CANVAS_CONFIG.baseUrl,
+      proxyUrl,
+      tokenPreview: CANVAS_CONFIG.accessToken ? `${CANVAS_CONFIG.accessToken.substring(0, 10)}...` : 'missing'
+    })
+
     try {
       const response = await fetch(proxyUrl, {
         method: options.method || 'GET',
@@ -74,20 +81,30 @@ export const canvasService = {
         body: options.body ? JSON.stringify(options.body) : undefined,
       })
 
+      console.log('📊 Canvas API response status:', response.status)
+
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('❌ Canvas API error response:', errorData)
+
         if (response.status === 401) {
-          throw new Error('Invalid Canvas token. Please check your token in Account settings.')
+          throw new Error(errorData.error || 'Invalid Canvas token. Please check that your token is correct and has not expired.')
         }
         if (response.status === 403) {
-          throw new Error('Access denied. Your token may not have the required permissions.')
+          throw new Error(errorData.error || 'Access denied. Your token may not have the required permissions.')
         }
-        const errorData = await response.json().catch(() => ({}))
+        if (response.status === 404) {
+          throw new Error(errorData.error || 'Canvas API endpoint not found. Please check your Canvas URL.')
+        }
+
         throw new Error(errorData.error || `Canvas API error: ${response.status} - ${response.statusText}`)
       }
 
-      return await response.json()
+      const data = await response.json()
+      console.log('✅ Canvas API request successful')
+      return data
     } catch (error) {
-      console.error('Canvas API request failed:', error)
+      console.error('❌ Canvas API request failed:', error)
       throw error
     }
   },
