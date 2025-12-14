@@ -95,6 +95,21 @@
   }
 }
 
+/* Shimmer animation for AI assignments */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
 .animate-fly-away {
   animation: fly-away 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   will-change: transform, opacity, filter;
@@ -108,6 +123,10 @@
 
 .animate-pulse-slow {
   animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
 }
 
 .success-flash {

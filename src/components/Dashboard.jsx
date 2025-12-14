@@ -626,13 +626,35 @@ const Dashboard = ({ onOpenScanner }) => {
                   : ''
               }`}
             >
+              {/* AI Assignment Premium Decorations */}
+              {assignment.aiCaptured && (
+                <>
+                  {/* Animated shimmer bar across top */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-400 to-transparent animate-shimmer"></div>
+
+                  {/* Glowing orbs for depth */}
+                  <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none"></div>
+                  <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-accent-purple/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style={{ animationDelay: '1.5s' }}></div>
+
+                  {/* Sparkle accents in corners */}
+                  <div className="absolute top-4 left-4 w-2 h-2 bg-primary-400 rounded-full shadow-lg shadow-primary-500/50 animate-pulse" style={{ animationDuration: '2s' }}></div>
+                  <div className="absolute bottom-4 right-4 w-1.5 h-1.5 bg-accent-cyan rounded-full shadow-lg shadow-accent-cyan/50 animate-pulse" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}></div>
+                </>
+              )}
+
               {/* Badges and Actions */}
-              <div className="absolute top-3.5 md:top-5 lg:top-6 right-3.5 md:right-5 lg:right-6 flex items-center gap-2 md:gap-3">
-                {/* AI Badge */}
+              <div className="absolute top-3.5 md:top-5 lg:top-6 right-3.5 md:right-5 lg:right-6 flex items-center gap-2 md:gap-3 z-10">
+                {/* AI Badge - Premium Design */}
                 {assignment.aiCaptured && (
-                  <div className="flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full bg-dark-bg-secondary/80 shadow-dark-soft border border-dark-border-glow">
-                    <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gradient-to-r from-primary-500 to-accent-purple shadow-glow-cyan"></div>
-                    <span className="text-xs md:text-sm font-semibold text-dark-text-primary tracking-tight">AI</span>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-purple rounded-full blur-md opacity-75 group-hover:opacity-100 animate-pulse-slow"></div>
+                    <div className="relative flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-gradient-to-r from-primary-500 via-accent-cyan to-accent-purple border-2 border-white/20 shadow-xl backdrop-blur-sm">
+                      <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span className="text-xs md:text-sm font-black text-white tracking-wide drop-shadow-lg">AI</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                    </div>
                   </div>
                 )}
 
