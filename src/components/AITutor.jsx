@@ -774,7 +774,7 @@ const AITutor = () => {
             )}
 
             {/* Message Content */}
-            <div className={`flex flex-col ${message.role === 'user' ? 'max-w-[85%] md:max-w-[75%] lg:max-w-[65%] items-end' : 'max-w-full md:max-w-[95%] lg:max-w-[90%] xl:max-w-[85%] items-start'}`}>
+            <div className={`flex flex-col ${message.role === 'user' ? 'max-w-[85%] md:max-w-[75%] lg:max-w-[65%] items-end' : 'max-w-full md:max-w-full lg:max-w-[98%] xl:max-w-[95%] items-start'}`}>
               <div className={`rounded-2xl ${
                 message.role === 'assistant'
                   ? message.isError
