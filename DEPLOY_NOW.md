@@ -11,7 +11,7 @@ Your Groq API key is ready! Now let's deploy the edge function.
 3. Click **"Import from filesystem"** or **"New function"**
 4. If using filesystem:
    - Name: `ai-chat`
-   - Upload: `/home/reidwcoleman/focus-flow-ai/supabase/functions/ai-chat/index.ts`
+   - Upload: `/home/reidwcoleman/focus-flow-desktop/supabase/functions/ai-chat/index.ts`
 5. If creating new:
    - Name: `ai-chat`
    - Copy/paste the content of `/supabase/functions/ai-chat/index.ts`
@@ -48,7 +48,7 @@ Your Groq API key is ready! Now let's deploy the edge function.
 ### Deploy with Token
 
 ```bash
-cd /home/reidwcoleman/focus-flow-ai
+cd /home/reidwcoleman/focus-flow-desktop
 
 # Set your access token
 export SUPABASE_ACCESS_TOKEN="sbp_your_token_here"

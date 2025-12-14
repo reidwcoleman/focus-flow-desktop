@@ -8,7 +8,7 @@ To deploy the new user profiles and AI usage tracking system to Supabase:
 
 ```bash
 # Make sure you're in the project directory
-cd /home/reidwcoleman/focus-flow-ai
+cd /home/reidwcoleman/focus-flow-desktop
 
 # Deploy migrations
 supabase db push
