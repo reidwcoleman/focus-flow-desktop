@@ -50,24 +50,28 @@ export const canvasService = {
     CANVAS_CONFIG.accessToken = ''
   },
 
-  // Make authenticated API request to Canvas
+  // Make authenticated API request to Canvas via Supabase Edge Function proxy
   async makeRequest(endpoint, options = {}) {
     const connected = await this.isConnected()
     if (!connected) {
       throw new Error('Canvas not connected. Please configure Canvas in Account settings.')
     }
 
-    const url = `${CANVAS_CONFIG.baseUrl}/api/v1${endpoint}`
+    // Use Supabase Edge Function as proxy to bypass CORS
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+    const proxyUrl = `${SUPABASE_URL}/functions/v1/canvas-proxy`
 
     try {
-      const response = await fetch(url, {
-        ...options,
+      const response = await fetch(proxyUrl, {
+        method: options.method || 'GET',
         headers: {
-          'Authorization': `Bearer ${CANVAS_CONFIG.accessToken}`,
           'Content-Type': 'application/json',
+          'canvas-url': CANVAS_CONFIG.baseUrl,
+          'canvas-token': CANVAS_CONFIG.accessToken,
+          'canvas-endpoint': endpoint,
           ...options.headers,
         },
-        mode: 'cors',
+        body: options.body ? JSON.stringify(options.body) : undefined,
       })
 
       if (!response.ok) {
@@ -77,18 +81,12 @@ export const canvasService = {
         if (response.status === 403) {
           throw new Error('Access denied. Your token may not have the required permissions.')
         }
-        throw new Error(`Canvas API error: ${response.status} - ${response.statusText}`)
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Canvas API error: ${response.status} - ${response.statusText}`)
       }
 
       return await response.json()
     } catch (error) {
-      // Check if it's a CORS error (expected in browser)
-      if (error.message.includes('CORS') || error.name === 'TypeError') {
-        // Silently fail for CORS errors - this is expected from GitHub Pages
-        throw new Error('Canvas CORS: Browser blocked. Use Canvas directly at canvas.wcpss.net')
-      }
-
-      // Log other errors
       console.error('Canvas API request failed:', error)
       throw error
     }
