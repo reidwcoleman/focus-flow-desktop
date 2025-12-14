@@ -84,6 +84,14 @@ class AssignmentsService {
         description: assignment.description || null,
         source: assignment.source || 'manual',
         completed: assignment.completed || false,
+        // Canvas fields
+        canvas_assignment_id: assignment.canvasAssignmentId || assignment.canvas_assignment_id || null,
+        canvas_course_id: assignment.canvasCourseId || assignment.canvas_course_id || null,
+        points_possible: assignment.pointsPossible || assignment.points_possible || null,
+        submitted: assignment.submitted || false,
+        grade_received: assignment.gradeReceived || assignment.grade_received || null,
+        score_received: assignment.scoreReceived || assignment.score_received || null,
+        canvas_url: assignment.canvasUrl || assignment.canvas_url || null,
       }
 
       console.log('💾 Inserting assignment into Supabase:', insertData)
@@ -215,6 +223,14 @@ class AssignmentsService {
       completed: dbAssignment.completed,
       createdAt: dbAssignment.created_at,
       updatedAt: dbAssignment.updated_at,
+      // Canvas fields
+      canvasAssignmentId: dbAssignment.canvas_assignment_id,
+      canvasCourseId: dbAssignment.canvas_course_id,
+      pointsPossible: dbAssignment.points_possible,
+      submitted: dbAssignment.submitted,
+      gradeReceived: dbAssignment.grade_received,
+      scoreReceived: dbAssignment.score_received,
+      canvasUrl: dbAssignment.canvas_url,
     }
   }
 

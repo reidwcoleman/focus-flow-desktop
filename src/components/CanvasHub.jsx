@@ -48,7 +48,7 @@ const CanvasHub = () => {
     try {
       const result = await canvasService.syncToDatabase()
       if (result.success) {
-        alert(`✅ Synced ${result.synced} assignments from Canvas!`)
+        alert(`✅ Sync Complete!\n\n📚 Courses: ${result.courses}\n📝 Assignments: ${result.assignments}\n📊 Grades: ${result.grades}`)
         await loadCanvasData() // Reload data after sync
       } else {
         throw new Error(result.message || 'Sync failed')
@@ -402,18 +402,6 @@ const CanvasHub = () => {
           )}
         </div>
       )}
-
-      {/* CORS Warning */}
-      <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-        <div className="flex items-start gap-2">
-          <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          <p className="text-xs text-amber-300">
-            <strong>Note:</strong> Canvas has browser limitations. If you see errors, view assignments directly at canvas.wcpss.net. Use "Sync to App" to import assignments into Focus Flow.
-          </p>
-        </div>
-      </div>
     </div>
   )
 }

@@ -220,7 +220,126 @@ export const canvasService = {
     )
   },
 
-  // Sync Canvas assignments to database
+  // Sync courses to canvas_courses table
+  async syncCourses(userId) {
+    try {
+      const courses = await this.getCourses()
+      let syncedCount = 0
+
+      for (const course of courses) {
+        const courseData = {
+          user_id: userId,
+          canvas_course_id: course.id,
+          name: course.name,
+          course_code: course.course_code || null,
+          term_name: course.term?.name || null,
+          enrollment_type: course.enrollments?.[0]?.type || null,
+          is_active: true,
+          synced_at: new Date().toISOString()
+        }
+
+        // Upsert: insert or update on conflict
+        const { error } = await supabase
+          .from('canvas_courses')
+          .upsert(courseData, {
+            onConflict: 'user_id,canvas_course_id',
+            ignoreDuplicates: false
+          })
+
+        if (!error) syncedCount++
+      }
+
+      return { synced: syncedCount, total: courses.length }
+    } catch (error) {
+      console.error('Failed to sync courses:', error)
+      return { synced: 0, error: error.message }
+    }
+  },
+
+  // Sync assignments with Canvas ID for deduplication
+  async syncAssignments(userId) {
+    try {
+      const canvasAssignments = await this.getAllAssignments()
+      let syncedCount = 0
+
+      for (const assignment of canvasAssignments) {
+        // Extract numeric Canvas assignment ID
+        const canvasId = parseInt(assignment.id.replace('canvas-', ''))
+
+        const assignmentData = {
+          user_id: userId,
+          canvas_assignment_id: canvasId,
+          canvas_course_id: assignment.courseId,
+          title: assignment.title,
+          subject: assignment.subject,
+          due_date: assignment.dueDate
+            ? new Date(assignment.dueDate).toISOString().split('T')[0]
+            : null,
+          description: assignment.description || null,
+          priority: this.calculatePriority(assignment.dueDate),
+          source: 'canvas',
+          points_possible: assignment.points || null,
+          submitted: assignment.submitted || false,
+          grade_received: assignment.grade || null,
+          canvas_url: assignment.htmlUrl || null,
+          time_estimate: this.estimateTime(assignment.points)
+        }
+
+        // Upsert: insert or update on conflict of (user_id, canvas_assignment_id)
+        const { error } = await supabase
+          .from('assignments')
+          .upsert(assignmentData, {
+            onConflict: 'user_id,canvas_assignment_id',
+            ignoreDuplicates: false
+          })
+
+        if (!error) syncedCount++
+      }
+
+      return { synced: syncedCount, total: canvasAssignments.length }
+    } catch (error) {
+      console.error('Failed to sync assignments:', error)
+      return { synced: 0, error: error.message }
+    }
+  },
+
+  // Sync course grades to course_grades table
+  async syncGrades(userId) {
+    try {
+      const grades = await this.getAllGrades()
+      let syncedCount = 0
+
+      for (const grade of grades) {
+        const gradeData = {
+          user_id: userId,
+          canvas_course_id: grade.courseId,
+          course_name: grade.courseName,
+          current_grade: grade.currentGrade || null,
+          current_score: grade.currentScore || null,
+          final_grade: grade.finalGrade || null,
+          final_score: grade.finalScore || null,
+          synced_at: new Date().toISOString()
+        }
+
+        // Upsert: insert or update on conflict
+        const { error } = await supabase
+          .from('course_grades')
+          .upsert(gradeData, {
+            onConflict: 'user_id,canvas_course_id',
+            ignoreDuplicates: false
+          })
+
+        if (!error) syncedCount++
+      }
+
+      return { synced: syncedCount, total: grades.length }
+    } catch (error) {
+      console.error('Failed to sync grades:', error)
+      return { synced: 0, error: error.message }
+    }
+  },
+
+  // Sync Canvas data to database with upsert (no duplicates)
   async syncToDatabase() {
     try {
       console.log('🔄 Starting Canvas sync...')
@@ -228,66 +347,94 @@ export const canvasService = {
       // Initialize connection
       await this.initializeFromProfile()
 
-      // Fetch all assignments from Canvas
-      const canvasAssignments = await this.getAllAssignments()
-      console.log(`📥 Fetched ${canvasAssignments.length} assignments from Canvas`)
-
-      if (canvasAssignments.length === 0) {
-        return { success: true, synced: 0, message: 'No assignments found in Canvas' }
+      const { user } = await authService.getCurrentUser()
+      if (!user) {
+        return { success: false, error: 'No user logged in' }
       }
 
-      let syncedCount = 0
-      const errors = []
+      // Sync courses first
+      const courseResult = await this.syncCourses(user.id)
+      console.log(`📚 Synced ${courseResult.synced} courses`)
 
-      // Sync each assignment to database
-      for (const assignment of canvasAssignments) {
-        try {
-          // Transform to database format
-          const dbAssignment = {
-            title: assignment.title,
-            subject: assignment.subject,
-            dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString().split('T')[0] : null,
-            description: assignment.description || null,
-            priority: this.calculatePriority(assignment.dueDate),
-            source: 'canvas',
-            aiCaptured: false,
-            timeEstimate: this.estimateTime(assignment.points),
-          }
+      // Sync assignments
+      const assignmentResult = await this.syncAssignments(user.id)
+      console.log(`📝 Synced ${assignmentResult.synced} assignments`)
 
-          // Create or update in database
-          const result = await assignmentsService.createAssignment(dbAssignment)
-
-          if (!result.error) {
-            syncedCount++
-            console.log(`✅ Synced: ${assignment.title}`)
-          } else {
-            errors.push({ title: assignment.title, error: result.error })
-            console.error(`❌ Failed to sync: ${assignment.title}`, result.error)
-          }
-        } catch (error) {
-          errors.push({ title: assignment.title, error: error.message })
-          console.error(`❌ Error syncing ${assignment.title}:`, error)
-        }
-      }
-
-      console.log(`✨ Sync complete: ${syncedCount}/${canvasAssignments.length} assignments synced`)
+      // Sync grades
+      const gradeResult = await this.syncGrades(user.id)
+      console.log(`📊 Synced ${gradeResult.synced} course grades`)
 
       return {
         success: true,
-        synced: syncedCount,
-        total: canvasAssignments.length,
-        errors: errors.length > 0 ? errors : null,
-        message: `Synced ${syncedCount} assignments from Canvas`
+        courses: courseResult.synced,
+        assignments: assignmentResult.synced,
+        grades: gradeResult.synced,
+        message: `Synced ${courseResult.synced} courses, ${assignmentResult.synced} assignments, ${gradeResult.synced} grades`
       }
     } catch (error) {
       console.error('❌ Canvas sync failed:', error)
       return {
         success: false,
-        synced: 0,
         error: error.message,
         message: `Sync failed: ${error.message}`
       }
     }
+  },
+
+  // Get synced courses from database
+  async getSyncedCourses() {
+    const { user } = await authService.getCurrentUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+      .from('canvas_courses')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .order('name')
+
+    if (error) {
+      console.error('Failed to get synced courses:', error)
+      return []
+    }
+    return data || []
+  },
+
+  // Get synced grades from database
+  async getSyncedGrades() {
+    const { user } = await authService.getCurrentUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+      .from('course_grades')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('course_name')
+
+    if (error) {
+      console.error('Failed to get synced grades:', error)
+      return []
+    }
+    return data || []
+  },
+
+  // Get Canvas assignments from database
+  async getSyncedAssignments() {
+    const { user } = await authService.getCurrentUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+      .from('assignments')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('source', 'canvas')
+      .order('due_date', { ascending: true, nullsFirst: false })
+
+    if (error) {
+      console.error('Failed to get synced Canvas assignments:', error)
+      return []
+    }
+    return data || []
   },
 
   // Calculate priority based on due date
