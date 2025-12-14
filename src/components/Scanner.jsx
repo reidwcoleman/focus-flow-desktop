@@ -247,33 +247,33 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-neutral-900 flex items-center justify-center">
-      {/* Mobile-sized container - matches app dimensions */}
-      <div className="w-full h-full max-w-[28rem] mx-auto bg-neutral-900 relative">
+      {/* Responsive container - mobile to desktop */}
+      <div className="w-full h-full max-w-[28rem] md:max-w-4xl lg:max-w-6xl mx-auto bg-neutral-900 relative">
         {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-neutral-900 to-transparent p-4">
-          <div className="flex items-center justify-between mb-3">
+        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-neutral-900 to-transparent p-4 md:p-6">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-all"
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-all"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <h2 className="text-white font-semibold">
+            <h2 className="text-white font-semibold text-base md:text-xl">
               {scanMode === 'homework' && 'Scan Homework'}
               {scanMode === 'notes' && 'Scan Notes'}
               {scanMode === 'flashcards' && 'Scan Textbook'}
             </h2>
-            <div className="w-10"></div>
+            <div className="w-10 md:w-12"></div>
           </div>
 
         {/* Mode Selector */}
         {mode === 'camera' && (
-          <div className="flex gap-2 px-1">
+          <div className="flex gap-2 md:gap-3 px-1">
             <button
               onClick={() => setScanMode('homework')}
-              className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-xl text-sm md:text-base font-semibold transition-all duration-200 ${
                 scanMode === 'homework'
                   ? 'bg-white text-neutral-900 shadow-soft'
                   : 'bg-white/10 text-white/70 hover:bg-white/20'
@@ -283,7 +283,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
             </button>
             <button
               onClick={() => setScanMode('notes')}
-              className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-xl text-sm md:text-base font-semibold transition-all duration-200 ${
                 scanMode === 'notes'
                   ? 'bg-white text-neutral-900 shadow-soft'
                   : 'bg-white/10 text-white/70 hover:bg-white/20'
@@ -293,7 +293,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
             </button>
             <button
               onClick={() => setScanMode('flashcards')}
-              className={`flex-1 py-2 px-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-xl text-sm md:text-base font-semibold transition-all duration-200 ${
                 scanMode === 'flashcards'
                   ? 'bg-white text-neutral-900 shadow-soft'
                   : 'bg-white/10 text-white/70 hover:bg-white/20'
@@ -361,30 +361,30 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
 
       {/* Processing/Result View */}
       {(mode === 'processing' || mode === 'result') && (
-        <div className="w-full h-full flex flex-col p-6">
+        <div className="w-full h-full flex flex-col md:flex-row md:gap-6 p-6 md:p-8">
           {/* Preview Image */}
-          <div className="flex-shrink-0 mb-6">
+          <div className="flex-shrink-0 mb-6 md:mb-0 md:w-1/2 lg:w-2/5">
             <img
               src={capturedImage}
               alt="Captured"
-              className="w-full h-64 object-cover rounded-2xl shadow-xl"
+              className="w-full h-64 md:h-full md:max-h-[600px] lg:max-h-[700px] object-cover rounded-2xl shadow-xl"
             />
           </div>
 
           {/* Processing State */}
           {isProcessing ? (
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="relative w-20 h-20 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 border-primary-500/30"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-primary-500 border-t-transparent animate-spin"></div>
+            <div className="flex-1 flex flex-col items-center justify-center md:w-1/2 lg:w-3/5">
+              <div className="relative w-20 h-20 md:w-28 md:h-28 mb-6">
+                <div className="absolute inset-0 rounded-full border-4 md:border-6 border-primary-500/30"></div>
+                <div className="absolute inset-0 rounded-full border-4 md:border-6 border-primary-500 border-t-transparent animate-spin"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-10 h-10 md:w-14 md:h-14 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">AI Processing...</h3>
-              <p className="text-white/70 text-sm text-center">
+              <h3 className="text-white font-semibold text-lg md:text-2xl mb-2">AI Processing...</h3>
+              <p className="text-white/70 text-sm md:text-base text-center max-w-md">
                 {processingStep || (
                   scanMode === 'homework' ? 'Extracting assignment details from your homework' :
                   scanMode === 'notes' ? 'Reading and organizing your handwritten notes' :
@@ -393,23 +393,23 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
               </p>
             </div>
           ) : error ? (
-            <div className="flex-1 flex flex-col items-center justify-center px-6">
-              <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex-1 flex flex-col items-center justify-center md:w-1/2 lg:w-3/5 px-6">
+              <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 md:w-12 md:h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">Processing Failed</h3>
-              <p className="text-white/70 text-sm text-center mb-6">{error}</p>
+              <h3 className="text-white font-semibold text-lg md:text-2xl mb-2">Processing Failed</h3>
+              <p className="text-white/70 text-sm md:text-base text-center mb-6 max-w-md">{error}</p>
               <button
                 onClick={retake}
-                className="px-6 py-3 bg-white/10 backdrop-blur-sm text-white font-medium rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95"
+                className="px-6 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-sm text-white font-medium text-sm md:text-base rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95"
               >
                 Try Again
               </button>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 md:space-y-5 md:w-1/2 lg:w-3/5">
               {/* HOMEWORK MODE RESULT */}
               {assignmentData && (
                 <>
@@ -464,7 +464,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                     <button
                       onClick={saveAssignment}
                       disabled={isSaving}
-                      className="w-full py-4 px-6 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl shadow-glow-lg hover:shadow-glow transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-sm md:text-base rounded-xl shadow-glow-lg hover:shadow-glow transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSaving ? (
                         <div className="flex items-center justify-center gap-2">
@@ -478,7 +478,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                     <button
                       onClick={retake}
                       disabled={isSaving}
-                      className="w-full py-3 px-6 bg-white/10 backdrop-blur-sm text-white font-medium rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-3 md:py-4 px-6 md:px-8 bg-white/10 backdrop-blur-sm text-white font-medium text-sm md:text-base rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Retake Photo
                     </button>
@@ -561,7 +561,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                     <button
                       onClick={saveNotes}
                       disabled={isSaving}
-                      className="w-full py-4 px-6 bg-gradient-to-r from-accent-purple to-accent-pink text-white font-semibold rounded-xl shadow-glow-purple hover:shadow-glow transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-accent-purple to-accent-pink text-white font-semibold text-sm md:text-base rounded-xl shadow-glow-purple hover:shadow-glow transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSaving ? (
                         <div className="flex items-center justify-center gap-2">
@@ -575,7 +575,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                     <button
                       onClick={retake}
                       disabled={isSaving}
-                      className="w-full py-3 px-6 bg-white/10 backdrop-blur-sm text-white font-medium rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-3 md:py-4 px-6 md:px-8 bg-white/10 backdrop-blur-sm text-white font-medium text-sm md:text-base rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Retake Photo
                     </button>
@@ -644,7 +644,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                     <button
                       onClick={saveFlashcards}
                       disabled={isSaving}
-                      className="w-full py-4 px-6 bg-gradient-to-r from-accent-cyan to-primary-500 text-white font-semibold rounded-xl shadow-soft-lg hover:shadow-soft-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-accent-cyan to-primary-500 text-white font-semibold text-sm md:text-base rounded-xl shadow-soft-lg hover:shadow-soft-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSaving ? (
                         <div className="flex items-center justify-center gap-2">
@@ -658,7 +658,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                     <button
                       onClick={retake}
                       disabled={isSaving}
-                      className="w-full py-3 px-6 bg-white/10 backdrop-blur-sm text-white font-medium rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-3 md:py-4 px-6 md:px-8 bg-white/10 backdrop-blur-sm text-white font-medium text-sm md:text-base rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Retake Photo
                     </button>

@@ -214,17 +214,36 @@ function App() {
         )}
 
         {/* Left Sidebar Navigation - Desktop Style */}
-        <aside className="hidden md:flex md:flex-col md:w-64 lg:w-72 bg-dark-bg-secondary border-r border-dark-border-glow shadow-dark-soft-lg fixed left-0 top-0 bottom-0 z-40">
+        <aside className="hidden md:flex md:flex-col md:w-72 lg:w-80 xl:w-96 bg-dark-bg-secondary border-r border-dark-border-glow shadow-dark-soft-lg fixed left-0 top-0 bottom-0 z-40">
           {/* Logo / Brand */}
-          <div className="p-6 border-b border-dark-border-glow">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-accent-cyan bg-clip-text text-transparent">
+          <div className="p-6 xl:p-8 border-b border-dark-border-glow">
+            <h1 className="text-3xl xl:text-4xl font-bold bg-gradient-to-r from-primary-500 to-accent-cyan bg-clip-text text-transparent">
               Focus Flow
             </h1>
-            <p className="text-sm text-dark-text-muted mt-1">Your Academic OS</p>
+            <p className="text-base xl:text-lg text-dark-text-muted mt-2">Your Academic OS</p>
           </div>
 
+          {/* User Profile Section */}
+          {user && (
+            <div className="px-6 xl:px-8 py-4 border-b border-dark-border-subtle">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 xl:w-14 xl:h-14 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center text-white font-bold text-lg xl:text-xl">
+                  {user.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm xl:text-base font-semibold text-dark-text-primary truncate">
+                    {user.email?.split('@')[0] || 'User'}
+                  </p>
+                  <p className="text-xs xl:text-sm text-dark-text-muted truncate">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Navigation Items */}
-          <nav className="flex-1 py-6 px-3 overflow-y-auto">
+          <nav className="flex-1 py-6 xl:py-8 px-4 xl:px-6 overflow-y-auto">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id
               const isCenter = tab.isCenter
@@ -238,12 +257,12 @@ function App() {
                       setShowScanner(true)
                       setActiveTab('dashboard')
                     }}
-                    className="w-full mb-2 px-4 py-3.5 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg hover:shadow-glow-cyan-lg transition-all duration-200 flex items-center gap-3 text-white font-semibold"
+                    className="w-full mb-3 px-5 xl:px-6 py-4 xl:py-5 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg hover:shadow-glow-cyan-xl hover:scale-[1.02] transition-all duration-200 flex items-center gap-4 text-white font-semibold"
                   >
-                    <div className="w-6 h-6">
+                    <div className="w-7 h-7 xl:w-8 xl:h-8">
                       {getIcon(tab.icon, true, false)}
                     </div>
-                    <span className="text-base">{tab.label}</span>
+                    <span className="text-lg xl:text-xl">{tab.label}</span>
                   </button>
                 )
               }
@@ -252,20 +271,27 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => tab.id !== activeTab && setActiveTab(tab.id)}
-                  className={`w-full mb-2 px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
+                  className={`w-full mb-2 px-5 xl:px-6 py-3.5 xl:py-4 rounded-xl transition-all duration-200 flex items-center gap-4 group ${
                     isActive
-                      ? 'bg-dark-bg-surface text-primary-500 shadow-rim-light'
-                      : 'text-dark-text-muted hover:bg-dark-bg-surface/50 hover:text-dark-text-secondary'
+                      ? 'bg-dark-bg-surface text-primary-500 shadow-rim-light scale-[1.02]'
+                      : 'text-dark-text-muted hover:bg-dark-bg-surface/50 hover:text-dark-text-secondary hover:scale-[1.01]'
                   }`}
                 >
-                  <div className={`w-6 h-6 ${isActive ? 'drop-shadow-[0_0_8px_rgba(88,166,255,0.5)]' : ''}`}>
+                  <div className={`w-6 h-6 xl:w-7 xl:h-7 transition-transform group-hover:scale-110 ${isActive ? 'drop-shadow-[0_0_12px_rgba(88,166,255,0.6)]' : ''}`}>
                     {getIcon(tab.icon, isActive, false)}
                   </div>
-                  <span className={`text-base font-medium ${isActive ? 'font-semibold' : ''}`}>
+                  <span className={`text-base xl:text-lg font-medium ${isActive ? 'font-semibold' : ''}`}>
                     {tab.label}
                   </span>
                   {isActive && tab.id === 'tutor' && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-accent-purple animate-pulse"></div>
+                    <div className="ml-auto w-2.5 h-2.5 rounded-full bg-accent-purple animate-pulse shadow-glow-purple"></div>
+                  )}
+                  {!isActive && (
+                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   )}
                 </button>
               )
@@ -274,7 +300,7 @@ function App() {
         </aside>
 
         {/* Main Content Area - Desktop optimized */}
-        <main className="flex-1 md:ml-64 lg:ml-72 px-6 md:px-8 lg:px-12 py-8 overflow-y-auto overflow-x-hidden pb-24 md:pb-8">
+        <main className="flex-1 md:ml-72 lg:ml-80 xl:ml-96 px-6 md:px-10 lg:px-16 xl:px-20 py-6 md:py-10 xl:py-12 overflow-y-auto overflow-x-hidden pb-24 md:pb-12">
           <div className="max-w-desktop mx-auto w-full">
             <div className="relative w-full">
               <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'dashboard' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>

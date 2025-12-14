@@ -165,9 +165,11 @@ export default {
         '128': '32rem',
       },
       maxWidth: {
-        'desktop': '1400px',
-        'desktop-content': '1200px',
-        'desktop-card': '500px',
+        'desktop': '1600px',      // Ultra-wide desktop
+        'desktop-lg': '1400px',    // Large desktop
+        'desktop-md': '1200px',    // Medium desktop
+        'desktop-content': '1000px',
+        'desktop-card': '600px',
       },
       animation: {
         'fadeIn': 'fadeIn 0.3s ease-out',
