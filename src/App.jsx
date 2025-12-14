@@ -255,7 +255,7 @@ function App() {
           )}
 
           {/* Navigation Items */}
-          <nav className="flex-1 py-3 xl:py-4 px-4 xl:px-6 overflow-y-visible">
+          <nav className="flex-1 py-2 xl:py-2.5 px-3 xl:px-4 overflow-y-visible">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id
               const isCenter = tab.isCenter
@@ -269,12 +269,12 @@ function App() {
                       setShowScanner(true)
                       setActiveTab('dashboard')
                     }}
-                    className="w-full mb-1.5 px-4 xl:px-5 py-3 xl:py-3.5 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg hover:shadow-glow-cyan-xl hover:scale-[1.02] transition-all duration-200 flex items-center gap-3 text-white font-semibold"
+                    className="w-full mb-1 px-3 xl:px-4 py-2 xl:py-2.5 rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg hover:shadow-glow-cyan-xl hover:scale-[1.02] transition-all duration-200 flex items-center gap-2.5 text-white font-semibold"
                   >
-                    <div className="w-6 h-6 xl:w-7 xl:h-7">
+                    <div className="w-5 h-5 xl:w-6 xl:h-6">
                       {getIcon(tab.icon, true, false)}
                     </div>
-                    <span className="text-base xl:text-lg">{tab.label}</span>
+                    <span className="text-sm xl:text-base">{tab.label}</span>
                   </button>
                 )
               }
@@ -283,24 +283,24 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => tab.id !== activeTab && setActiveTab(tab.id)}
-                  className={`w-full mb-1 px-4 xl:px-5 py-2.5 xl:py-3 rounded-xl transition-all duration-200 flex items-center gap-3 group ${
+                  className={`w-full mb-0.5 px-3 xl:px-4 py-1.5 xl:py-2 rounded-lg transition-all duration-200 flex items-center gap-2.5 group ${
                     isActive
                       ? 'bg-dark-bg-surface text-primary-500 shadow-rim-light scale-[1.02]'
                       : 'text-dark-text-muted hover:bg-dark-bg-surface/50 hover:text-dark-text-secondary hover:scale-[1.01]'
                   }`}
                 >
-                  <div className={`w-5 h-5 xl:w-6 xl:h-6 transition-transform group-hover:scale-110 ${isActive ? 'drop-shadow-[0_0_12px_rgba(88,166,255,0.6)]' : ''}`}>
+                  <div className={`w-4 h-4 xl:w-5 xl:h-5 transition-transform group-hover:scale-110 ${isActive ? 'drop-shadow-[0_0_12px_rgba(88,166,255,0.6)]' : ''}`}>
                     {getIcon(tab.icon, isActive, false)}
                   </div>
-                  <span className={`text-sm xl:text-base font-medium ${isActive ? 'font-semibold' : ''}`}>
+                  <span className={`text-xs xl:text-sm font-medium ${isActive ? 'font-semibold' : ''}`}>
                     {tab.label}
                   </span>
                   {isActive && tab.id === 'tutor' && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-accent-purple animate-pulse shadow-glow-purple"></div>
+                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent-purple animate-pulse shadow-glow-purple"></div>
                   )}
                   {!isActive && (
                     <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
