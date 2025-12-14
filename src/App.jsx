@@ -21,6 +21,7 @@ function App() {
   const [showScanner, setShowScanner] = useState(false)
   const [scannedAssignments, setScannedAssignments] = useState([])
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [dashboardKey, setDashboardKey] = useState(0)
 
@@ -31,8 +32,13 @@ function App() {
       setUser(user)
       setAuthLoading(false)
 
-      // Check and update streak on login
+      // Load user profile
       if (user) {
+        await authService.refreshUserProfile()
+        const userProfile = authService.getUserProfile()
+        setProfile(userProfile)
+
+        // Check and update streak on login
         await streakService.checkAndUpdateStreak(user.id)
       }
     }
@@ -43,12 +49,18 @@ function App() {
     checkAuth()
 
     // Listen for auth state changes
-    const subscription = authService.onAuthStateChange((event, session) => {
+    const subscription = authService.onAuthStateChange(async (event, session) => {
       setUser(session?.user || null)
 
-      // Update streak when user signs in
+      // Load profile and update streak when user signs in
       if (session?.user) {
-        streakService.checkAndUpdateStreak(session.user.id)
+        await authService.refreshUserProfile()
+        const userProfile = authService.getUserProfile()
+        setProfile(userProfile)
+
+        await streakService.checkAndUpdateStreak(session.user.id)
+      } else {
+        setProfile(null)
       }
     })
 
@@ -228,11 +240,11 @@ function App() {
             <div className="px-6 xl:px-8 py-4 border-b border-dark-border-subtle">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 xl:w-14 xl:h-14 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center text-white font-bold text-lg xl:text-xl">
-                  {user.email?.[0]?.toUpperCase() || 'U'}
+                  {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm xl:text-base font-semibold text-dark-text-primary truncate">
-                    {user.email?.split('@')[0] || 'User'}
+                    {profile?.full_name || user.email?.split('@')[0] || 'User'}
                   </p>
                   <p className="text-xs xl:text-sm text-dark-text-muted truncate">
                     {user.email}
@@ -243,7 +255,7 @@ function App() {
           )}
 
           {/* Navigation Items */}
-          <nav className="flex-1 py-6 xl:py-8 px-4 xl:px-6 overflow-y-auto">
+          <nav className="flex-1 py-3 xl:py-4 px-4 xl:px-6 overflow-y-visible">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id
               const isCenter = tab.isCenter
@@ -257,12 +269,12 @@ function App() {
                       setShowScanner(true)
                       setActiveTab('dashboard')
                     }}
-                    className="w-full mb-3 px-5 xl:px-6 py-4 xl:py-5 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg hover:shadow-glow-cyan-xl hover:scale-[1.02] transition-all duration-200 flex items-center gap-4 text-white font-semibold"
+                    className="w-full mb-1.5 px-4 xl:px-5 py-3 xl:py-3.5 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg hover:shadow-glow-cyan-xl hover:scale-[1.02] transition-all duration-200 flex items-center gap-3 text-white font-semibold"
                   >
-                    <div className="w-7 h-7 xl:w-8 xl:h-8">
+                    <div className="w-6 h-6 xl:w-7 xl:h-7">
                       {getIcon(tab.icon, true, false)}
                     </div>
-                    <span className="text-lg xl:text-xl">{tab.label}</span>
+                    <span className="text-base xl:text-lg">{tab.label}</span>
                   </button>
                 )
               }
@@ -271,20 +283,20 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => tab.id !== activeTab && setActiveTab(tab.id)}
-                  className={`w-full mb-2 px-5 xl:px-6 py-3.5 xl:py-4 rounded-xl transition-all duration-200 flex items-center gap-4 group ${
+                  className={`w-full mb-1 px-4 xl:px-5 py-2.5 xl:py-3 rounded-xl transition-all duration-200 flex items-center gap-3 group ${
                     isActive
                       ? 'bg-dark-bg-surface text-primary-500 shadow-rim-light scale-[1.02]'
                       : 'text-dark-text-muted hover:bg-dark-bg-surface/50 hover:text-dark-text-secondary hover:scale-[1.01]'
                   }`}
                 >
-                  <div className={`w-6 h-6 xl:w-7 xl:h-7 transition-transform group-hover:scale-110 ${isActive ? 'drop-shadow-[0_0_12px_rgba(88,166,255,0.6)]' : ''}`}>
+                  <div className={`w-5 h-5 xl:w-6 xl:h-6 transition-transform group-hover:scale-110 ${isActive ? 'drop-shadow-[0_0_12px_rgba(88,166,255,0.6)]' : ''}`}>
                     {getIcon(tab.icon, isActive, false)}
                   </div>
-                  <span className={`text-base xl:text-lg font-medium ${isActive ? 'font-semibold' : ''}`}>
+                  <span className={`text-sm xl:text-base font-medium ${isActive ? 'font-semibold' : ''}`}>
                     {tab.label}
                   </span>
                   {isActive && tab.id === 'tutor' && (
-                    <div className="ml-auto w-2.5 h-2.5 rounded-full bg-accent-purple animate-pulse shadow-glow-purple"></div>
+                    <div className="ml-auto w-2 h-2 rounded-full bg-accent-purple animate-pulse shadow-glow-purple"></div>
                   )}
                   {!isActive && (
                     <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
