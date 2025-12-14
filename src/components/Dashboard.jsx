@@ -637,49 +637,51 @@ const Dashboard = ({ onOpenScanner }) => {
                 </>
               )}
 
-              {/* Badges and Actions */}
-              <div className="absolute top-3.5 md:top-5 lg:top-6 right-3.5 md:right-5 lg:right-6 flex items-center gap-2 md:gap-3 z-10">
-                {/* AI Badge - Premium Design */}
-                {assignment.aiCaptured && (
+              {/* AI Badge - Top Left Position */}
+              {assignment.aiCaptured && (
+                <div className="absolute top-4 md:top-5 lg:top-6 left-4 md:left-5 lg:left-6 z-20">
                   <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-purple rounded-full blur-md opacity-75 group-hover:opacity-100 animate-pulse-slow"></div>
-                    <div className="relative flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-gradient-to-r from-primary-500 via-accent-cyan to-accent-purple border-2 border-white/20 shadow-xl backdrop-blur-sm">
-                      <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-purple rounded-full blur-md opacity-60 group-hover:opacity-90 animate-pulse-slow"></div>
+                    <div className="relative flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-gradient-to-r from-primary-500 via-accent-cyan to-accent-purple border-2 border-white/30 shadow-xl">
+                      <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      <span className="text-xs md:text-sm font-black text-white tracking-wide drop-shadow-lg">AI</span>
-                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                      <span className="text-xs md:text-sm font-bold text-white tracking-tight">AI Generated</span>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Delete Button - For manual and scanned assignments */}
-                {assignment.source !== 'canvas' && (
+              {/* Delete Button - Top Right Position */}
+              {assignment.source !== 'canvas' && (
+                <div className="absolute top-4 md:top-5 lg:top-6 right-4 md:right-5 lg:right-6 z-20">
                   <button
                     onClick={() => handleDeleteAssignment(assignment.id, assignment.source)}
-                    className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-lg md:rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all active:scale-95 flex items-center justify-center"
+                    className="w-9 h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 rounded-xl md:rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all active:scale-95 flex items-center justify-center backdrop-blur-sm"
                     title="Delete assignment"
                   >
-                    <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-5.5 lg:h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Subject Badge */}
-              <div className="flex items-center gap-2 md:gap-3 mb-2.5 md:mb-3">
-                <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${getSubjectColor(assignment.subject)} shadow-xs`}></div>
-                <span className="text-xs md:text-sm lg:text-base font-semibold text-dark-text-secondary tracking-tight">{assignment.subject}</span>
-              </div>
+              {/* Content Container - with proper spacing from badges */}
+              <div className={`relative ${assignment.aiCaptured ? 'mt-12 md:mt-14' : ''}`}>
+                {/* Subject Badge */}
+                <div className="flex items-center gap-2 md:gap-3 mb-2.5 md:mb-3">
+                  <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${getSubjectColor(assignment.subject)} shadow-xs`}></div>
+                  <span className="text-xs md:text-sm lg:text-base font-semibold text-dark-text-secondary tracking-tight">{assignment.subject}</span>
+                </div>
 
-              {/* Title */}
-              <h4 className="text-base md:text-lg lg:text-xl font-semibold text-dark-text-primary mb-2.5 md:mb-3 lg:mb-4 pr-16 md:pr-20 lg:pr-24 tracking-tight leading-snug">
-                {assignment.title}
-              </h4>
+                {/* Title */}
+                <h4 className="text-base md:text-lg lg:text-xl font-semibold text-dark-text-primary mb-2.5 md:mb-3 lg:mb-4 pr-12 md:pr-14 lg:pr-16 tracking-tight leading-snug">
+                  {assignment.title}
+                </h4>
 
-              {/* Meta Info */}
-              <div className="flex items-center gap-4 md:gap-5 text-xs md:text-sm text-dark-text-secondary mb-3.5 md:mb-4">
+                {/* Meta Info */}
+                <div className="flex items-center gap-4 md:gap-5 text-xs md:text-sm text-dark-text-secondary mb-3.5 md:mb-4">
                 <div className="flex items-center gap-1.5 md:gap-2">
                   <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -692,48 +694,49 @@ const Dashboard = ({ onOpenScanner }) => {
                   </svg>
                   <span className="font-semibold">{getDaysUntilDue(assignment.dueDate)}</span>
                 </div>
-              </div>
-
-              {/* Mark as Done Checkbox */}
-              <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
-                <button
-                  onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
-                  className={`w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-lg md:rounded-xl border-2 flex items-center justify-center transition-all ${
-                    assignment.completed
-                      ? 'bg-green-500 border-green-500'
-                      : 'border-dark-border-glow hover:border-primary-500'
-                  }`}
-                >
-                  {assignment.completed && (
-                    <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </button>
-                <span className={`text-sm md:text-base font-medium ${
-                  assignment.completed
-                    ? 'text-green-400 line-through'
-                    : 'text-dark-text-primary'
-                }`}>
-                  {assignment.completed ? 'Completed' : 'Mark as done'}
-                </span>
-              </div>
-
-              {/* Progress Bar */}
-              {!assignment.completed && (
-                <div>
-                  <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                    <span className="text-xs md:text-sm font-semibold text-dark-text-secondary tracking-tight">Progress</span>
-                    <span className="text-xs md:text-sm font-bold text-primary-500">{assignment.progress}%</span>
-                  </div>
-                  <div className="w-full h-2 md:h-3 bg-dark-bg-primary rounded-full overflow-hidden shadow-dark-inner">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary-500 to-accent-cyan rounded-full transition-all duration-500 shadow-glow-cyan"
-                      style={{ width: `${assignment.progress}%` }}
-                    ></div>
-                  </div>
                 </div>
-              )}
+
+                {/* Mark as Done Checkbox */}
+                <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+                  <button
+                    onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
+                    className={`w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-lg md:rounded-xl border-2 flex items-center justify-center transition-all ${
+                      assignment.completed
+                        ? 'bg-green-500 border-green-500'
+                        : 'border-dark-border-glow hover:border-primary-500'
+                    }`}
+                  >
+                    {assignment.completed && (
+                      <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <span className={`text-sm md:text-base font-medium ${
+                    assignment.completed
+                      ? 'text-green-400 line-through'
+                      : 'text-dark-text-primary'
+                  }`}>
+                    {assignment.completed ? 'Completed' : 'Mark as done'}
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                {!assignment.completed && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                      <span className="text-xs md:text-sm font-semibold text-dark-text-secondary tracking-tight">Progress</span>
+                      <span className="text-xs md:text-sm font-bold text-primary-500">{assignment.progress}%</span>
+                    </div>
+                    <div className="w-full h-2 md:h-3 bg-dark-bg-primary rounded-full overflow-hidden shadow-dark-inner">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary-500 to-accent-cyan rounded-full transition-all duration-500 shadow-glow-cyan"
+                        style={{ width: `${assignment.progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
