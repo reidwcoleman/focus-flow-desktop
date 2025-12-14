@@ -22,7 +22,22 @@ const AI_CONFIG = {
   groqApiKey: import.meta.env.VITE_GROQ_API_KEY || '',
 }
 
-// Usage limits
+// Usage limits by mode
+const USAGE_LIMITS = {
+  free: {
+    total: 3, // Total combined limit for free users
+    deepResearch: 0, // No deep research for free
+    ultraThink: 0, // No ultrathink for free
+    standard: 3 // All 3 uses are standard
+  },
+  pro: {
+    deepResearch: 20, // 20 deep research per month
+    ultraThink: 50, // 50 ultrathink per month
+    standard: -1 // Unlimited standard (-1 means unlimited)
+  }
+}
+
+// Legacy limits for backward compatibility
 const FREE_TIER_LIMIT = 3
 const PRO_TIER_LIMIT = 250
 
@@ -405,6 +420,44 @@ When students ask:
   }
 
   /**
+   * Get usage count for specific AI mode
+   * @param {'deepResearch'|'ultraThink'|'standard'} mode
+   */
+  async getUsageCountByMode(mode) {
+    const profile = authService.getUserProfile()
+    if (!profile) {
+      const key = `ai_${mode}_usage_count`
+      return parseInt(localStorage.getItem(key) || '0', 10)
+    }
+
+    // Map mode to profile field
+    const fieldMap = {
+      deepResearch: 'ai_deep_research_used',
+      ultraThink: 'ai_ultrathink_used',
+      standard: 'ai_standard_used'
+    }
+
+    return profile[fieldMap[mode]] || 0
+  }
+
+  /**
+   * Get all usage counts
+   */
+  async getAllUsageCounts() {
+    const deepResearch = await this.getUsageCountByMode('deepResearch')
+    const ultraThink = await this.getUsageCountByMode('ultraThink')
+    const standard = await this.getUsageCountByMode('standard')
+    const total = await this.getUsageCount()
+
+    return {
+      deepResearch,
+      ultraThink,
+      standard,
+      total
+    }
+  }
+
+  /**
    * Increment usage count in Supabase
    */
   async incrementUsage() {
@@ -434,12 +487,78 @@ When students ask:
   }
 
   /**
+   * Increment usage for specific mode
+   * @param {'deepResearch'|'ultraThink'|'standard'} mode
+   */
+  async incrementUsageByMode(mode) {
+    const userId = authService.getUserId()
+
+    if (!userId) {
+      // Fallback to localStorage
+      const key = `ai_${mode}_usage_count`
+      const current = await this.getUsageCountByMode(mode)
+      localStorage.setItem(key, String(current + 1))
+
+      // Also increment total
+      await this.incrementUsage()
+      return current + 1
+    }
+
+    try {
+      // Increment mode-specific usage
+      const rpcMap = {
+        deepResearch: 'increment_ai_deep_research',
+        ultraThink: 'increment_ai_ultrathink',
+        standard: 'increment_ai_standard'
+      }
+
+      const { data, error } = await supabase.rpc(rpcMap[mode], {
+        user_uuid: userId
+      })
+
+      if (error) throw error
+
+      // Also increment total usage
+      await this.incrementUsage()
+
+      // Refresh user profile
+      await authService.refreshUserProfile()
+
+      return data
+    } catch (error) {
+      console.error(`Failed to increment ${mode} usage:`, error)
+      // Fallback to incrementing total only
+      return await this.incrementUsage()
+    }
+  }
+
+  /**
    * Check if user has remaining requests
    */
   async hasRemainingRequests() {
     const usage = await this.getUsageCount()
     const limit = authService.getAiChatLimit()
     return usage < limit
+  }
+
+  /**
+   * Check if user has remaining requests for specific mode
+   * @param {'deepResearch'|'ultraThink'|'standard'} mode
+   */
+  async hasRemainingRequestsForMode(mode) {
+    const isPro = authService.isPro()
+    const usage = await this.getUsageCountByMode(mode)
+
+    if (isPro) {
+      const limit = USAGE_LIMITS.pro[mode]
+      // -1 means unlimited
+      if (limit === -1) return true
+      return usage < limit
+    } else {
+      // Free users: check total limit instead
+      const totalUsage = await this.getUsageCount()
+      return totalUsage < USAGE_LIMITS.free.total
+    }
   }
 
   /**
@@ -452,6 +571,26 @@ When students ask:
   }
 
   /**
+   * Get remaining requests for specific mode
+   * @param {'deepResearch'|'ultraThink'|'standard'} mode
+   */
+  async getRemainingRequestsForMode(mode) {
+    const isPro = authService.isPro()
+    const usage = await this.getUsageCountByMode(mode)
+
+    if (isPro) {
+      const limit = USAGE_LIMITS.pro[mode]
+      // -1 means unlimited
+      if (limit === -1) return Infinity
+      return Math.max(0, limit - usage)
+    } else {
+      // Free users use total limit
+      const totalUsage = await this.getUsageCount()
+      return Math.max(0, USAGE_LIMITS.free.total - totalUsage)
+    }
+  }
+
+  /**
    * Get usage limits
    */
   getLimits() {
@@ -459,6 +598,23 @@ When students ask:
       free: FREE_TIER_LIMIT,
       pro: PRO_TIER_LIMIT,
     }
+  }
+
+  /**
+   * Get mode-specific limits for current user
+   */
+  getModeLimits() {
+    const isPro = authService.isPro()
+    return isPro ? USAGE_LIMITS.pro : USAGE_LIMITS.free
+  }
+
+  /**
+   * Get current AI mode based on settings
+   */
+  getCurrentMode() {
+    if (this.useDeepResearch) return 'deepResearch'
+    if (this.useUltraThink) return 'ultraThink'
+    return 'standard'
   }
 
   /**

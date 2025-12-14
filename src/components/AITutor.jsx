@@ -18,6 +18,7 @@ const AITutor = () => {
   const [error, setError] = useState('')
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [usageCount, setUsageCount] = useState(0)
+  const [modeUsage, setModeUsage] = useState({ deepResearch: 0, ultraThink: 0, standard: 0 })
   const [currentChatId, setCurrentChatId] = useState(null)
   const [chatHistory, setChatHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
@@ -222,8 +223,9 @@ const AITutor = () => {
         aiResponse = await aiService.getDemoResponse(userMessage)
       }
 
-      // Increment usage count after successful response
-      const newCount = await aiService.incrementUsage()
+      // Increment usage count for specific mode after successful response
+      const currentMode = aiService.getCurrentMode()
+      const newCount = await aiService.incrementUsageByMode(currentMode)
       setUsageCount(newCount)
 
       // Add AI response
@@ -249,10 +251,12 @@ const AITutor = () => {
         }
       }, 500)
 
-      // Check if this was the last free request
-      const hasRequests = await aiService.hasRemainingRequests()
-      if (!hasRequests) {
-        setTimeout(() => setShowUpgradeModal(true), 1000)
+      // Check if user has reached limit for this mode (for free users)
+      if (!authService.isPro()) {
+        const hasRequests = await aiService.hasRemainingRequests()
+        if (!hasRequests) {
+          setTimeout(() => setShowUpgradeModal(true), 1000)
+        }
       }
     } catch (err) {
       console.error('AI Error:', err)
