@@ -367,7 +367,7 @@ const Dashboard = ({ onOpenScanner }) => {
       {/* Streak Display - Clickable */}
       <button
         onClick={() => setShowStreakCalendar(true)}
-        className="w-full relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-6 md:p-8 lg:p-10 shadow-dark-soft-lg border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
+        className="w-full relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-4 md:p-5 lg:p-6 shadow-dark-soft-lg border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
       >
         {/* Celebration overlay */}
         {showStreakCelebration && (
@@ -375,10 +375,10 @@ const Dashboard = ({ onOpenScanner }) => {
         )}
 
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4 md:gap-6 lg:gap-8">
+          <div className="flex items-center gap-3 md:gap-4 lg:gap-5">
             {/* Fire icon with animation */}
             <div className={`relative ${showStreakCelebration ? 'animate-bounce' : ''}`}>
-              <div className="text-5xl md:text-7xl lg:text-8xl xl:text-9xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
+              <div className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
                 🔥
               </div>
               {showStreakCelebration && (
@@ -391,10 +391,10 @@ const Dashboard = ({ onOpenScanner }) => {
             {/* Streak info */}
             <div>
               <div className="flex items-baseline gap-2 md:gap-3 mb-1 md:mb-2">
-                <span className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
+                <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
                   {streak.currentStreak}
                 </span>
-                <span className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-orange-300">
+                <span className="text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-orange-300">
                   {streak.currentStreak === 1 ? 'day' : 'days'}
                 </span>
               </div>
