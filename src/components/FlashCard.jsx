@@ -88,18 +88,18 @@ const FlashCard = ({ card, className = '', showDifficulty = false }) => {
 
         {/* Back Side */}
         <div
-          className="absolute inset-0 backface-hidden bg-gradient-to-br from-primary-500 via-primary-500 to-primary-600 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 shadow-soft-xl ring-1 ring-white/10 flex flex-col text-white"
+          className="absolute inset-0 backface-hidden bg-gradient-to-br from-primary-500 via-primary-500 to-primary-600 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-10 lg:p-12 shadow-soft-xl ring-1 ring-white/10 flex flex-col text-white"
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'
           }}
         >
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-white/80 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-2 sm:mb-3">
+            <div className="text-center max-w-2xl">
+              <div className="text-white/80 text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wider mb-2 sm:mb-3 md:mb-4">
                 Answer
               </div>
-              <p className="text-white text-lg sm:text-xl font-semibold leading-relaxed">
+              <p className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold leading-relaxed">
                 {card.back}
               </p>
             </div>
@@ -107,17 +107,17 @@ const FlashCard = ({ card, className = '', showDifficulty = false }) => {
 
           {/* Hint */}
           {card.hint && (
-            <div className="mt-4 px-3 py-2 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30">
-              <span className="text-white/90 text-xs">💡 {card.hint}</span>
+            <div className="mt-4 px-3 md:px-4 py-2 md:py-3 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30">
+              <span className="text-white/90 text-xs md:text-sm">💡 {card.hint}</span>
             </div>
           )}
 
           {/* Flip Indicator */}
           <div className="mt-4 flex items-center justify-center gap-2 text-white/70">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
-            <span className="text-xs font-medium">Tap to flip</span>
+            <span className="text-xs md:text-sm font-medium">Tap to flip</span>
           </div>
         </div>
       </div>
