@@ -605,11 +605,11 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-4">
           {assignments.map((assignment) => (
             <div
               key={assignment.id}
-              className={`relative overflow-hidden rounded-2xl md:rounded-3xl ${getSubjectBgColor(assignment.subject)} border border-dark-border-glow p-5 md:p-6 lg:p-7 shadow-dark-soft-md hover:shadow-rim-light transition-all active:scale-[0.99] ${
+              className={`relative overflow-hidden rounded-2xl p-4 md:p-5 lg:p-5 shadow-dark-soft-md hover:shadow-rim-light transition-all active:scale-[0.99] ${
                 flyingAwayItems.has(assignment.id)
                   ? 'animate-fly-away'
                   : assignment.completed

@@ -76,6 +76,7 @@ class AuthService {
       // Create user profile with provided data
       if (data.user && profileData) {
         try {
+          console.log('📝 Creating user profile with data:', profileData)
           const { error: profileError } = await supabase
             .from('user_profiles')
             .insert({
@@ -89,15 +90,17 @@ class AuthService {
             })
 
           if (profileError) {
-            console.error('Failed to create user profile:', profileError)
+            console.error('❌ Failed to create user profile:', profileError)
             // Don't fail the signup if profile creation fails
             // The trigger should handle it, but this is a fallback
           } else {
+            console.log('✅ User profile created successfully')
             // Load the newly created profile
             await this._loadUserProfile()
+            console.log('👤 Loaded profile after creation:', this.userProfile)
           }
         } catch (profileErr) {
-          console.error('Profile creation error:', profileErr)
+          console.error('❌ Profile creation error:', profileErr)
           // Continue anyway - profile can be created later
         }
       }

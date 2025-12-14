@@ -281,42 +281,42 @@ const Planner = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-5 pb-6 animate-fadeIn">
+    <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-6 md:pb-8 lg:pb-10 animate-fadeIn">
       {/* Header with Stats */}
       <div>
-        <div className="flex items-start justify-between mb-3 md:mb-4">
+        <div className="flex items-start justify-between mb-3 md:mb-4 lg:mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary mb-1">Smart Calendar</h1>
-            <p className="text-sm md:text-base text-dark-text-secondary">AI-powered activity planning</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-dark-text-primary mb-1 md:mb-2">Smart Calendar</h1>
+            <p className="text-sm md:text-base lg:text-lg text-dark-text-secondary">AI-powered activity planning</p>
           </div>
           <div className="text-right">
-            <div className="text-lg md:text-2xl font-bold text-primary-500">{activities.length}</div>
-            <div className="text-[10px] md:text-xs text-dark-text-muted">activities</div>
+            <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-primary-500">{activities.length}</div>
+            <div className="text-[10px] md:text-xs lg:text-sm text-dark-text-muted">activities</div>
           </div>
         </div>
 
         {/* Quick Stats */}
         {loading ? (
-          <div className="flex gap-2 md:gap-3 mt-2">
+          <div className="flex gap-2 md:gap-3 lg:gap-4 mt-2">
             <StatCardSkeleton />
             <StatCardSkeleton />
             <StatCardSkeleton />
           </div>
         ) : activities.length > 0 && (
-          <div className="flex gap-2 md:gap-3 mt-2 animate-fadeIn">
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-2.5 md:p-3 border border-dark-border-glow hover:border-primary-500/50 transition-all">
-              <div className="text-xs md:text-sm text-dark-text-muted">Total Hours</div>
-              <div className="text-lg md:text-xl font-bold text-dark-text-primary mt-1">{getTotalHours().toFixed(1)}h</div>
+          <div className="flex gap-2 md:gap-3 lg:gap-4 xl:gap-5 mt-2 md:mt-3 lg:mt-4 animate-fadeIn">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-primary-500/50 transition-all">
+              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Total Hours</div>
+              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-dark-text-primary mt-1">{getTotalHours().toFixed(1)}h</div>
             </div>
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-2.5 md:p-3 border border-dark-border-glow hover:border-green-500/50 transition-all">
-              <div className="text-xs md:text-sm text-dark-text-muted">Completed</div>
-              <div className="text-lg md:text-xl font-bold text-green-500 mt-1">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-green-500/50 transition-all">
+              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Completed</div>
+              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-green-500 mt-1">
                 {activities.filter(a => a.is_completed).length}
               </div>
             </div>
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-2.5 md:p-3 border border-dark-border-glow hover:border-amber-500/50 transition-all">
-              <div className="text-xs md:text-sm text-dark-text-muted">Pending</div>
-              <div className="text-lg md:text-xl font-bold text-amber-500 mt-1">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-amber-500/50 transition-all">
+              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Pending</div>
+              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-amber-500 mt-1">
                 {activities.filter(a => !a.is_completed).length}
               </div>
             </div>
@@ -325,39 +325,39 @@ const Planner = () => {
       </div>
 
       {/* AI Activity Input */}
-      <div className="bg-gradient-to-br from-primary-500/10 via-dark-bg-secondary to-accent-purple/10 rounded-2xl p-4 md:p-4 border border-dark-border-glow shadow-dark-soft-lg transition-all">
+      <div className="bg-gradient-to-br from-primary-500/10 via-dark-bg-secondary to-accent-purple/10 rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 xl:p-8 border border-dark-border-glow shadow-dark-soft-lg hover:shadow-dark-soft-xl transition-all">
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-3 p-2.5 rounded-xl bg-green-500/10 border border-green-500/30 animate-fadeIn">
-            <p className="text-green-400 text-xs md:text-sm font-medium">{success}</p>
+          <div className="mb-3 md:mb-4 lg:mb-5 p-2.5 md:p-3 lg:p-4 rounded-xl md:rounded-2xl bg-green-500/10 border border-green-500/30 animate-fadeIn">
+            <p className="text-green-400 text-xs md:text-sm lg:text-base font-medium">{success}</p>
           </div>
         )}
         {error && (
-          <div className="mb-3 p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 animate-fadeIn">
-            <p className="text-red-400 text-xs md:text-sm font-medium">{error}</p>
+          <div className="mb-3 md:mb-4 lg:mb-5 p-2.5 md:p-3 lg:p-4 rounded-xl md:rounded-2xl bg-red-500/10 border border-red-500/30 animate-fadeIn">
+            <p className="text-red-400 text-xs md:text-sm lg:text-base font-medium">{error}</p>
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 md:gap-3 lg:gap-4">
           <input
             type="text"
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAiCreate()}
             placeholder="Study chemistry tomorrow at 3pm..."
-            className="flex-1 px-3 md:px-4 py-2.5 text-sm md:text-base rounded-xl bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary placeholder:text-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+            className="flex-1 px-3 md:px-4 lg:px-5 xl:px-6 py-2.5 md:py-3 lg:py-4 text-sm md:text-base lg:text-lg rounded-xl md:rounded-2xl bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary placeholder:text-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
             disabled={aiProcessing}
           />
           <button
             onClick={handleAiCreate}
             disabled={aiProcessing || !aiInput.trim()}
-            className="px-4 md:px-5 py-2.5 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base font-semibold rounded-xl hover:shadow-glow-cyan transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-1.5"
+            className="px-4 md:px-5 lg:px-6 xl:px-8 py-2.5 md:py-3 lg:py-4 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base lg:text-lg font-semibold rounded-xl md:rounded-2xl hover:shadow-glow-cyan transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-1.5 md:gap-2"
           >
             {aiProcessing ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
             ) : (
               <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <span className="hidden sm:inline">Create</span>
@@ -367,22 +367,22 @@ const Planner = () => {
         </div>
 
         {/* Pro Tip */}
-        <div className="mt-2.5 flex items-start gap-1.5 text-[10px] md:text-xs text-dark-text-muted">
-          <svg className="w-3 h-3 flex-shrink-0 mt-0.5 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
+        <div className="mt-2.5 md:mt-3 lg:mt-4 flex items-start gap-1.5 md:gap-2 text-[10px] md:text-xs lg:text-sm text-dark-text-muted">
+          <svg className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 flex-shrink-0 mt-0.5 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
           </svg>
           <p>
-            <span className="font-semibold text-primary-500">Pro tip:</span> Use specific dates like "on the 17th" for best accuracy!
+            <span className="font-semibold text-primary-500">Pro tip:</span> Use specific dates like "on the 17th" for best accuracy. Days of the week like "Monday" or "Friday" also work well!
           </p>
         </div>
 
         {/* Collapsible Examples */}
         <button
           onClick={() => setShowExamples(!showExamples)}
-          className="mt-2 flex items-center gap-1.5 text-xs md:text-sm text-dark-text-secondary hover:text-primary-500 transition-colors"
+          className="mt-2 md:mt-3 flex items-center gap-1.5 md:gap-2 text-xs md:text-sm lg:text-base text-dark-text-secondary hover:text-primary-500 transition-colors"
         >
           <svg
-            className={`w-3.5 h-3.5 transition-transform ${showExamples ? 'rotate-90' : ''}`}
+            className={`w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 transition-transform ${showExamples ? 'rotate-90' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -393,28 +393,28 @@ const Planner = () => {
         </button>
 
         {showExamples && (
-          <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 animate-fadeIn">
+          <div className="mt-2 md:mt-3 lg:mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 animate-fadeIn">
             <button
               onClick={() => { setAiInput("Study chemistry tomorrow at 3pm for 2 hours"); setShowExamples(false); }}
-              className="text-xs px-2.5 py-2 rounded-lg bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 transition-all text-left"
+              className="text-xs md:text-sm lg:text-base px-2.5 md:px-3 lg:px-4 py-2 md:py-2.5 lg:py-3 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 hover:scale-105 transition-all text-left"
             >
               Study tomorrow 3pm
             </button>
             <button
               onClick={() => { setAiInput("Math quiz on Friday"); setShowExamples(false); }}
-              className="text-xs px-2.5 py-2 rounded-lg bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 transition-all text-left"
+              className="text-xs md:text-sm lg:text-base px-2.5 md:px-3 lg:px-4 py-2 md:py-2.5 lg:py-3 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 hover:scale-105 transition-all text-left"
             >
               Quiz on Friday
             </button>
             <button
               onClick={() => { setAiInput("finish physics homework on the 17th"); setShowExamples(false); }}
-              className="text-xs px-2.5 py-2 rounded-lg bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 transition-all text-left"
+              className="text-xs md:text-sm lg:text-base px-2.5 md:px-3 lg:px-4 py-2 md:py-2.5 lg:py-3 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 hover:scale-105 transition-all text-left"
             >
               Homework on 17th
             </button>
             <button
               onClick={() => { setAiInput("chemistry lab Monday at 2pm"); setShowExamples(false); }}
-              className="text-xs px-2.5 py-2 rounded-lg bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 transition-all text-left"
+              className="text-xs md:text-sm lg:text-base px-2.5 md:px-3 lg:px-4 py-2 md:py-2.5 lg:py-3 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 hover:scale-105 transition-all text-left"
             >
               Lab Monday 2pm
             </button>
@@ -423,44 +423,44 @@ const Planner = () => {
       </div>
 
       {/* View Mode Toggle & Filters */}
-      <div className="space-y-2 md:space-y-3">
+      <div className="space-y-2 md:space-y-3 lg:space-y-4">
         {/* View Toggle */}
-        <div className="flex gap-2 md:gap-3">
+        <div className="flex gap-2 md:gap-3 lg:gap-4">
           <button
             onClick={() => setViewMode('calendar')}
-            className={`flex-1 py-2 px-3 md:px-4 rounded-xl font-semibold text-sm md:text-base transition-all active:scale-95 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 md:py-3 lg:py-4 px-3 md:px-4 lg:px-6 rounded-xl md:rounded-2xl font-semibold text-sm md:text-base lg:text-lg transition-all active:scale-95 flex items-center justify-center gap-2 md:gap-3 ${
               viewMode === 'calendar'
                 ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
                 : 'bg-dark-bg-secondary text-dark-text-secondary border border-dark-border-glow hover:border-primary-500/50'
             }`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span className="hidden sm:inline">Calendar</span>
+            <span className="hidden md:inline">Calendar</span>
           </button>
           <button
             onClick={() => setViewMode('upcoming')}
-            className={`flex-1 py-2 px-3 md:px-4 rounded-xl font-semibold text-sm md:text-base transition-all active:scale-95 flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 md:py-3 lg:py-4 px-3 md:px-4 lg:px-6 rounded-xl md:rounded-2xl font-semibold text-sm md:text-base lg:text-lg transition-all active:scale-95 flex items-center justify-center gap-2 md:gap-3 ${
               viewMode === 'upcoming'
                 ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
                 : 'bg-dark-bg-secondary text-dark-text-secondary border border-dark-border-glow hover:border-primary-500/50'
             }`}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
             </svg>
-            <span className="hidden sm:inline">Upcoming</span>
+            <span className="hidden md:inline">Upcoming</span>
           </button>
         </div>
 
         {/* Activity Type Filters */}
-        <div className="flex gap-1.5 md:gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-1.5 md:gap-2 lg:gap-3 overflow-x-auto pb-1 scrollbar-hide">
           {activityTypes.map(type => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold whitespace-nowrap transition-all active:scale-95 ${
+              className={`px-3 md:px-4 lg:px-5 py-1.5 md:py-2 lg:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm lg:text-base font-semibold whitespace-nowrap transition-all active:scale-95 hover:scale-105 ${
                 filterType === type
                   ? 'bg-primary-500 text-white shadow-glow-cyan-sm'
                   : 'bg-dark-bg-tertiary text-dark-text-secondary border border-dark-border-subtle hover:border-primary-500/50'
@@ -472,18 +472,16 @@ const Planner = () => {
         </div>
       </div>
 
-      {/* Calendar View - Side by Side Layout on Desktop */}
+      {/* Calendar View */}
       {viewMode === 'calendar' && (
-        <div className="grid md:grid-cols-2 gap-4 md:gap-4">
-          {/* Calendar Section */}
-          {loading ? (
-            <CalendarSkeleton />
-          ) : (
-            <div
-              className="bg-dark-bg-secondary rounded-2xl p-4 md:p-4 border border-dark-border-glow shadow-dark-soft-md transition-all animate-fadeIn"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
+        loading ? (
+          <CalendarSkeleton />
+        ) : (
+          <div
+            className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 xl:p-8 border border-dark-border-glow shadow-dark-soft-md hover:shadow-dark-soft-lg transition-all animate-fadeIn"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
           <div className="flex items-center justify-between mb-4 md:mb-5 lg:mb-6 xl:mb-8">
             <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-dark-text-primary">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
@@ -735,37 +733,37 @@ const Planner = () => {
               {getFilteredActivities(dayActivities).map((activity) => (
                 <div
                   key={activity.id}
-                  className={`p-3 md:p-4 lg:p-5 xl:p-6 rounded-xl md:rounded-2xl border transition-all hover:scale-[1.01] ${
+                  className={`p-3 rounded-xl border transition-all ${
                     flyingAwayItems.has(activity.id)
                       ? 'animate-fly-away'
                       : activity.is_completed
                       ? 'bg-dark-bg-tertiary border-dark-border-subtle opacity-60 duration-300'
-                      : 'bg-dark-bg-tertiary border-dark-border-glow duration-200 hover:border-primary-500/50'
+                      : 'bg-dark-bg-tertiary border-dark-border-glow duration-200'
                   } ${
                     activity.is_completed && !flyingAwayItems.has(activity.id)
                       ? 'success-flash'
                       : ''
                   }`}
                 >
-                  <div className="flex items-start gap-2.5 md:gap-3 lg:gap-4">
+                  <div className="flex items-start gap-2.5">
                     <button
                       onClick={() => handleToggleComplete(activity.id, activity.is_completed)}
-                      className={`mt-0.5 md:mt-1 w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 flex-shrink-0 rounded md:rounded-lg border-2 flex items-center justify-center transition-all hover:scale-110 ${
+                      className={`mt-0.5 w-4 h-4 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${
                         activity.is_completed
                           ? 'bg-green-500 border-green-500'
                           : 'border-dark-border-glow hover:border-primary-500'
                       }`}
                     >
                       {activity.is_completed && (
-                        <svg className="w-2.5 h-2.5 md:w-3 md:h-3 lg:w-4 lg:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </button>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 md:gap-3 mb-1 md:mb-1.5 lg:mb-2">
-                        <h4 className={`text-sm md:text-base lg:text-lg xl:text-xl font-semibold leading-tight ${
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h4 className={`text-sm font-semibold leading-tight ${
                           activity.is_completed
                             ? 'text-dark-text-muted line-through'
                             : 'text-dark-text-primary'
@@ -773,18 +771,18 @@ const Planner = () => {
                           {activity.title}
                         </h4>
                         {activity.ai_generated && (
-                          <div className="flex-shrink-0 flex items-center px-1.5 md:px-2 lg:px-2.5 py-0.5 md:py-1 rounded md:rounded-lg bg-primary-500/10 border border-primary-500/30">
-                            <svg className="w-2.5 h-2.5 md:w-3 md:h-3 lg:w-4 lg:h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="flex-shrink-0 flex items-center px-1.5 py-0.5 rounded bg-primary-500/10 border border-primary-500/30">
+                            <svg className="w-2.5 h-2.5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2 md:gap-2.5 lg:gap-3 text-[10px] md:text-xs lg:text-sm text-dark-text-muted">
+                      <div className="flex flex-wrap items-center gap-2 text-[10px] text-dark-text-muted">
                         {activity.start_time && (
-                          <span className="flex items-center gap-1 md:gap-1.5 font-medium">
-                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="flex items-center gap-1 font-medium">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             {activity.start_time.slice(0, 5)}
@@ -796,21 +794,21 @@ const Planner = () => {
                         {activity.subject && (
                           <span className="text-dark-text-secondary font-medium">{activity.subject}</span>
                         )}
-                        <span className={`px-1.5 md:px-2 lg:px-2.5 py-0.5 md:py-1 rounded md:rounded-lg ${getTypeColor(activity.activity_type)} text-white font-medium`}>
+                        <span className={`px-1.5 py-0.5 rounded ${getTypeColor(activity.activity_type)} text-white font-medium`}>
                           {activity.activity_type}
                         </span>
                       </div>
 
                       {activity.description && (
-                        <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary mt-1.5 md:mt-2 lg:mt-2.5 line-clamp-2">{activity.description}</p>
+                        <p className="text-xs text-dark-text-secondary mt-1.5 line-clamp-2">{activity.description}</p>
                       )}
                     </div>
 
                     <button
                       onClick={() => handleDeleteActivity(activity.id)}
-                      className="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-lg md:rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:scale-110 transition-all active:scale-95"
+                      className="flex-shrink-0 w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all active:scale-95"
                     >
-                      <svg className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
