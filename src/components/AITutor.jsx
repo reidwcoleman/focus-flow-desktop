@@ -335,9 +335,9 @@ const AITutor = () => {
         setModeExplanation({
           mode: 'ultrathink',
           title: '🧠 UltraThink Mode',
-          description: 'Advanced reasoning mode that provides comprehensive, step-by-step explanations with deep analysis. Perfect for complex problems and thorough understanding.',
-          tokens: '8,000 tokens',
-          features: ['Detailed step-by-step reasoning', 'Multiple approaches explained', 'In-depth concept breakdowns', 'Practice problems included']
+          description: 'Thoughtful reasoning mode with clear step-by-step explanations and organized analysis. Great for understanding complex topics without overwhelming detail.',
+          tokens: '5,000 tokens',
+          features: ['Clear step-by-step logic', 'Well-organized explanations', 'Helpful examples and analogies', 'Balanced depth and clarity']
         })
       }
     }
@@ -355,9 +355,9 @@ const AITutor = () => {
         setModeExplanation({
           mode: 'deepresearch',
           title: '📚 Deep Research Mode',
-          description: 'Comprehensive academic research mode that provides extensive analysis with multiple perspectives, historical context, and scholarly depth. Ideal for research papers and in-depth study.',
-          tokens: '12,000 tokens',
-          features: ['Extensive multi-perspective analysis', 'Historical context and evolution', 'Academic rigor and citations', 'Critical analysis of concepts']
+          description: 'ULTRA-COMPREHENSIVE academic research mode providing exhaustive, encyclopedic analysis with maximum scholarly depth. Delivers extensive multi-perspective investigation, complete historical context, theoretical frameworks, and interdisciplinary connections. Perfect for research papers, thesis work, and advanced academic study.',
+          tokens: '16,000 tokens',
+          features: ['Exhaustive multi-perspective analysis', 'Complete historical development', 'Theoretical frameworks and paradigms', 'Interdisciplinary connections', 'Extensive case studies and examples', 'Critical debates and controversies', 'Scholarly rigor and depth']
         })
       }
     }
