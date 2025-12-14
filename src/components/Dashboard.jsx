@@ -610,7 +610,11 @@ const Dashboard = ({ onOpenScanner }) => {
           {assignments.map((assignment) => (
             <div
               key={assignment.id}
-              className={`relative overflow-hidden rounded-2xl p-4 md:p-5 lg:p-5 shadow-dark-soft-md hover:shadow-rim-light transition-all active:scale-[0.99] ${
+              className={`relative overflow-hidden rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 transition-all active:scale-[0.99] ${
+                assignment.aiCaptured
+                  ? 'bg-gradient-to-br from-primary-500/15 via-dark-bg-secondary to-accent-purple/15 border-2 border-primary-500/40 shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-[0_0_40px_rgba(59,130,246,0.5)] hover:border-primary-500/60 ring-1 ring-primary-500/20'
+                  : `${getSubjectBgColor(assignment.subject)} border border-dark-border-glow shadow-dark-soft-md hover:shadow-rim-light`
+              } ${
                 flyingAwayItems.has(assignment.id)
                   ? 'animate-fly-away'
                   : assignment.completed

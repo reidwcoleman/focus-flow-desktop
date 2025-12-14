@@ -448,8 +448,8 @@ const AITutor = () => {
       <div className="flex-shrink-0 mb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-dark-text-primary tracking-tight">AI Tutor</h2>
-            <p className="text-sm text-dark-text-secondary mt-0.5">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary tracking-tight">AI Tutor</h2>
+            <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary mt-0.5">
               {aiService.isConfigured() ? (
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse-soft shadow-glow-cyan"></span>
@@ -597,7 +597,7 @@ const AITutor = () => {
             <button
               key={index}
               onClick={() => handleQuickQuestion(question)}
-              className="flex-shrink-0 px-3.5 py-2 bg-dark-bg-secondary border border-dark-border-glow hover:border-accent-purple hover:bg-accent-purple/10 rounded-full text-sm font-medium text-dark-text-primary hover:text-accent-purple-light transition-all duration-200 active:scale-95 shadow-dark-soft"
+              className="flex-shrink-0 px-3 md:px-3.5 lg:px-4 py-1.5 md:py-2 bg-dark-bg-secondary border border-dark-border-glow hover:border-accent-purple hover:bg-accent-purple/10 rounded-full text-xs md:text-sm lg:text-base font-medium text-dark-text-primary hover:text-accent-purple-light transition-all duration-200 active:scale-95 shadow-dark-soft"
             >
               {question}
             </button>
@@ -626,13 +626,13 @@ const AITutor = () => {
             )}
 
             {/* Message Content */}
-            <div className={`flex flex-col ${message.role === 'user' ? 'max-w-[75%] items-end' : 'max-w-[95%] items-start'}`}>
+            <div className={`flex flex-col ${message.role === 'user' ? 'max-w-[85%] md:max-w-[75%] lg:max-w-[65%] items-end' : 'max-w-full md:max-w-[95%] lg:max-w-[90%] xl:max-w-[85%] items-start'}`}>
               <div className={`rounded-2xl ${
                 message.role === 'assistant'
                   ? message.isError
-                    ? 'bg-red-900/20 border border-red-700/40 shadow-dark-soft px-5 py-3.5'
-                    : 'bg-dark-bg-secondary border border-dark-border-glow shadow-dark-soft-md px-6 py-5'
-                  : 'bg-gradient-to-br from-accent-purple via-accent-purple-dark to-accent-purple-dark text-white shadow-glow-purple px-4 py-3'
+                    ? 'bg-red-900/20 border border-red-700/40 shadow-dark-soft px-4 md:px-5 py-3 md:py-3.5'
+                    : 'bg-dark-bg-secondary border border-dark-border-glow shadow-dark-soft-md px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5'
+                  : 'bg-gradient-to-br from-accent-purple via-accent-purple-dark to-accent-purple-dark text-white shadow-glow-purple px-3 md:px-4 lg:px-5 py-2 md:py-3 lg:py-4'
               }`}>
                 {/* Show image if message has one */}
                 {message.image && (

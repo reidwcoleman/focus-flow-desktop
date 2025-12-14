@@ -470,6 +470,65 @@ const Planner = () => {
             </button>
           ))}
         </div>
+
+        {/* Color Legend - Only show in calendar mode */}
+        {viewMode === 'calendar' && (
+          <div className="bg-gradient-to-br from-dark-bg-secondary to-dark-bg-tertiary rounded-xl md:rounded-2xl p-3 md:p-4 lg:p-5 border-2 border-dark-border-glow shadow-dark-soft-md">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+              </svg>
+              <h4 className="text-sm md:text-base lg:text-lg font-bold text-dark-text-primary">What the Colors Mean</h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+              {/* Assignments/Tasks - RED */}
+              <div className="flex items-center gap-3 p-2 md:p-3 rounded-xl bg-dark-bg-tertiary/50 border border-dark-border-subtle">
+                <div className="relative">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-red-500/80 to-orange-500/80 border-[3px] border-red-400/80 shadow-lg shadow-red-500/50 flex items-center justify-center">
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center text-xs font-extrabold text-red-900 border-2 border-yellow-300 shadow-xl">
+                    3
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm md:text-base font-bold text-red-400">🔴 RED - Assignments</div>
+                  <div className="text-xs md:text-sm text-dark-text-muted mt-0.5">Tasks & homework due</div>
+                </div>
+              </div>
+
+              {/* Classes - PURPLE */}
+              <div className="flex items-center gap-3 p-2 md:p-3 rounded-xl bg-dark-bg-tertiary/50 border border-dark-border-subtle">
+                <div className="relative">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-purple-500/70 to-pink-500/70 border-[3px] border-purple-400/70 shadow-lg shadow-purple-500/50"></div>
+                  <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-white rounded-full flex items-center justify-center text-xs font-extrabold text-primary-600 border-2 border-white shadow-xl">
+                    2
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm md:text-base font-bold text-purple-400">🟣 PURPLE - Classes</div>
+                  <div className="text-xs md:text-sm text-dark-text-muted mt-0.5">Scheduled classes</div>
+                </div>
+              </div>
+
+              {/* Other Activities - CYAN */}
+              <div className="flex items-center gap-3 p-2 md:p-3 rounded-xl bg-dark-bg-tertiary/50 border border-dark-border-subtle">
+                <div className="relative">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-cyan-500/70 to-blue-500/70 border-[3px] border-cyan-400/70 shadow-lg shadow-cyan-500/50"></div>
+                  <div className="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-white rounded-full flex items-center justify-center text-xs font-extrabold text-primary-600 border-2 border-white shadow-xl">
+                    1
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm md:text-base font-bold text-cyan-400">🔵 BLUE - Activities</div>
+                  <div className="text-xs md:text-sm text-dark-text-muted mt-0.5">Events & meetings</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Calendar View */}

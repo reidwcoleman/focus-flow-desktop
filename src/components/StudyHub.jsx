@@ -230,7 +230,7 @@ const StudyHub = () => {
   // Render "View All Notes" section
   if (activeSection === 'allNotes') {
     return (
-      <div className="space-y-6 pb-6">
+      <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
         {/* Header with Back Button */}
         <div className="flex items-center gap-3">
           <button
@@ -242,13 +242,13 @@ const StudyHub = () => {
             </svg>
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-dark-text-primary mb-1">All Notes</h1>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">All Notes</h1>
             <p className="text-dark-text-secondary">{notes.length} total notes</p>
           </div>
         </div>
 
         {/* All Notes List */}
-        <div className="bg-dark-bg-secondary rounded-2xl p-5 shadow-dark-soft-md border border-dark-border-glow">
+        <div className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow">
           {notesLoading ? (
             <div className="text-center py-12">
               <div className="inline-block w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
@@ -505,7 +505,7 @@ const StudyHub = () => {
 
                 {/* Note Metadata */}
                 <div className="pt-6 border-t border-dark-border-subtle">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
                     <div>
                       <div className="text-dark-text-secondary font-medium mb-1">Created</div>
                       <div className="text-dark-text-primary">
@@ -589,7 +589,7 @@ const StudyHub = () => {
   // Render "View All Flashcards" section
   if (activeSection === 'allFlashcards') {
     return (
-      <div className="space-y-6 pb-6">
+      <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
         {/* Header with Back Button */}
         <div className="flex items-center gap-3">
           <button
@@ -601,13 +601,13 @@ const StudyHub = () => {
             </svg>
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-dark-text-primary mb-1">All Flashcard Decks</h1>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">All Flashcard Decks</h1>
             <p className="text-dark-text-secondary">{decks.length} total decks</p>
           </div>
         </div>
 
         {/* All Decks List */}
-        <div className="bg-dark-bg-secondary rounded-2xl p-5 shadow-dark-soft-md border border-dark-border-glow">
+        <div className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow">
           {flashcardsLoading ? (
             <div className="text-center py-12">
               <div className="inline-block w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
@@ -658,18 +658,18 @@ const StudyHub = () => {
 
   // Render overview (default view)
   return (
-    <div className="space-y-6 pb-6">
+    <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-dark-text-primary mb-1">Study Hub</h1>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">Study Hub</h1>
           <p className="text-dark-text-secondary">Your notes and flashcards</p>
         </div>
       </div>
 
       {/* Daily Review Widget */}
       {dueCards.length > 0 && (
-        <div className="bg-gradient-to-br from-accent-purple to-accent-purple-dark rounded-2xl p-6 shadow-glow-purple-lg border border-accent-purple/30">
+        <div className="bg-gradient-to-br from-accent-purple to-accent-purple-dark rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-glow-purple-lg border border-accent-purple/30">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
@@ -699,11 +699,11 @@ const StudyHub = () => {
       )}
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Notes Card */}
         <button
           onClick={() => setActiveSection('notes')}
-          className="bg-dark-bg-secondary rounded-2xl p-5 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light transition-all active:scale-95 text-left"
+          className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light transition-all active:scale-95 text-left"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-glow-purple">
@@ -712,7 +712,7 @@ const StudyHub = () => {
               </svg>
             </div>
           </div>
-          <div className="text-3xl font-bold text-dark-text-primary mb-1">
+          <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">
             {notesLoading ? '...' : notesStats.totalNotes}
           </div>
           <div className="text-dark-text-secondary text-sm font-medium">Notes</div>
@@ -721,7 +721,7 @@ const StudyHub = () => {
         {/* Flashcards Card */}
         <button
           onClick={() => setActiveSection('flashcards')}
-          className="bg-dark-bg-secondary rounded-2xl p-5 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light transition-all active:scale-95 text-left"
+          className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light transition-all active:scale-95 text-left"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan">
@@ -730,7 +730,7 @@ const StudyHub = () => {
               </svg>
             </div>
           </div>
-          <div className="text-3xl font-bold text-dark-text-primary mb-1">
+          <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">
             {flashcardsLoading ? '...' : flashcardsStats.totalDecks}
           </div>
           <div className="text-dark-text-secondary text-sm font-medium">Decks</div>
@@ -738,9 +738,9 @@ const StudyHub = () => {
       </div>
 
       {/* Recent Notes Section */}
-      <div className="bg-dark-bg-secondary rounded-2xl p-5 shadow-dark-soft-md border border-dark-border-glow">
+      <div className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-dark-text-primary">Recent Notes</h3>
+          <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary">Recent Notes</h3>
           <button
             onClick={() => setActiveSection('allNotes')}
             className="text-primary-500 text-sm font-semibold hover:text-primary-400 transition-colors"
@@ -792,9 +792,9 @@ const StudyHub = () => {
       </div>
 
       {/* Flashcard Decks Section */}
-      <div className="bg-dark-bg-secondary rounded-2xl p-5 shadow-dark-soft-md border border-dark-border-glow">
+      <div className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-dark-text-primary">Flashcard Decks</h3>
+          <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary">Flashcard Decks</h3>
           <button
             onClick={() => setActiveSection('allFlashcards')}
             className="text-primary-500 text-sm font-semibold hover:text-primary-400 transition-colors"
@@ -1054,7 +1054,7 @@ const StudyHub = () => {
 
               {/* Note Metadata */}
               <div className="pt-6 border-t border-dark-border-subtle">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
                   <div>
                     <div className="text-dark-text-secondary font-medium mb-1">Created</div>
                     <div className="text-dark-text-primary">
