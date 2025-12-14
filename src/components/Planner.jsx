@@ -532,29 +532,51 @@ const Planner = () => {
                   key={index}
                   onClick={() => day && setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
                   disabled={!day}
-                  className={`aspect-square rounded-lg md:rounded-xl lg:rounded-2xl p-0.5 md:p-1 lg:p-1.5 transition-all text-center hover:scale-105 ${
+                  className={`aspect-square rounded-lg md:rounded-xl lg:rounded-2xl p-0.5 md:p-1 lg:p-1.5 transition-all text-center hover:scale-105 relative ${
                     !day
                       ? 'invisible'
                       : isSelected(day)
                       ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
                       : isToday(day)
                       ? 'bg-primary-500/20 border-2 md:border-[3px] border-primary-500 text-dark-text-primary font-bold'
+                      : hasActivities
+                      ? 'bg-gradient-to-br from-primary-500/30 to-accent-cyan/20 border-2 border-primary-500/50 text-dark-text-primary font-semibold shadow-glow-cyan-sm hover:shadow-glow-cyan'
                       : 'bg-dark-bg-tertiary text-dark-text-primary hover:bg-dark-navy-dark hover:border-primary-500/50 border border-dark-border-subtle'
                   } active:scale-95`}
                 >
                   {day && (
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <span className={`text-xs md:text-sm lg:text-base xl:text-lg font-semibold ${isSelected(day) ? 'text-white' : ''}`}>
+                    <div className="flex flex-col items-center justify-center h-full relative">
+                      <span className={`text-xs md:text-sm lg:text-base xl:text-lg font-semibold ${isSelected(day) ? 'text-white' : hasActivities ? 'text-primary-400' : ''}`}>
                         {day}
                       </span>
+                      {hasActivities && dayActivities.length > 0 && (
+                        <div className={`absolute -top-1 -right-1 min-w-[18px] h-[18px] md:min-w-[20px] md:h-[20px] flex items-center justify-center rounded-full text-[10px] md:text-xs font-bold ${
+                          isSelected(day)
+                            ? 'bg-white text-primary-500'
+                            : 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg'
+                        }`}>
+                          {dayActivities.length}
+                        </div>
+                      )}
                       {hasActivities && (
-                        <div className="flex gap-0.5 md:gap-1 mt-0.5 md:mt-1">
-                          {dayActivities.slice(0, 3).map((_, i) => (
+                        <div className="flex gap-1 mt-1">
+                          {dayActivities.slice(0, 3).map((activity, i) => (
                             <div
                               key={i}
-                              className={`w-0.5 h-0.5 md:w-1 md:h-1 lg:w-1.5 lg:h-1.5 rounded-full ${isSelected(day) ? 'bg-white' : 'bg-primary-500'}`}
+                              className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${
+                                isSelected(day)
+                                  ? 'bg-white'
+                                  : activity.activity_type === 'assignment' || activity.activity_type === 'task'
+                                  ? 'bg-amber-500'
+                                  : activity.activity_type === 'class'
+                                  ? 'bg-purple-500'
+                                  : 'bg-cyan-500'
+                              }`}
                             ></div>
                           ))}
+                          {dayActivities.length > 3 && (
+                            <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${isSelected(day) ? 'bg-white/60' : 'bg-primary-400'}`}></div>
+                          )}
                         </div>
                       )}
                     </div>
