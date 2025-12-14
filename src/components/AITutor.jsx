@@ -551,30 +551,26 @@ const AITutor = () => {
           )}
         </div>
 
-        {/* ULTRA PROMINENT MODE INDICATOR BANNER */}
+        {/* Mode Indicator Banners */}
         {ultraThinkEnabled && (
-          <div className="mt-3 p-4 md:p-5 bg-gradient-to-r from-purple-500/30 via-purple-600/30 to-pink-500/30 rounded-2xl border-2 border-purple-400 shadow-glow-purple-lg animate-fadeIn relative overflow-hidden">
-            {/* Animated background shimmer */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-300/20 to-transparent translate-x-[-100%] animate-shimmer"></div>
-
-            <div className="relative z-10 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-glow-purple animate-pulse-soft border-2 border-purple-300">
-                  <svg className="w-7 h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          <div className="mt-2.5 p-2.5 md:p-3 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-xl border border-purple-400/50 shadow-dark-soft animate-fadeIn">
+            <div className="flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5 flex-1">
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-purple-500/80 to-purple-700/80 flex items-center justify-center shadow-md border border-purple-400/30">
+                  <svg className="w-4.5 h-4.5 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-base md:text-lg lg:text-xl font-extrabold text-purple-100">💭 ULTRATHINK MODE ACTIVE</h3>
-                    <div className="px-2 py-0.5 bg-purple-400 text-purple-900 text-[10px] font-bold rounded-full animate-pulse-soft">ON</div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm md:text-base font-bold text-purple-200">💭 UltraThink Active</h3>
                   </div>
-                  <p className="text-xs md:text-sm text-purple-200 font-medium">Deep reasoning and step-by-step analysis enabled</p>
+                  <p className="text-xs text-purple-300/80 hidden md:block">Deep reasoning enabled</p>
                 </div>
               </div>
               <button
                 onClick={toggleUltraThink}
-                className="px-3 py-1.5 md:px-4 md:py-2 bg-purple-500/50 hover:bg-purple-500/70 border border-purple-300 rounded-lg text-white text-xs md:text-sm font-semibold transition-all active:scale-95 shadow-lg"
+                className="px-2.5 py-1 bg-purple-500/40 hover:bg-purple-500/60 border border-purple-400/50 rounded-lg text-white text-xs font-semibold transition-all active:scale-95"
               >
                 Disable
               </button>
@@ -583,28 +579,24 @@ const AITutor = () => {
         )}
 
         {deepResearchEnabled && (
-          <div className="mt-3 p-4 md:p-5 bg-gradient-to-r from-blue-500/30 via-cyan-600/30 to-blue-500/30 rounded-2xl border-2 border-blue-400 shadow-glow-cyan-lg animate-fadeIn relative overflow-hidden">
-            {/* Animated background shimmer */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-300/20 to-transparent translate-x-[-100%] animate-shimmer"></div>
-
-            <div className="relative z-10 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-700 flex items-center justify-center shadow-glow-cyan animate-pulse-soft border-2 border-blue-300">
-                  <svg className="w-7 h-7 md:w-8 md:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          <div className="mt-2.5 p-2.5 md:p-3 bg-gradient-to-r from-blue-500/20 to-cyan-600/20 rounded-xl border border-blue-400/50 shadow-dark-soft animate-fadeIn">
+            <div className="flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5 flex-1">
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-blue-500/80 to-cyan-700/80 flex items-center justify-center shadow-md border border-blue-400/30">
+                  <svg className="w-4.5 h-4.5 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-base md:text-lg lg:text-xl font-extrabold text-blue-100">📚 DEEP RESEARCH MODE ACTIVE</h3>
-                    <div className="px-2 py-0.5 bg-blue-400 text-blue-900 text-[10px] font-bold rounded-full animate-pulse-soft">ON</div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm md:text-base font-bold text-blue-200">📚 Deep Research Active</h3>
                   </div>
-                  <p className="text-xs md:text-sm text-blue-200 font-medium">Comprehensive research and extensive analysis enabled</p>
+                  <p className="text-xs text-blue-300/80 hidden md:block">Comprehensive analysis enabled</p>
                 </div>
               </div>
               <button
                 onClick={toggleDeepResearch}
-                className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-500/50 hover:bg-blue-500/70 border border-blue-300 rounded-lg text-white text-xs md:text-sm font-semibold transition-all active:scale-95 shadow-lg"
+                className="px-2.5 py-1 bg-blue-500/40 hover:bg-blue-500/60 border border-blue-400/50 rounded-lg text-white text-xs font-semibold transition-all active:scale-95"
               >
                 Disable
               </button>
@@ -924,48 +916,42 @@ const AITutor = () => {
             </svg>
           </button>
 
-          {/* UltraThink toggle - PROMINENT */}
+          {/* UltraThink toggle */}
           <button
             onClick={toggleUltraThink}
             disabled={isLoading}
-            className={`relative flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${
+            className={`relative flex-shrink-0 flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${
               ultraThinkEnabled
-                ? 'bg-gradient-to-br from-purple-500/40 to-purple-600/40 border-purple-400 shadow-glow-purple-lg'
+                ? 'bg-purple-500/25 border-purple-400/60 shadow-md'
                 : 'bg-dark-bg-tertiary border-dark-border-glow hover:border-purple-500/50 hover:bg-purple-500/10'
             }`}
-            title={ultraThinkEnabled ? 'UltraThink: Deep reasoning mode enabled - Click to disable' : 'Enable UltraThink for advanced reasoning'}
+            title={ultraThinkEnabled ? 'UltraThink mode enabled - Click to disable' : 'Enable UltraThink for advanced reasoning'}
           >
-            <svg className={`w-5 h-5 flex-shrink-0 ${ultraThinkEnabled ? 'text-purple-300 animate-pulse-soft' : 'text-dark-text-muted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 flex-shrink-0 ${ultraThinkEnabled ? 'text-purple-300' : 'text-dark-text-muted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
-            <span className={`text-xs font-bold whitespace-nowrap hidden md:inline ${ultraThinkEnabled ? 'text-purple-200' : 'text-dark-text-muted'}`}>
-              {ultraThinkEnabled ? 'Ultra ON' : 'Ultra'}
+            <span className={`text-xs font-medium whitespace-nowrap hidden md:inline ${ultraThinkEnabled ? 'text-purple-200' : 'text-dark-text-muted'}`}>
+              {ultraThinkEnabled ? 'Ultra' : 'Ultra'}
             </span>
-            {ultraThinkEnabled && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-pulse border-2 border-purple-200 shadow-glow-purple"></div>
-            )}
           </button>
 
-          {/* Deep Research toggle - PROMINENT */}
+          {/* Deep Research toggle */}
           <button
             onClick={toggleDeepResearch}
             disabled={isLoading}
-            className={`relative flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${
+            className={`relative flex-shrink-0 flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${
               deepResearchEnabled
-                ? 'bg-gradient-to-br from-blue-500/40 to-cyan-600/40 border-blue-400 shadow-glow-cyan-lg'
+                ? 'bg-blue-500/25 border-blue-400/60 shadow-md'
                 : 'bg-dark-bg-tertiary border-dark-border-glow hover:border-blue-500/50 hover:bg-blue-500/10'
             }`}
-            title={deepResearchEnabled ? 'Deep Research: Comprehensive research mode enabled - Click to disable' : 'Enable Deep Research for extensive analysis'}
+            title={deepResearchEnabled ? 'Deep Research mode enabled - Click to disable' : 'Enable Deep Research for extensive analysis'}
           >
-            <svg className={`w-5 h-5 flex-shrink-0 ${deepResearchEnabled ? 'text-blue-300 animate-pulse-soft' : 'text-dark-text-muted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 flex-shrink-0 ${deepResearchEnabled ? 'text-blue-300' : 'text-dark-text-muted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            <span className={`text-xs font-bold whitespace-nowrap hidden md:inline ${deepResearchEnabled ? 'text-blue-200' : 'text-dark-text-muted'}`}>
-              {deepResearchEnabled ? 'Research ON' : 'Research'}
+            <span className={`text-xs font-medium whitespace-nowrap hidden md:inline ${deepResearchEnabled ? 'text-blue-200' : 'text-dark-text-muted'}`}>
+              {deepResearchEnabled ? 'Research' : 'Research'}
             </span>
-            {deepResearchEnabled && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-pulse border-2 border-blue-200 shadow-glow-cyan"></div>
-            )}
           </button>
 
           <textarea
