@@ -141,7 +141,8 @@ const Dashboard = ({ onOpenScanner }) => {
         dueDate: assignmentData.dueDate,
         priority: assignmentData.priority,
         timeEstimate: assignmentData.timeEstimate,
-        source: 'ai',
+        source: 'manual', // Database constraint only allows 'manual', 'scanner', 'canvas'
+        aiCaptured: true, // This flag indicates it was AI-generated
       })
 
       if (error) {

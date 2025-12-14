@@ -72,25 +72,38 @@ class AssignmentsService {
     }
 
     try {
+      const insertData = {
+        user_id: userId,
+        title: assignment.title,
+        subject: assignment.subject || null,
+        due_date: assignment.dueDate || assignment.due_date || null,
+        priority: assignment.priority || 'medium',
+        progress: assignment.progress || 0,
+        ai_captured: assignment.aiCaptured || assignment.ai_captured || (assignment.source === 'ai'),
+        time_estimate: assignment.timeEstimate || assignment.time_estimate || null,
+        description: assignment.description || null,
+        source: assignment.source || 'manual',
+        completed: assignment.completed || false,
+      }
+
+      console.log('💾 Inserting assignment into Supabase:', insertData)
+
       const { data, error } = await supabase
         .from('assignments')
-        .insert({
-          user_id: userId,
-          title: assignment.title,
-          subject: assignment.subject || null,
-          due_date: assignment.dueDate || assignment.due_date || null,
-          priority: assignment.priority || 'medium',
-          progress: assignment.progress || 0,
-          ai_captured: assignment.aiCaptured || assignment.ai_captured || false,
-          time_estimate: assignment.timeEstimate || assignment.time_estimate || null,
-          description: assignment.description || null,
-          source: assignment.source || 'manual',
-          completed: assignment.completed || false,
-        })
+        .insert(insertData)
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Supabase error details:', error)
+        console.error('❌ Error code:', error.code)
+        console.error('❌ Error message:', error.message)
+        console.error('❌ Error hint:', error.hint)
+        console.error('❌ Error details:', error.details)
+        throw error
+      }
+
+      console.log('✅ Assignment created in Supabase:', data)
       return { data, error: null }
     } catch (error) {
       console.error('Failed to create assignment:', error)
