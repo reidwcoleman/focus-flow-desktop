@@ -17,9 +17,6 @@ dist-ssr
 .env.local
 .env.production
 
-# Docs build output with embedded secrets (will be built by CI/CD or locally)
-docs/assets/*.js
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
