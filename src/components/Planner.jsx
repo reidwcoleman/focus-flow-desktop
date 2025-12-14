@@ -532,50 +532,50 @@ const Planner = () => {
                   key={index}
                   onClick={() => day && setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
                   disabled={!day}
-                  className={`aspect-square rounded-lg md:rounded-xl lg:rounded-2xl p-0.5 md:p-1 lg:p-1.5 transition-all text-center hover:scale-105 relative ${
+                  className={`aspect-square rounded-lg md:rounded-xl lg:rounded-2xl p-0.5 md:p-1 lg:p-1.5 transition-all text-center hover:scale-110 relative ${
                     !day
                       ? 'invisible'
                       : isSelected(day)
-                      ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
+                      ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white shadow-glow-cyan ring-2 ring-primary-400 ring-offset-2 ring-offset-dark-bg-secondary'
                       : isToday(day)
                       ? 'bg-primary-500/20 border-2 md:border-[3px] border-primary-500 text-dark-text-primary font-bold'
                       : hasActivities
-                      ? 'bg-gradient-to-br from-primary-500/30 to-accent-cyan/20 border-2 border-primary-500/50 text-dark-text-primary font-semibold shadow-glow-cyan-sm hover:shadow-glow-cyan'
-                      : 'bg-dark-bg-tertiary text-dark-text-primary hover:bg-dark-navy-dark hover:border-primary-500/50 border border-dark-border-subtle'
+                      ? 'bg-gradient-to-br from-amber-500/40 via-orange-500/30 to-red-500/20 border-[3px] md:border-4 border-amber-500 text-dark-text-primary font-bold shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] animate-pulse-slow'
+                      : 'bg-dark-bg-tertiary text-dark-text-muted hover:bg-dark-navy-dark hover:border-primary-500/50 border border-dark-border-subtle'
                   } active:scale-95`}
                 >
                   {day && (
                     <div className="flex flex-col items-center justify-center h-full relative">
-                      <span className={`text-xs md:text-sm lg:text-base xl:text-lg font-semibold ${isSelected(day) ? 'text-white' : hasActivities ? 'text-primary-400' : ''}`}>
+                      <span className={`text-xs md:text-sm lg:text-base xl:text-lg font-bold ${isSelected(day) ? 'text-white' : hasActivities ? 'text-amber-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]' : ''}`}>
                         {day}
                       </span>
                       {hasActivities && dayActivities.length > 0 && (
-                        <div className={`absolute -top-1 -right-1 min-w-[18px] h-[18px] md:min-w-[20px] md:h-[20px] flex items-center justify-center rounded-full text-[10px] md:text-xs font-bold ${
+                        <div className={`absolute -top-1 -right-1 min-w-[24px] h-[24px] md:min-w-[28px] md:h-[28px] lg:min-w-[32px] lg:h-[32px] flex items-center justify-center rounded-full text-xs md:text-sm lg:text-base font-black border-2 border-white ${
                           isSelected(day)
-                            ? 'bg-white text-primary-500'
-                            : 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg'
+                            ? 'bg-white text-primary-500 shadow-xl'
+                            : 'bg-gradient-to-br from-red-500 via-orange-500 to-amber-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-pulse'
                         }`}>
                           {dayActivities.length}
                         </div>
                       )}
                       {hasActivities && (
-                        <div className="flex gap-1 mt-1">
+                        <div className="flex gap-1 md:gap-1.5 mt-1 md:mt-1.5">
                           {dayActivities.slice(0, 3).map((activity, i) => (
                             <div
                               key={i}
-                              className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${
+                              className={`w-1.5 h-1.5 md:w-2 md:h-2 lg:w-2.5 lg:h-2.5 rounded-full shadow-lg ${
                                 isSelected(day)
                                   ? 'bg-white'
                                   : activity.activity_type === 'assignment' || activity.activity_type === 'task'
-                                  ? 'bg-amber-500'
+                                  ? 'bg-amber-400 shadow-amber-500/50'
                                   : activity.activity_type === 'class'
-                                  ? 'bg-purple-500'
-                                  : 'bg-cyan-500'
+                                  ? 'bg-purple-400 shadow-purple-500/50'
+                                  : 'bg-cyan-400 shadow-cyan-500/50'
                               }`}
                             ></div>
                           ))}
                           {dayActivities.length > 3 && (
-                            <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${isSelected(day) ? 'bg-white/60' : 'bg-primary-400'}`}></div>
+                            <div className={`w-1.5 h-1.5 md:w-2 md:h-2 lg:w-2.5 lg:h-2.5 rounded-full ${isSelected(day) ? 'bg-white/60' : 'bg-primary-400 shadow-lg shadow-primary-500/50'}`}></div>
                           )}
                         </div>
                       )}
