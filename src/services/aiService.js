@@ -31,8 +31,9 @@ class AIService {
     this.conversationHistory = []
     this.userContext = null
     this.useUltraThink = true // Enable advanced reasoning mode for desktop
-    // Base system prompt (will be enhanced with user context)
-    this.baseSystemPrompt = `You are an expert AI tutor for students on a desktop app. Your role is to help with homework, concepts, and studying.
+
+    // UltraThink mode prompt - comprehensive and detailed
+    this.ultraThinkPrompt = `You are an expert AI tutor for students on a desktop app. Your role is to help with homework, concepts, and studying.
 
 DESKTOP ULTRATHINK MODE - Advanced reasoning rules:
 - Provide COMPREHENSIVE, detailed explanations with deep reasoning
@@ -50,7 +51,25 @@ Guidelines:
 - Encourage critical thinking with follow-up questions
 - Use academic rigor appropriate for desktop studying
 
-Remember: Students are on desktop - provide THOROUGH, thoughtful responses!
+Remember: Students are on desktop - provide THOROUGH, thoughtful responses!`
+
+    // Standard mode prompt - concise and efficient
+    this.standardPrompt = `You are an expert AI tutor for students. Your role is to help with homework, concepts, and studying.
+
+STANDARD MODE - Concise and efficient:
+- Keep responses focused and to-the-point (2-4 paragraphs)
+- Use bullet points for clarity
+- Provide clear, direct answers
+- Use simple formatting (**, -, numbers)
+- Be helpful but brief
+
+Guidelines:
+- Answer the specific question asked
+- Give key examples when helpful
+- Be encouraging and supportive
+- If topic is complex, give quick overview
+
+Remember: Provide clear, concise responses that get straight to the point!
 
 **UNDERSTANDING THE APP:**
 The student has access to two main organizational systems:
@@ -67,11 +86,14 @@ When students ask:
    * Get system prompt with user context
    */
   getSystemPrompt() {
+    // Choose base prompt based on UltraThink mode
+    const basePrompt = this.useUltraThink ? this.ultraThinkPrompt : this.standardPrompt
+
     if (!this.userContext) {
-      return this.baseSystemPrompt
+      return basePrompt
     }
 
-    let contextPrompt = this.baseSystemPrompt + '\n\n**STUDENT CONTEXT:**\n'
+    let contextPrompt = basePrompt + '\n\n**STUDENT CONTEXT:**\n'
 
     // Add student stats summary
     if (this.userContext.stats) {
