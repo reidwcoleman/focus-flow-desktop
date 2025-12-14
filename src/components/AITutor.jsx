@@ -426,7 +426,7 @@ const AITutor = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] relative">
+    <div className="flex flex-col min-h-[calc(100vh-8rem)] h-full relative">
       {/* Clean Minimal Header */}
       <div className="flex-shrink-0 mb-4">
         <div className="flex items-center justify-between">

@@ -164,15 +164,15 @@ const StudySession = ({ deckId, cards, onComplete, onExit }) => {
 
   if (!currentCard || showComplete) {
     return (
-      <div className="fixed inset-0 z-50 bg-dark-bg flex items-center justify-center p-6 md:p-8">
-        <div className="max-w-md md:max-w-2xl w-full bg-dark-bg-secondary rounded-3xl p-8 md:p-10 shadow-dark-soft-xl border border-dark-border-glow">
+      <div className="fixed inset-0 z-50 bg-dark-bg flex items-center justify-center p-6 md:p-8 lg:p-10">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl w-full bg-dark-bg-secondary rounded-3xl p-8 md:p-10 lg:p-12 xl:p-16 shadow-dark-soft-xl border border-dark-border-glow">
           {/* Circular Accuracy Indicator */}
-          <div className="text-center mb-8 md:mb-10 animate-opal-card-enter">
-            <h2 className="text-2xl md:text-4xl font-bold text-dark-text-primary mb-6 md:mb-8">Session Complete!</h2>
+          <div className="text-center mb-8 md:mb-10 lg:mb-12 animate-opal-card-enter">
+            <h2 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-dark-text-primary mb-6 md:mb-8 lg:mb-10">Session Complete!</h2>
 
             {/* Circular Progress Ring */}
-            <div className="relative w-48 h-48 md:w-64 md:h-64 mx-auto mb-6 md:mb-8">
-              <svg className="w-48 h-48 md:w-64 md:h-64 transform -rotate-90" viewBox="0 0 200 200">
+            <div className="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 mx-auto mb-6 md:mb-8 lg:mb-10">
+              <svg className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 transform -rotate-90" viewBox="0 0 200 200">
                 {/* Background circle */}
                 <circle
                   cx="100"
@@ -200,10 +200,10 @@ const StudySession = ({ deckId, cards, onComplete, onExit }) => {
               </svg>
               {/* Center text */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className={`text-5xl md:text-7xl font-bold ${accuracy >= 80 ? 'text-green-600' : accuracy >= 60 ? 'text-amber-600' : 'text-orange-600'}`}>
+                <div className={`text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-bold ${accuracy >= 80 ? 'text-green-600' : accuracy >= 60 ? 'text-amber-600' : 'text-orange-600'}`}>
                   {accuracy}%
                 </div>
-                <div className="text-sm md:text-base text-dark-text-secondary font-semibold mt-1 md:mt-2">Accuracy</div>
+                <div className="text-sm md:text-base lg:text-lg xl:text-xl text-dark-text-secondary font-semibold mt-1 md:mt-2 lg:mt-3">Accuracy</div>
               </div>
             </div>
 
@@ -379,10 +379,10 @@ const StudySession = ({ deckId, cards, onComplete, onExit }) => {
       </div>
 
       {/* Flashcard */}
-      <div className="h-full flex items-center justify-center px-4 sm:px-6 md:px-8 pt-20 sm:pt-28 md:pt-32 pb-32 sm:pb-40 md:pb-48">
+      <div className="h-full flex items-center justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-20 sm:pt-28 md:pt-32 lg:pt-36 pb-32 sm:pb-40 md:pb-48 lg:pb-56">
         <div
           ref={cardRef}
-          className={`w-full max-w-md md:max-w-2xl lg:max-w-3xl transition-all ${cardEntering ? 'duration-300' : 'duration-200'}`}
+          className={`w-full max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl transition-all ${cardEntering ? 'duration-300' : 'duration-200'}`}
           style={{
             transform: cardExiting
               ? `translateX(${cardExiting === 'right' ? '150%' : '-150%'}) rotate(${cardExiting === 'right' ? '30deg' : '-30deg'})`

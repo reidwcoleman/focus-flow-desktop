@@ -478,46 +478,46 @@ const FocusMode = () => {
             return (
               <div
                 key={list.id}
-                className="bg-[rgba(255,255,255,0.05)] backdrop-blur-xl rounded-2xl p-6 border border-[rgba(255,255,255,0.1)] hover:border-[rgba(124,92,255,0.5)] transition-all duration-300 animate-opal-card-enter"
+                className="bg-[rgba(255,255,255,0.05)] backdrop-blur-xl rounded-2xl md:rounded-3xl p-6 md:p-7 lg:p-8 border border-[rgba(255,255,255,0.1)] hover:border-[rgba(124,92,255,0.5)] hover:scale-[1.02] transition-all duration-300 animate-opal-card-enter"
                 style={{ animationDelay: `${index * 0.08}s` }}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-cyan/20 flex items-center justify-center text-2xl">
+                <div className="flex items-center justify-between mb-4 md:mb-5 lg:mb-6">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-br from-primary-500/20 to-accent-cyan/20 flex items-center justify-center text-2xl md:text-3xl lg:text-4xl">
                       {list.icon}
                     </div>
                     <div>
-                      <h4 className="font-bold text-dark-text-primary">{list.name}</h4>
-                      <p className="text-xs text-dark-text-muted">{appCount} apps</p>
+                      <h4 className="font-bold text-base md:text-lg lg:text-xl text-dark-text-primary">{list.name}</h4>
+                      <p className="text-xs md:text-sm lg:text-base text-dark-text-muted">{appCount} apps</p>
                     </div>
                   </div>
                 </div>
 
                 {/* App Preview */}
-                <div className="flex gap-2 mb-4">
+                <div className="flex gap-2 md:gap-3 mb-4 md:mb-5 lg:mb-6">
                   {previewApps.map(app => (
                     <div
                       key={app.id}
-                      className={`w-10 h-10 rounded-xl bg-gradient-to-br ${app.gradient} flex items-center justify-center text-lg shadow-soft-sm`}
+                      className={`w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br ${app.gradient} flex items-center justify-center text-lg md:text-xl lg:text-2xl shadow-soft-sm hover:scale-110 transition-transform`}
                     >
                       {app.icon}
                     </div>
                   ))}
                   {appCount > 4 && (
-                    <div className="w-10 h-10 rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle flex items-center justify-center">
-                      <span className="text-xs text-dark-text-muted font-semibold">+{appCount - 4}</span>
+                    <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl bg-dark-bg-tertiary border border-dark-border-subtle flex items-center justify-center">
+                      <span className="text-xs md:text-sm lg:text-base text-dark-text-muted font-semibold">+{appCount - 4}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Duration Buttons */}
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-2 md:gap-3">
                   {durations.map(preset => (
                     <button
                       key={preset.minutes}
                       onClick={() => handleQuickStart(list, preset.minutes)}
                       disabled={loading}
-                      className="py-2.5 px-3 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] hover:border-[#7C5CFF] hover:bg-[rgba(78,48,189,0.15)] text-white font-semibold text-sm rounded-full transition-all duration-200 active:scale-95 disabled:opacity-50"
+                      className="py-2.5 md:py-3 lg:py-3.5 px-3 md:px-4 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] hover:border-[#7C5CFF] hover:bg-[rgba(78,48,189,0.15)] hover:scale-105 text-white font-semibold text-sm md:text-base rounded-full transition-all duration-200 active:scale-95 disabled:opacity-50"
                     >
                       {preset.label}
                     </button>
@@ -532,9 +532,9 @@ const FocusMode = () => {
       {/* Custom Block Button */}
       <button
         onClick={handleStartCustom}
-        className="w-full py-5 px-6 bg-gradient-to-r from-[#4E30BD] via-[#7C5CFF] to-[#A0FFF9] text-white font-bold text-lg rounded-full shadow-glow-opal-lg hover:shadow-glow-opal-xl hover:scale-[1.03] transition-all duration-300 active:scale-95 flex items-center justify-center gap-3"
+        className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto block py-5 md:py-6 lg:py-7 px-6 md:px-8 lg:px-10 bg-gradient-to-r from-[#4E30BD] via-[#7C5CFF] to-[#A0FFF9] text-white font-bold text-lg md:text-xl lg:text-2xl rounded-full shadow-glow-opal-lg hover:shadow-glow-opal-xl hover:scale-[1.03] transition-all duration-300 active:scale-95 flex items-center justify-center gap-3 md:gap-4"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
         <span>Custom Block</span>
@@ -542,12 +542,12 @@ const FocusMode = () => {
 
       {/* Database Setup Reminder */}
       {(!blockingLists || blockingLists.length === 0) && (
-        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl p-4 border border-amber-500/30">
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 text-2xl">⚠️</div>
+        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl md:rounded-3xl p-4 md:p-6 border border-amber-500/30">
+          <div className="flex gap-3 md:gap-4">
+            <div className="flex-shrink-0 text-2xl md:text-3xl lg:text-4xl">⚠️</div>
             <div>
-              <h4 className="text-sm font-semibold text-dark-text-primary mb-1">Setup Required</h4>
-              <p className="text-xs text-dark-text-secondary leading-relaxed">
+              <h4 className="text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary mb-1">Setup Required</h4>
+              <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary leading-relaxed">
                 Run FOCUS_MODE_DATABASE.sql in Supabase to enable Focus Mode features.
               </p>
             </div>
