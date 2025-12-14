@@ -60,10 +60,10 @@ const DeckPreview = ({ deck, onClose, onStartStudy, onEditDeck, onDeleteDeck }) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-dark-bg flex flex-col">
+    <div className="fixed inset-0 md:left-72 lg:left-80 xl:left-96 z-50 bg-dark-bg flex flex-col">
       {/* Header */}
       <div className="bg-dark-bg-secondary border-b border-neutral-700/50 safe-area-inset-top">
-        <div className="max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-4 md:py-5 lg:py-6">
+        <div className="max-w-full mx-auto px-4 sm:px-6 md:px-6 lg:px-8 xl:px-10 py-4 md:py-5 lg:py-6">
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <button
               onClick={onClose}
@@ -116,7 +116,7 @@ const DeckPreview = ({ deck, onClose, onStartStudy, onEditDeck, onDeleteDeck }) 
 
       {/* Card Grid */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-6 md:py-8 lg:py-10">
+        <div className="max-w-full mx-auto px-4 sm:px-6 md:px-6 lg:px-8 xl:px-10 py-6 md:py-8 lg:py-10">
           {cards.length === 0 ? (
             <div className="text-center py-12 md:py-16 lg:py-20">
               <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-4 md:mb-6 rounded-full bg-neutral-700/50 flex items-center justify-center">
@@ -128,7 +128,7 @@ const DeckPreview = ({ deck, onClose, onStartStudy, onEditDeck, onDeleteDeck }) 
               <p className="text-neutral-500 text-sm md:text-base lg:text-lg">Add cards to start studying this deck</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-4 lg:gap-5">
               {cards.map((card) => {
                 const difficultyConfig = getDifficultyConfig(card.difficulty)
                 return (
@@ -163,7 +163,7 @@ const DeckPreview = ({ deck, onClose, onStartStudy, onEditDeck, onDeleteDeck }) 
 
       {/* Bottom Actions */}
       <div className="bg-dark-bg-secondary border-t border-neutral-700/50 safe-area-inset-bottom">
-        <div className="max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-4 md:py-5 lg:py-6">
+        <div className="max-w-full mx-auto px-4 sm:px-6 md:px-6 lg:px-8 xl:px-10 py-4 md:py-5 lg:py-6">
           <button
             onClick={onStartStudy}
             disabled={cards.length === 0}
@@ -177,11 +177,11 @@ const DeckPreview = ({ deck, onClose, onStartStudy, onEditDeck, onDeleteDeck }) 
       {/* Full Card Modal */}
       {selectedCard && (
         <div
-          className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4 md:p-6 lg:p-8"
+          className="fixed inset-0 md:left-72 lg:left-80 xl:left-96 z-60 bg-black/80 flex items-center justify-center p-4 md:p-6 lg:p-8"
           onClick={() => setSelectedCard(null)}
         >
           <div
-            className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl w-full"
+            className="max-w-md md:max-w-xl lg:max-w-2xl xl:max-w-3xl w-full"
             onClick={(e) => e.stopPropagation()}
           >
             <FlashCard card={selectedCard} showDifficulty={true} />

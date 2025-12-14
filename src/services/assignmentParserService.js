@@ -155,6 +155,9 @@ class AssignmentParserService {
       const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
       console.log('📚 Parsing assignment with AI:', userInput, '| Today:', today)
 
+      console.log('🌐 Making AI request to:', `${supabaseUrl}/functions/v1/ai-chat`)
+      console.log('📝 Request body:', { userInput, model: 'llama-3.3-70b-versatile' })
+
       const response = await fetch(`${supabaseUrl}/functions/v1/ai-chat`, {
         method: 'POST',
         headers: {
@@ -169,19 +172,26 @@ class AssignmentParserService {
         }),
       })
 
+      console.log('📡 Response status:', response.status, response.statusText)
+
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ AI API Error:', errorText)
-        throw new Error('Failed to parse assignment with AI')
+        console.error('❌ AI API Error Response:', errorText)
+        console.error('❌ Response headers:', Object.fromEntries(response.headers.entries()))
+        throw new Error(`Failed to parse assignment with AI: ${response.status} ${errorText}`)
       }
 
       const data = await response.json()
+      console.log('🤖 AI Response Data:', data)
+
       const aiResponse = data.response || data.message || data.content
 
       if (!aiResponse) {
-        console.error('❌ No response from AI:', data)
+        console.error('❌ No response from AI. Full data:', JSON.stringify(data, null, 2))
         throw new Error('No response from AI')
       }
+
+      console.log('✨ AI Response Content:', aiResponse)
 
       // Parse JSON from AI response
       let jsonString = aiResponse.replace(/```json\s*/g, '').replace(/```\s*/g, '')

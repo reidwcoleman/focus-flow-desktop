@@ -40,8 +40,13 @@ const Dashboard = ({ onOpenScanner }) => {
     await authService.refreshUserProfile()
     const profile = authService.getUserProfile()
 
+    console.log('👤 User profile:', profile)
+    console.log('📧 User email:', user?.email)
+    console.log('✏️ Full name from profile:', profile?.full_name)
+
     // Use full_name if available, otherwise use email username
     const name = profile?.full_name || user?.email?.split('@')[0] || 'there'
+    console.log('👋 Final name to display:', name)
     setUserName(name)
   }
 
@@ -122,10 +127,14 @@ const Dashboard = ({ onOpenScanner }) => {
     setAiSuccess('')
 
     try {
+      console.log('🚀 Starting AI assignment creation:', aiInput)
+
       // Parse assignment with AI
       const assignmentData = await assignmentParserService.parseAssignment(aiInput)
+      console.log('✅ Parsed assignment data:', assignmentData)
 
       // Create assignment in database
+      console.log('💾 Creating assignment in database...')
       const { data, error } = await assignmentsService.createAssignment({
         title: assignmentData.title,
         subject: assignmentData.subject,
@@ -135,19 +144,25 @@ const Dashboard = ({ onOpenScanner }) => {
         source: 'ai',
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Database error:', error)
+        throw error
+      }
+
+      console.log('✅ Assignment created successfully:', data)
 
       // Reload assignments
       await loadAssignments()
 
       // Show success
-      setAiSuccess(`Created: ${assignmentData.title}`)
+      setAiSuccess(`✅ Created: ${assignmentData.title}`)
       setAiInput('')
       setTimeout(() => setAiSuccess(''), 3000)
     } catch (err) {
-      console.error('Failed to create assignment:', err)
-      setAiError('Failed to create assignment. Try being more specific.')
-      setTimeout(() => setAiError(''), 5000)
+      console.error('❌ Failed to create assignment:', err)
+      const errorMessage = err.message || 'Unknown error'
+      setAiError(`Failed: ${errorMessage}. Check console for details.`)
+      setTimeout(() => setAiError(''), 8000)
     } finally {
       setAiProcessing(false)
     }

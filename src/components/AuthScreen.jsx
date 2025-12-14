@@ -38,13 +38,20 @@ const AuthScreen = ({ onAuthSuccess }) => {
       return
     }
 
+    // Validate name is provided for sign up
+    if (isSignUp && !fullName.trim()) {
+      setError('Please enter your name')
+      setLoading(false)
+      return
+    }
+
     try {
       let result
       if (isSignUp) {
         console.log('📝 Signing up...')
         // Prepare profile data for signup
         const profileData = {
-          full_name: fullName.trim() || null,
+          full_name: fullName.trim(),
           canvas_url: canvasUrl.trim() || null,
           canvas_token: canvasToken.trim() || null,
         }

@@ -36,6 +36,7 @@ function App() {
       if (user) {
         await authService.refreshUserProfile()
         const userProfile = authService.getUserProfile()
+        console.log('🔄 App.jsx checkAuth - Loaded user profile:', userProfile)
         setProfile(userProfile)
 
         // Check and update streak on login
@@ -50,12 +51,14 @@ function App() {
 
     // Listen for auth state changes
     const subscription = authService.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth state change:', event)
       setUser(session?.user || null)
 
       // Load profile and update streak when user signs in
       if (session?.user) {
         await authService.refreshUserProfile()
         const userProfile = authService.getUserProfile()
+        console.log('🔄 App.jsx onAuthStateChange - Loaded user profile:', userProfile)
         setProfile(userProfile)
 
         await streakService.checkAndUpdateStreak(session.user.id)
@@ -228,25 +231,25 @@ function App() {
         {/* Left Sidebar Navigation - Desktop Style */}
         <aside className="hidden md:flex md:flex-col md:w-72 lg:w-80 xl:w-96 bg-dark-bg-secondary border-r border-dark-border-glow shadow-dark-soft-lg fixed left-0 top-0 bottom-0 z-40">
           {/* Logo / Brand */}
-          <div className="p-4 xl:p-5 border-b border-dark-border-glow">
+          <div className="p-5 xl:p-6 border-b border-dark-border-glow">
             <h1 className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-primary-500 to-accent-cyan bg-clip-text text-transparent">
               Focus Flow
             </h1>
-            <p className="text-sm xl:text-base text-dark-text-muted mt-1">Your Academic OS</p>
+            <p className="text-sm xl:text-base text-dark-text-muted mt-1.5">Your Academic OS</p>
           </div>
 
           {/* User Profile Section */}
           {user && (
-            <div className="px-4 xl:px-5 py-2.5 border-b border-dark-border-subtle">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 xl:w-11 xl:h-11 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center text-white font-bold text-base xl:text-lg">
+            <div className="px-5 xl:px-6 py-3 border-b border-dark-border-subtle">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 xl:w-12 xl:h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center text-white font-bold text-lg xl:text-xl">
                   {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs xl:text-sm font-semibold text-dark-text-primary truncate">
+                  <p className="text-sm xl:text-base font-semibold text-dark-text-primary truncate">
                     {profile?.full_name || user.email?.split('@')[0] || 'User'}
                   </p>
-                  <p className="text-[10px] xl:text-xs text-dark-text-muted truncate">
+                  <p className="text-xs xl:text-sm text-dark-text-muted truncate">
                     {user.email}
                   </p>
                 </div>
