@@ -281,42 +281,42 @@ const Planner = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-6 md:pb-8 lg:pb-10 animate-fadeIn">
+    <div className="space-y-4 md:space-y-5 pb-6 animate-fadeIn">
       {/* Header with Stats */}
       <div>
-        <div className="flex items-start justify-between mb-3 md:mb-4 lg:mb-6">
+        <div className="flex items-start justify-between mb-3 md:mb-4">
           <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-dark-text-primary mb-1 md:mb-2">Smart Calendar</h1>
-            <p className="text-sm md:text-base lg:text-lg text-dark-text-secondary">AI-powered activity planning</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary mb-1">Smart Calendar</h1>
+            <p className="text-sm md:text-base text-dark-text-secondary">AI-powered activity planning</p>
           </div>
           <div className="text-right">
-            <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-primary-500">{activities.length}</div>
-            <div className="text-[10px] md:text-xs lg:text-sm text-dark-text-muted">activities</div>
+            <div className="text-lg md:text-2xl font-bold text-primary-500">{activities.length}</div>
+            <div className="text-[10px] md:text-xs text-dark-text-muted">activities</div>
           </div>
         </div>
 
         {/* Quick Stats */}
         {loading ? (
-          <div className="flex gap-2 md:gap-3 lg:gap-4 mt-2">
+          <div className="flex gap-2 md:gap-3 mt-2">
             <StatCardSkeleton />
             <StatCardSkeleton />
             <StatCardSkeleton />
           </div>
         ) : activities.length > 0 && (
-          <div className="flex gap-2 md:gap-3 lg:gap-4 xl:gap-5 mt-2 md:mt-3 lg:mt-4 animate-fadeIn">
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-primary-500/50 transition-all">
-              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Total Hours</div>
-              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-dark-text-primary mt-1">{getTotalHours().toFixed(1)}h</div>
+          <div className="flex gap-2 md:gap-3 mt-2 animate-fadeIn">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-2.5 md:p-3 border border-dark-border-glow hover:border-primary-500/50 transition-all">
+              <div className="text-xs md:text-sm text-dark-text-muted">Total Hours</div>
+              <div className="text-lg md:text-xl font-bold text-dark-text-primary mt-1">{getTotalHours().toFixed(1)}h</div>
             </div>
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-green-500/50 transition-all">
-              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Completed</div>
-              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-green-500 mt-1">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-2.5 md:p-3 border border-dark-border-glow hover:border-green-500/50 transition-all">
+              <div className="text-xs md:text-sm text-dark-text-muted">Completed</div>
+              <div className="text-lg md:text-xl font-bold text-green-500 mt-1">
                 {activities.filter(a => a.is_completed).length}
               </div>
             </div>
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-amber-500/50 transition-all">
-              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Pending</div>
-              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-amber-500 mt-1">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-2.5 md:p-3 border border-dark-border-glow hover:border-amber-500/50 transition-all">
+              <div className="text-xs md:text-sm text-dark-text-muted">Pending</div>
+              <div className="text-lg md:text-xl font-bold text-amber-500 mt-1">
                 {activities.filter(a => !a.is_completed).length}
               </div>
             </div>

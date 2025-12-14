@@ -327,16 +327,16 @@ const Dashboard = ({ onOpenScanner }) => {
   }
 
   return (
-    <div className="space-y-5 md:space-y-6 lg:space-y-8 pb-6 md:pb-8 lg:pb-10">
+    <div className="space-y-4 md:space-y-5 lg:space-y-5 pb-6 md:pb-8 lg:pb-8">
       {/* Header with AI Status */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-dark-navy to-dark-navy-light p-6 md:p-8 lg:p-10 xl:p-12 shadow-dark-soft-lg border border-dark-border-glow">
+      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-dark-navy to-dark-navy-light p-4 md:p-5 lg:p-6 xl:p-7 shadow-dark-soft-lg border border-dark-border-glow">
         <div className="relative z-10">
-          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-            <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-primary-500 animate-pulse-soft shadow-glow-cyan"></div>
-            <span className="text-dark-text-primary text-sm md:text-base lg:text-lg font-medium tracking-tight">AI Active</span>
+          <div className="flex items-center gap-2 mb-2 md:mb-3">
+            <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse-soft shadow-glow-cyan"></div>
+            <span className="text-dark-text-primary text-xs md:text-sm lg:text-base font-medium tracking-tight">AI Active</span>
           </div>
-          <h2 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-dark-text-primary mb-1.5 md:mb-3 tracking-tight">{getTimeOfDayGreeting()}, {userName}</h2>
-          <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg xl:text-xl">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-dark-text-primary mb-1 md:mb-2 tracking-tight">{getTimeOfDayGreeting()}, {userName}</h2>
+          <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg">
             {assignments.length === 0
               ? 'No assignments - add one to get started!'
               : `You have ${assignments.length} assignment${assignments.length === 1 ? '' : 's'}`
@@ -345,8 +345,8 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
 
         {/* Decorative gradient orbs */}
-        <div className="absolute -top-20 -right-20 w-60 h-60 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-primary-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-20 -left-20 w-60 h-60 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-dark-navy-dark/50 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -top-20 -right-20 w-40 h-40 md:w-60 md:h-60 lg:w-72 lg:h-72 bg-primary-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 md:w-60 md:h-60 lg:w-72 lg:h-72 bg-dark-navy-dark/50 rounded-full blur-3xl pointer-events-none"></div>
       </div>
 
       {/* Streak Display - Clickable */}
