@@ -604,39 +604,34 @@ const AITutor = () => {
           </div>
         )}
 
-        {/* ULTRA PROMINENT AI Data Access Info Banner */}
+        {/* AI Data Access Info Banner */}
         {showDataInfo && (
-          <div className="mt-3 p-4 md:p-5 lg:p-6 bg-gradient-to-br from-primary-500/20 via-accent-cyan/20 to-accent-purple/20 rounded-2xl md:rounded-3xl border-2 border-primary-500/50 shadow-[0_0_30px_rgba(59,130,246,0.3)] animate-fadeIn relative overflow-hidden">
-            {/* Animated shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-300/20 to-transparent translate-x-[-100%] animate-shimmer"></div>
-
-            <div className="relative z-10">
-              {/* Header with dismiss button */}
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan animate-pulse-soft border-2 border-primary-300">
-                    <svg className="w-6 h-6 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="text-base md:text-lg lg:text-xl font-extrabold text-primary-100 mb-0.5">🔓 Full Data Access Enabled</h4>
-                    <p className="text-xs md:text-sm text-primary-200 font-medium">I can see everything to help you better</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowDataInfo(false)
-                    localStorage.setItem('ai_data_info_dismissed', 'true')
-                  }}
-                  className="flex-shrink-0 p-1.5 md:p-2 rounded-lg hover:bg-dark-bg-tertiary/50 transition-all active:scale-95 border border-primary-500/30"
-                  title="Dismiss"
-                >
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-300 hover:text-primary-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <div className="mt-3 p-3 bg-gradient-to-r from-accent-cyan/10 to-primary-500/10 rounded-xl border border-accent-cyan/30 shadow-dark-soft animate-fadeIn">
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500/30 to-accent-cyan/30 flex items-center justify-center border border-primary-500/40">
+                  <svg className="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                </button>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-dark-text-primary">I have access to your data</h4>
+                  <p className="text-[11px] text-dark-text-secondary">Ask me about anything below</p>
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  setShowDataInfo(false)
+                  localStorage.setItem('ai_data_info_dismissed', 'true')
+                }}
+                className="flex-shrink-0 p-1 rounded-lg hover:bg-dark-bg-tertiary transition-all active:scale-95"
+                title="Dismiss"
+              >
+                <svg className="w-3.5 h-3.5 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
               {/* Data sources grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
@@ -888,6 +883,18 @@ const AITutor = () => {
             className="hidden"
           />
 
+          {/* Image upload button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            className="flex-shrink-0 w-9 h-9 rounded-lg bg-dark-bg-tertiary hover:bg-primary-500/20 border border-dark-border-glow hover:border-primary-500/50 flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+            title="Upload or scan image"
+          >
+            <svg className="w-5 h-5 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
+
           {/* Regular Chat Mode button */}
           <button
             onClick={setRegularChat}
@@ -901,18 +908,6 @@ const AITutor = () => {
           >
             <svg className={`w-5 h-5 ${!ultraThinkEnabled && !deepResearchEnabled ? 'text-green-400' : 'text-dark-text-muted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </button>
-
-          {/* Image upload button */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading}
-            className="flex-shrink-0 w-9 h-9 rounded-lg bg-dark-bg-tertiary hover:bg-primary-500/20 border border-dark-border-glow hover:border-primary-500/50 flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
-            title="Upload or scan image"
-          >
-            <svg className="w-5 h-5 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </button>
 
