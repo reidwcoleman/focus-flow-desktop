@@ -8,7 +8,7 @@ const AITutor = () => {
     {
       id: 1,
       role: 'assistant',
-      content: "Hi! I'm your AI tutor with access to your assignments, calendar, study hours, notes, and more.\n\nI can help you with:\n- Study planning and scheduling\n- Homework and concept explanations\n- Exam preparation strategies\n- Analyzing images and solving problems\n\nWhat would you like to work on?",
+      content: "Hi! I'm your AI tutor with full access to your personal data.\n\n**I can see:**\n• Canvas Assignments - What's due and when\n• Your Calendar - All events and schedules\n• Study Schedule - Your study hours and sessions\n• Notes - All your scanned notes\n• Flashcards - Your decks and progress\n• Study Streak - Your consistency and habits\n\n**I can help you with:**\n• Study planning and scheduling\n• Homework and concept explanations\n• Exam preparation strategies\n• Analyzing images and solving problems\n• Personalized study advice based on your data\n\nWhat would you like to work on?",
       timestamp: new Date(),
     },
   ])
@@ -126,7 +126,7 @@ const AITutor = () => {
     setMessages([{
       id: Date.now(),
       role: 'assistant',
-      content: "Hi! I'm your AI tutor with access to your assignments, calendar, study hours, notes, and more.\n\nI can help you with:\n- Study planning and scheduling\n- Homework and concept explanations\n- Exam preparation strategies\n- Analyzing images and solving problems\n\nWhat would you like to work on?",
+      content: "Hi! I'm your AI tutor with full access to your personal data.\n\n**I can see:**\n• Canvas Assignments - What's due and when\n• Your Calendar - All events and schedules\n• Study Schedule - Your study hours and sessions\n• Notes - All your scanned notes\n• Flashcards - Your decks and progress\n• Study Streak - Your consistency and habits\n\n**I can help you with:**\n• Study planning and scheduling\n• Homework and concept explanations\n• Exam preparation strategies\n• Analyzing images and solving problems\n• Personalized study advice based on your data\n\nWhat would you like to work on?",
       timestamp: new Date(),
     }])
     setCurrentChatId(null)
