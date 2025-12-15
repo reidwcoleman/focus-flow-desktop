@@ -1106,61 +1106,61 @@ const AITutor = () => {
       )}
 
       {/* Upgrade Modal */}
-      {showUpgradeModal && (
+      {showUpgradeModal && !authService.isPro() && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-dark-bg-secondary rounded-3xl shadow-2xl border border-dark-border-glow max-w-sm w-full p-6 animate-fadeInUp">
+          <div className="bg-dark-bg-secondary rounded-3xl shadow-2xl border border-dark-border-glow max-w-sm md:max-w-md lg:max-w-lg w-full p-6 md:p-8 lg:p-10 animate-fadeInUp">
             {/* Icon */}
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-glow-purple">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex justify-center mb-4 md:mb-6">
+              <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-glow-purple">
+                <svg className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
             </div>
 
             {/* Title */}
-            <h3 className="text-2xl font-bold text-dark-text-primary text-center mb-2">
+            <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary text-center mb-2 md:mb-3">
               Upgrade to Pro
             </h3>
 
             {/* Description */}
-            <p className="text-dark-text-secondary text-center mb-6">
+            <p className="text-sm md:text-base lg:text-lg text-dark-text-secondary text-center mb-6 md:mb-8">
               You've used all your free AI chats. Upgrade to Pro for 250 chats per month plus exclusive features!
             </p>
 
             {/* Features List */}
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-accent-purple/20 flex items-center justify-center border border-accent-purple/40">
-                  <svg className="w-3 h-3 text-accent-purple-light" fill="currentColor" viewBox="0 0 20 20">
+            <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-accent-purple/20 flex items-center justify-center border border-accent-purple/40">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-accent-purple-light" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <span className="text-sm text-dark-text-primary font-medium">250 AI chats per month</span>
+                <span className="text-sm md:text-base lg:text-lg text-dark-text-primary font-medium">250 AI chats per month</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-accent-purple/20 flex items-center justify-center border border-accent-purple/40">
-                  <svg className="w-3 h-3 text-accent-purple-light" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-accent-purple/20 flex items-center justify-center border border-accent-purple/40">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-accent-purple-light" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <span className="text-sm text-dark-text-primary font-medium">Priority support</span>
+                <span className="text-sm md:text-base lg:text-lg text-dark-text-primary font-medium">Priority support</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-accent-purple/20 flex items-center justify-center border border-accent-purple/40">
-                  <svg className="w-3 h-3 text-accent-purple-light" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-accent-purple/20 flex items-center justify-center border border-accent-purple/40">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-accent-purple-light" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <span className="text-sm text-dark-text-primary font-medium">Advanced study analytics</span>
+                <span className="text-sm md:text-base lg:text-lg text-dark-text-primary font-medium">Advanced study analytics</span>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-accent-purple/20 flex items-center justify-center border border-accent-purple/40">
-                  <svg className="w-3 h-3 text-accent-purple-light" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 rounded-full bg-accent-purple/20 flex items-center justify-center border border-accent-purple/40">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-accent-purple-light" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <span className="text-sm text-dark-text-primary font-medium">Export study notes</span>
+                <span className="text-sm md:text-base lg:text-lg text-dark-text-primary font-medium">Export study notes</span>
               </div>
             </div>
 
