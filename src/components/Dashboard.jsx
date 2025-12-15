@@ -478,7 +478,7 @@ const Dashboard = ({ onOpenScanner }) => {
       {/* Streak Display - Clickable */}
       <button
         onClick={() => setShowStreakCalendar(true)}
-        className="w-full relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-3 md:p-4 shadow-dark-soft-lg border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
+        className="w-full relative overflow-hidden rounded-lg md:rounded-xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-2 md:p-3 shadow-dark-soft border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
       >
         {/* Celebration overlay */}
         {showStreakCelebration && (
@@ -486,14 +486,14 @@ const Dashboard = ({ onOpenScanner }) => {
         )}
 
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 md:gap-3">
+          <div className="flex items-center gap-2 md:gap-2.5">
             {/* Fire icon with animation */}
             <div className={`relative ${showStreakCelebration ? 'animate-bounce' : ''}`}>
-              <div className="text-3xl md:text-4xl lg:text-5xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
+              <div className="text-2xl md:text-3xl lg:text-4xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
                 🔥
               </div>
               {showStreakCelebration && (
-                <div className="absolute inset-0 text-4xl md:text-5xl lg:text-6xl animate-ping opacity-75">
+                <div className="absolute inset-0 text-3xl md:text-4xl lg:text-5xl animate-ping opacity-75">
                   🔥
                 </div>
               )}
@@ -502,10 +502,10 @@ const Dashboard = ({ onOpenScanner }) => {
             {/* Streak info */}
             <div>
               <div className="flex items-baseline gap-1.5 md:gap-2 mb-0.5 md:mb-1">
-                <span className="text-2xl md:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
+                <span className="text-xl md:text-2xl lg:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
                   {streak.currentStreak}
                 </span>
-                <span className="text-sm md:text-base lg:text-lg font-bold text-orange-300">
+                <span className="text-xs md:text-sm lg:text-base font-bold text-orange-300">
                   {streak.currentStreak === 1 ? 'day' : 'days'}
                 </span>
               </div>
@@ -535,7 +535,7 @@ const Dashboard = ({ onOpenScanner }) => {
         {/* Motivational message */}
         {showStreakCelebration && (
           <div className="mt-3 md:mt-4 text-center animate-fadeIn">
-            <p className="text-sm md:text-base lg:text-lg font-bold text-orange-300">
+            <p className="text-xs md:text-sm lg:text-base font-bold text-orange-300">
               🎉 Streak increased! Keep it going!
             </p>
           </div>
@@ -558,15 +558,15 @@ const Dashboard = ({ onOpenScanner }) => {
 
       {/* XP Display Widget */}
       {xpData && (
-        <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-3 md:p-4 shadow-dark-soft-lg border border-yellow-500/30">
+        <div className="relative overflow-hidden rounded-lg md:rounded-xl bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-2 md:p-3 shadow-dark-soft border border-yellow-500/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 md:gap-4">
-              <div className="text-3xl md:text-4xl lg:text-5xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
+              <div className="text-2xl md:text-3xl lg:text-4xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
                 ⭐
               </div>
               <div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-xl md:text-2xl lg:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
+                  <span className="text-lg md:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
                     Level {xpData.level}
                   </span>
                 </div>
@@ -577,7 +577,7 @@ const Dashboard = ({ onOpenScanner }) => {
             </div>
 
             <div className="text-right">
-              <div className="text-base md:text-lg lg:text-xl font-bold text-yellow-400">
+              <div className="text-sm md:text-base lg:text-lg font-bold text-yellow-400">
                 {xpData.totalXP.toLocaleString()} XP
               </div>
               <div className="text-[9px] md:text-[10px] lg:text-xs text-dark-text-muted">
@@ -587,7 +587,7 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-3 h-1.5 md:h-2 bg-dark-bg-tertiary rounded-full overflow-hidden">
+          <div className="mt-2 h-1 md:h-1.5 bg-dark-bg-tertiary rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(250,204,21,0.5)]"
               style={{ width: `${xpData.progressPercent}%` }}
@@ -759,7 +759,7 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-2 gap-4 md:gap-5 lg:gap-6">
           {assignments.map((assignment) => (
             <div
               key={assignment.id}
@@ -850,7 +850,7 @@ const Dashboard = ({ onOpenScanner }) => {
                 </div>
 
                 {/* Mark as Done Checkbox */}
-                <div className="flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4">
+                <div className="flex items-center gap-2 md:gap-2.5 mb-3 md:mb-4">
                   <button
                     onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
                     className={`w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-lg md:rounded-xl border-2 flex items-center justify-center transition-all ${
