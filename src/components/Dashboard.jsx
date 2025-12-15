@@ -904,29 +904,29 @@ const Dashboard = ({ onOpenScanner }) => {
                     </button>
 
                     {expandedAssignments.has(assignment.id) && (
-                      <div className="space-y-3 md:space-y-3.5">
+                      <div className="space-y-2">
                         {subtasksByAssignment[assignment.id].map((subtask) => (
-                          <div key={subtask.id} className="flex items-start gap-3 md:gap-3.5 bg-dark-bg-tertiary/50 rounded-xl p-3 md:p-3.5 lg:p-4 hover:bg-dark-bg-tertiary/70 transition-all">
+                          <div key={subtask.id} className="flex items-start gap-2.5 bg-dark-bg-tertiary/50 rounded-lg p-2.5 hover:bg-dark-bg-tertiary/70 transition-all">
                             <button
                               onClick={() => handleToggleSubtask(subtask)}
-                              className={`mt-0.5 w-5 h-5 md:w-5.5 md:h-5.5 lg:w-6 lg:h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all hover:scale-105 ${
+                              className={`mt-0.5 w-4.5 h-4.5 md:w-5 md:h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-all hover:scale-105 ${
                                 subtask.completed
                                   ? 'bg-green-500 border-green-500 shadow-md'
                                   : 'border-dark-border-glow hover:border-primary-500'
                               }`}
                             >
                               {subtask.completed && (
-                                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                 </svg>
                               )}
                             </button>
                             <div className="flex-1 min-w-0">
-                              <div className={`text-sm md:text-base font-medium leading-relaxed ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
+                              <div className={`text-xs md:text-sm font-medium ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
                                 {subtask.title}
                               </div>
                               {subtask.description && (
-                                <div className="text-xs md:text-sm text-dark-text-muted mt-1.5 md:mt-2 leading-relaxed">
+                                <div className="text-xs text-dark-text-muted mt-1">
                                   {subtask.description}
                                 </div>
                               )}

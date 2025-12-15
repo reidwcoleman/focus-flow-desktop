@@ -131,7 +131,7 @@ export const canvasService = {
     return await this.makeRequest('/courses?enrollment_state=active&per_page=100')
   },
 
-  // Get assignments for all courses
+  // Get assignments for all courses with submission/grade data
   async getAllAssignments() {
     try {
       const courses = await this.getCourses()
@@ -139,26 +139,39 @@ export const canvasService = {
 
       for (const course of courses) {
         try {
+          // Fetch assignments with submission data included
           const assignments = await this.makeRequest(
-            `/courses/${course.id}/assignments?per_page=100`
+            `/courses/${course.id}/assignments?include[]=submission&per_page=100`
           )
 
           // Transform Canvas assignments to our format
-          const transformedAssignments = assignments.map(assignment => ({
-            id: `canvas-${assignment.id}`,
-            title: assignment.name,
-            subject: course.name,
-            dueDate: assignment.due_at,
-            description: assignment.description,
-            points: assignment.points_possible,
-            submissionTypes: assignment.submission_types,
-            htmlUrl: assignment.html_url,
-            courseId: course.id,
-            submitted: assignment.has_submitted_submissions,
-            graded: !!assignment.grade,
-            grade: assignment.grade,
-            source: 'canvas',
-          }))
+          const transformedAssignments = assignments.map(assignment => {
+            const submission = assignment.submission || {}
+
+            return {
+              id: `canvas-${assignment.id}`,
+              title: assignment.name,
+              subject: course.name,
+              dueDate: assignment.due_at,
+              description: assignment.description,
+              points: assignment.points_possible,
+              submissionTypes: assignment.submission_types,
+              htmlUrl: assignment.html_url,
+              courseId: course.id,
+              // Enhanced submission/grade data
+              submitted: submission.workflow_state === 'submitted' || submission.workflow_state === 'graded',
+              graded: !!submission.grade,
+              grade: submission.grade,
+              score: submission.score,
+              submissionId: submission.id,
+              submittedAt: submission.submitted_at,
+              gradedAt: submission.graded_at,
+              late: submission.late,
+              missing: submission.missing,
+              excused: submission.excused,
+              source: 'canvas',
+            }
+          })
 
           allAssignments.push(...transformedAssignments)
         } catch (error) {
