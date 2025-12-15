@@ -478,7 +478,7 @@ const Dashboard = ({ onOpenScanner }) => {
       {/* Streak Display - Clickable */}
       <button
         onClick={() => setShowStreakCalendar(true)}
-        className="w-full relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-4 md:p-5 lg:p-6 shadow-dark-soft-lg border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
+        className="w-full relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-3 md:p-4 shadow-dark-soft-lg border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
       >
         {/* Celebration overlay */}
         {showStreakCelebration && (
@@ -486,14 +486,14 @@ const Dashboard = ({ onOpenScanner }) => {
         )}
 
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3 md:gap-4 lg:gap-5">
+          <div className="flex items-center gap-2.5 md:gap-3">
             {/* Fire icon with animation */}
             <div className={`relative ${showStreakCelebration ? 'animate-bounce' : ''}`}>
-              <div className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
+              <div className="text-3xl md:text-4xl lg:text-5xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
                 🔥
               </div>
               {showStreakCelebration && (
-                <div className="absolute inset-0 text-5xl md:text-7xl lg:text-8xl xl:text-9xl animate-ping opacity-75">
+                <div className="absolute inset-0 text-4xl md:text-5xl lg:text-6xl animate-ping opacity-75">
                   🔥
                 </div>
               )}
@@ -501,15 +501,15 @@ const Dashboard = ({ onOpenScanner }) => {
 
             {/* Streak info */}
             <div>
-              <div className="flex items-baseline gap-2 md:gap-3 mb-1 md:mb-2">
-                <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
+              <div className="flex items-baseline gap-1.5 md:gap-2 mb-0.5 md:mb-1">
+                <span className="text-2xl md:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
                   {streak.currentStreak}
                 </span>
-                <span className="text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-orange-300">
+                <span className="text-sm md:text-base lg:text-lg font-bold text-orange-300">
                   {streak.currentStreak === 1 ? 'day' : 'days'}
                 </span>
               </div>
-              <p className="text-sm md:text-base lg:text-lg xl:text-xl text-dark-text-secondary font-medium">
+              <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary font-medium">
                 Current streak
               </p>
             </div>
@@ -518,12 +518,12 @@ const Dashboard = ({ onOpenScanner }) => {
           {/* Longest streak badge */}
           {streak.longestStreak > 0 && (
             <div className="text-right">
-              <div className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-4 lg:px-5 py-1.5 md:py-2 lg:py-3 rounded-xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 backdrop-blur-sm">
-                <svg className="w-4 h-4 md:w-6 md:h-6 lg:w-7 lg:h-7 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="inline-flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 rounded-lg bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 backdrop-blur-sm">
+                <svg className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <div className="text-left">
-                  <div className="text-xs md:text-sm lg:text-base font-bold text-yellow-300">
+                  <div className="text-[10px] md:text-xs lg:text-sm font-bold text-yellow-300">
                     {streak.longestStreak} best
                   </div>
                 </div>
@@ -759,7 +759,7 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
           {assignments.map((assignment) => (
             <div
               key={assignment.id}
@@ -904,29 +904,29 @@ const Dashboard = ({ onOpenScanner }) => {
                     </button>
 
                     {expandedAssignments.has(assignment.id) && (
-                      <div className="space-y-2">
+                      <div className="space-y-3 md:space-y-3.5">
                         {subtasksByAssignment[assignment.id].map((subtask) => (
-                          <div key={subtask.id} className="flex items-start gap-2 bg-dark-bg-tertiary/50 rounded-lg p-2">
+                          <div key={subtask.id} className="flex items-start gap-3 md:gap-3.5 bg-dark-bg-tertiary/50 rounded-xl p-3 md:p-3.5 lg:p-4 hover:bg-dark-bg-tertiary/70 transition-all">
                             <button
                               onClick={() => handleToggleSubtask(subtask)}
-                              className={`mt-0.5 w-4 h-4 md:w-5 md:h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                              className={`mt-0.5 w-5 h-5 md:w-5.5 md:h-5.5 lg:w-6 lg:h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all hover:scale-105 ${
                                 subtask.completed
-                                  ? 'bg-green-500 border-green-500'
+                                  ? 'bg-green-500 border-green-500 shadow-md'
                                   : 'border-dark-border-glow hover:border-primary-500'
                               }`}
                             >
                               {subtask.completed && (
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                 </svg>
                               )}
                             </button>
                             <div className="flex-1 min-w-0">
-                              <div className={`text-xs md:text-sm font-medium ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
+                              <div className={`text-sm md:text-base font-medium leading-relaxed ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
                                 {subtask.title}
                               </div>
                               {subtask.description && (
-                                <div className="text-xs text-dark-text-muted mt-0.5">
+                                <div className="text-xs md:text-sm text-dark-text-muted mt-1.5 md:mt-2 leading-relaxed">
                                   {subtask.description}
                                 </div>
                               )}
