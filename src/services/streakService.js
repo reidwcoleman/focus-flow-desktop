@@ -3,6 +3,7 @@
  */
 
 import supabase from '../lib/supabase'
+import xpService from './xpService'
 
 class StreakService {
   /**
@@ -93,6 +94,20 @@ class StreakService {
 
       // Log today's login to streak_history
       await this.logLogin(userId, today)
+
+      // Award XP for daily login and streak bonus
+      try {
+        // Award daily login XP
+        await xpService.awardXP('daily_login', { userId })
+
+        // Award streak bonus XP if streak increased
+        if (isNewStreak && newStreak > 1) {
+          await xpService.awardXP('streak_bonus', { currentStreak: newStreak })
+        }
+      } catch (xpError) {
+        console.error('Failed to award streak XP:', xpError)
+        // Don't fail the whole streak update if XP fails
+      }
 
       console.log('🔥 Streak updated:', {
         current: newStreak,

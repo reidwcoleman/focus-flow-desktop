@@ -6,6 +6,8 @@
 import { useState, useEffect } from 'react'
 import authService from '../services/authService'
 import canvasService from '../services/canvasService'
+import xpService from '../services/xpService'
+import { BADGES, BADGE_TIERS } from '../data/badges'
 
 export default function Account() {
   const [user, setUser] = useState(null)
@@ -21,9 +23,12 @@ export default function Account() {
   const [syncing, setSyncing] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [badges, setBadges] = useState([])
+  const [loadingBadges, setLoadingBadges] = useState(true)
 
   useEffect(() => {
     loadUserData()
+    loadBadges()
   }, [])
 
   const loadUserData = async () => {
@@ -38,6 +43,18 @@ export default function Account() {
     setNewName(profile?.full_name || user?.email?.split('@')[0] || '')
     setCanvasUrl(profile?.canvas_url || '')
     setCanvasToken(profile?.canvas_token || '')
+  }
+
+  const loadBadges = async () => {
+    setLoadingBadges(true)
+    try {
+      const userBadges = await xpService.getUserBadges()
+      setBadges(userBadges)
+    } catch (err) {
+      console.error('Failed to load badges:', err)
+    } finally {
+      setLoadingBadges(false)
+    }
   }
 
   const handleSaveName = async () => {

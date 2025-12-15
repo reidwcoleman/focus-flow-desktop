@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient'
+import supabase from '../lib/supabase'
 import authService from './authService'
 import { BADGES } from '../data/badges'
 

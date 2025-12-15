@@ -4,7 +4,9 @@ import authService from '../services/authService'
 import assignmentsService from '../services/assignmentsService'
 import streakService from '../services/streakService'
 import assignmentParserService from '../services/assignmentParserService'
+import xpService from '../services/xpService'
 import StreakCalendar from './StreakCalendar'
+import XPToast from './XPToast'
 
 const Dashboard = ({ onOpenScanner }) => {
   const [userName, setUserName] = useState('there')
@@ -16,6 +18,8 @@ const Dashboard = ({ onOpenScanner }) => {
   const [streak, setStreak] = useState({ currentStreak: 0, longestStreak: 0, isNewStreak: false })
   const [showStreakCelebration, setShowStreakCelebration] = useState(false)
   const [flyingAwayItems, setFlyingAwayItems] = useState(new Set())
+  const [xpData, setXPData] = useState(null)
+  const [xpToast, setXPToast] = useState(null)
   const [aiInput, setAiInput] = useState('')
   const [aiProcessing, setAiProcessing] = useState(false)
   const [aiError, setAiError] = useState('')
@@ -33,7 +37,13 @@ const Dashboard = ({ onOpenScanner }) => {
     loadUserName()
     loadAssignments()
     checkStreak()
+    loadXPData()
   }, [])
+
+  const loadXPData = async () => {
+    const data = await xpService.getXPData()
+    setXPData(data)
+  }
 
   const loadUserName = async () => {
     const { user } = await authService.getCurrentUser()
@@ -199,6 +209,9 @@ const Dashboard = ({ onOpenScanner }) => {
 
       // If marking as complete, trigger fly-away animation
       if (newStatus) {
+        // Get assignment data for XP calculation
+        const assignment = assignments.find(a => a.id === assignmentId)
+
         // Optimistically update the UI to show completed state
         setAssignments(prev => prev.map(a =>
           a.id === assignmentId ? { ...a, completed: true, progress: 100 } : a
@@ -216,6 +229,22 @@ const Dashboard = ({ onOpenScanner }) => {
             completed: true,
             progress: 100
           })
+
+          // Award XP for completing assignment
+          if (assignment) {
+            const xpResult = await xpService.awardXP('assignment_complete', { assignment })
+            if (xpResult) {
+              // Show XP toast notification
+              setXPToast({
+                xp: xpResult.xpAwarded,
+                levelUp: xpResult.leveledUp,
+                newLevel: xpResult.newLevel,
+                message: 'Assignment completed!'
+              })
+              // Reload XP data to update widget
+              await loadXPData()
+            }
+          }
 
           // Remove from UI
           setAssignments(prev => prev.filter(a => a.id !== assignmentId))
@@ -445,6 +474,49 @@ const Dashboard = ({ onOpenScanner }) => {
           <span className="text-[10px] md:text-xs font-semibold text-orange-300">Tap to view calendar</span>
         </div>
       </button>
+
+      {/* XP Display Widget */}
+      {xpData && (
+        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-4 md:p-5 lg:p-6 shadow-dark-soft-lg border border-yellow-500/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="text-4xl md:text-5xl lg:text-6xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
+                ⭐
+              </div>
+              <div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-2xl md:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
+                    Level {xpData.level}
+                  </span>
+                </div>
+                <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary font-medium">
+                  {xpData.levelTitle}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <div className="text-lg md:text-xl lg:text-2xl font-bold text-yellow-400">
+                {xpData.totalXP.toLocaleString()} XP
+              </div>
+              <div className="text-[10px] md:text-xs lg:text-sm text-dark-text-muted">
+                {xpData.xpToNext} to next level
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mt-4 h-2 md:h-2.5 bg-dark-bg-tertiary rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(250,204,21,0.5)]"
+              style={{ width: `${xpData.progressPercent}%` }}
+            />
+          </div>
+
+          {/* Decorative gradient orb */}
+          <div className="absolute -top-10 -right-10 w-32 h-32 md:w-40 md:h-40 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        </div>
+      )}
 
       {/* AI Assignment Input */}
       <div className="bg-gradient-to-br from-primary-500/10 via-dark-bg-secondary to-accent-purple/10 rounded-2xl p-3 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow shadow-dark-soft-lg hover:shadow-dark-soft-xl transition-all">
@@ -829,6 +901,17 @@ const Dashboard = ({ onOpenScanner }) => {
           onClose={() => setShowStreakCalendar(false)}
           currentStreak={streak.currentStreak}
           longestStreak={streak.longestStreak}
+        />
+      )}
+
+      {/* XP Toast Notifications */}
+      {xpToast && (
+        <XPToast
+          xp={xpToast.xp}
+          levelUp={xpToast.levelUp}
+          newLevel={xpToast.newLevel}
+          message={xpToast.message}
+          onClose={() => setXPToast(null)}
         />
       )}
     </div>

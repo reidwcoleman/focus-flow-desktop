@@ -65,7 +65,9 @@ export const canvasService = {
       endpoint,
       url: CANVAS_CONFIG.baseUrl,
       proxyUrl,
-      tokenPreview: CANVAS_CONFIG.accessToken ? `${CANVAS_CONFIG.accessToken.substring(0, 10)}...` : 'missing'
+      tokenPreview: CANVAS_CONFIG.accessToken ? `${CANVAS_CONFIG.accessToken.substring(0, 10)}...` : 'missing',
+      tokenLength: CANVAS_CONFIG.accessToken?.length || 0,
+      fullCanvasUrl: `${CANVAS_CONFIG.baseUrl}/api/v1${endpoint}`
     })
 
     try {
@@ -82,6 +84,13 @@ export const canvasService = {
       })
 
       console.log('📊 Canvas API response status:', response.status)
+
+      // Log the actual error from Canvas if available
+      if (!response.ok) {
+        const clonedResponse = response.clone()
+        const errorText = await clonedResponse.text()
+        console.log('🔍 Raw Canvas error response:', errorText)
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))

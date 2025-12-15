@@ -31,7 +31,13 @@ serve(async (req) => {
     // Construct Canvas API URL
     const url = `${canvasUrl}/api/v1${canvasEndpoint}`
 
-    console.log('📡 Proxying Canvas request to:', url)
+    console.log('📡 Proxying Canvas request:', {
+      url,
+      method: req.method,
+      tokenPreview: canvasToken.substring(0, 10) + '...',
+      tokenLength: canvasToken.length,
+      endpoint: canvasEndpoint
+    })
 
     // Forward the request to Canvas
     const canvasResponse = await fetch(url, {
@@ -43,7 +49,11 @@ serve(async (req) => {
       body: req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined,
     })
 
-    console.log('📊 Canvas response status:', canvasResponse.status)
+    console.log('📊 Canvas response:', {
+      status: canvasResponse.status,
+      statusText: canvasResponse.statusText,
+      contentType: canvasResponse.headers.get('content-type')
+    })
 
     // Handle Canvas response
     let data
