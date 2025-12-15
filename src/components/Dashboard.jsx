@@ -509,7 +509,7 @@ const Dashboard = ({ onOpenScanner }) => {
                   {streak.currentStreak === 1 ? 'day' : 'days'}
                 </span>
               </div>
-              <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary font-medium">
+              <p className="text-[10px] md:text-xs lg:text-sm text-dark-text-secondary font-medium">
                 Current streak
               </p>
             </div>
@@ -558,36 +558,36 @@ const Dashboard = ({ onOpenScanner }) => {
 
       {/* XP Display Widget */}
       {xpData && (
-        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-4 md:p-5 lg:p-6 shadow-dark-soft-lg border border-yellow-500/30">
+        <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-3 md:p-4 shadow-dark-soft-lg border border-yellow-500/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 md:gap-4">
-              <div className="text-4xl md:text-5xl lg:text-6xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
+              <div className="text-3xl md:text-4xl lg:text-5xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
                 ⭐
               </div>
               <div>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl md:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
+                  <span className="text-xl md:text-2xl lg:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
                     Level {xpData.level}
                   </span>
                 </div>
-                <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary font-medium">
+                <p className="text-[10px] md:text-xs lg:text-sm text-dark-text-secondary font-medium">
                   {xpData.levelTitle}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-lg md:text-xl lg:text-2xl font-bold text-yellow-400">
+              <div className="text-base md:text-lg lg:text-xl font-bold text-yellow-400">
                 {xpData.totalXP.toLocaleString()} XP
               </div>
-              <div className="text-[10px] md:text-xs lg:text-sm text-dark-text-muted">
+              <div className="text-[9px] md:text-[10px] lg:text-xs text-dark-text-muted">
                 {xpData.xpToNext} to next level
               </div>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-4 h-2 md:h-2.5 bg-dark-bg-tertiary rounded-full overflow-hidden">
+          <div className="mt-3 h-1.5 md:h-2 bg-dark-bg-tertiary rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(250,204,21,0.5)]"
               style={{ width: `${xpData.progressPercent}%` }}
@@ -595,7 +595,7 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
 
           {/* Decorative gradient orb */}
-          <div className="absolute -top-10 -right-10 w-32 h-32 md:w-40 md:h-40 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -top-10 -right-10 w-24 h-24 md:w-32 md:h-32 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
         </div>
       )}
 
@@ -642,7 +642,7 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
 
         {/* Pro Tip */}
-        <div className="mt-2.5 md:mt-3 lg:mt-4 flex items-start gap-1.5 md:gap-2 text-[10px] md:text-xs lg:text-sm text-dark-text-muted">
+        <div className="mt-2.5 md:mt-3 lg:mt-4 flex items-start gap-1.5 md:gap-2 text-[9px] md:text-[10px] lg:text-xs text-dark-text-muted">
           <svg className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 flex-shrink-0 mt-0.5 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
           </svg>
@@ -850,7 +850,7 @@ const Dashboard = ({ onOpenScanner }) => {
                 </div>
 
                 {/* Mark as Done Checkbox */}
-                <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+                <div className="flex items-center gap-2.5 md:gap-3 mb-3 md:mb-4">
                   <button
                     onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
                     className={`w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-lg md:rounded-xl border-2 flex items-center justify-center transition-all ${
