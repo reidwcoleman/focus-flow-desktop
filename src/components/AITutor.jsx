@@ -16,7 +16,10 @@ const AITutor = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [error, setError] = useState('')
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(() => {
+    // Only show if user hasn't dismissed it before
+    return !localStorage.getItem('upgrade_modal_dismissed')
+  })
   const [usageCount, setUsageCount] = useState(0)
   const [modeUsage, setModeUsage] = useState({ deepResearch: 0, ultraThink: 0, standard: 0 })
   const [currentChatId, setCurrentChatId] = useState(null)
@@ -855,7 +858,7 @@ const AITutor = () => {
           </div>
         )}
 
-        <div className="flex items-end gap-2.5">
+        <div className="flex items-end gap-2.5 overflow-x-auto scrollbar-thin pb-1">
           {/* Hidden file input */}
           <input
             ref={fileInputRef}
@@ -1181,7 +1184,10 @@ const AITutor = () => {
                 Upgrade Now
               </button>
               <button
-                onClick={() => setShowUpgradeModal(false)}
+                onClick={() => {
+                  localStorage.setItem('upgrade_modal_dismissed', 'true')
+                  setShowUpgradeModal(false)
+                }}
                 className="w-full py-3 text-dark-text-secondary hover:text-dark-text-primary font-medium transition-colors"
               >
                 Maybe Later
