@@ -478,7 +478,7 @@ const Dashboard = ({ onOpenScanner }) => {
       {/* Streak Display - Clickable */}
       <button
         onClick={() => setShowStreakCalendar(true)}
-        className="w-full relative overflow-hidden rounded-lg md:rounded-xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-2 md:p-3 shadow-dark-soft border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
+        className="w-full relative overflow-hidden rounded-lg bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-2 shadow-dark-soft border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
       >
         {/* Celebration overlay */}
         {showStreakCelebration && (
@@ -486,14 +486,14 @@ const Dashboard = ({ onOpenScanner }) => {
         )}
 
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-2.5">
+          <div className="flex items-center gap-1.5 md:gap-2">
             {/* Fire icon with animation */}
             <div className={`relative ${showStreakCelebration ? 'animate-bounce' : ''}`}>
-              <div className="text-2xl md:text-3xl lg:text-4xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
+              <div className="text-xl md:text-2xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
                 🔥
               </div>
               {showStreakCelebration && (
-                <div className="absolute inset-0 text-3xl md:text-4xl lg:text-5xl animate-ping opacity-75">
+                <div className="absolute inset-0 text-2xl md:text-3xl animate-ping opacity-75">
                   🔥
                 </div>
               )}
@@ -501,15 +501,15 @@ const Dashboard = ({ onOpenScanner }) => {
 
             {/* Streak info */}
             <div>
-              <div className="flex items-baseline gap-1.5 md:gap-2 mb-0.5 md:mb-1">
-                <span className="text-xl md:text-2xl lg:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
+              <div className="flex items-baseline gap-1 md:gap-1.5 mb-0.5 md:mb-1">
+                <span className="text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
                   {streak.currentStreak}
                 </span>
-                <span className="text-xs md:text-sm lg:text-base font-bold text-orange-300">
+                <span className="text-[10px] md:text-xs font-bold text-orange-300">
                   {streak.currentStreak === 1 ? 'day' : 'days'}
                 </span>
               </div>
-              <p className="text-[10px] md:text-xs lg:text-sm text-dark-text-secondary font-medium">
+              <p className="text-[9px] md:text-[10px] text-dark-text-secondary font-medium">
                 Current streak
               </p>
             </div>
@@ -535,7 +535,7 @@ const Dashboard = ({ onOpenScanner }) => {
         {/* Motivational message */}
         {showStreakCelebration && (
           <div className="mt-3 md:mt-4 text-center animate-fadeIn">
-            <p className="text-xs md:text-sm lg:text-base font-bold text-orange-300">
+            <p className="text-[10px] md:text-xs font-bold text-orange-300">
               🎉 Streak increased! Keep it going!
             </p>
           </div>
@@ -558,26 +558,26 @@ const Dashboard = ({ onOpenScanner }) => {
 
       {/* XP Display Widget */}
       {xpData && (
-        <div className="relative overflow-hidden rounded-lg md:rounded-xl bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-2 md:p-3 shadow-dark-soft border border-yellow-500/30">
+        <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-2 shadow-dark-soft border border-yellow-500/30">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 md:gap-4">
-              <div className="text-2xl md:text-3xl lg:text-4xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="text-xl md:text-2xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
                 ⭐
               </div>
               <div>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-lg md:text-xl lg:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
+                <div className="flex items-baseline gap-1 mb-0.5">
+                  <span className="text-base md:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
                     Level {xpData.level}
                   </span>
                 </div>
-                <p className="text-[10px] md:text-xs lg:text-sm text-dark-text-secondary font-medium">
+                <p className="text-[9px] md:text-[10px] text-dark-text-secondary font-medium">
                   {xpData.levelTitle}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-sm md:text-base lg:text-lg font-bold text-yellow-400">
+              <div className="text-xs md:text-sm font-bold text-yellow-400">
                 {xpData.totalXP.toLocaleString()} XP
               </div>
               <div className="text-[9px] md:text-[10px] lg:text-xs text-dark-text-muted">
@@ -587,7 +587,7 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-2 h-1 md:h-1.5 bg-dark-bg-tertiary rounded-full overflow-hidden">
+          <div className="mt-1.5 h-0.5 md:h-1 bg-dark-bg-tertiary rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(250,204,21,0.5)]"
               style={{ width: `${xpData.progressPercent}%` }}
@@ -702,7 +702,7 @@ const Dashboard = ({ onOpenScanner }) => {
         <button
           onClick={onOpenScanner}
           className="relative overflow-hidden bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-3 md:p-4 lg:p-5 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light hover:border-primary-500/30 transition-all duration-200 active:scale-[0.98]">
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-1.5 md:gap-2">
             <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan">
               <svg className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -719,7 +719,7 @@ const Dashboard = ({ onOpenScanner }) => {
         <button
           onClick={() => setShowAddModal(true)}
           className="relative overflow-hidden bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-3 md:p-4 lg:p-5 shadow-dark-soft-md border border-dark-border-glow hover:shadow-glow-green hover:border-green-500/30 transition-all duration-200 active:scale-[0.98]">
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-1.5 md:gap-2">
             <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center shadow-glow-green">
               <svg className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -850,7 +850,7 @@ const Dashboard = ({ onOpenScanner }) => {
                 </div>
 
                 {/* Mark as Done Checkbox */}
-                <div className="flex items-center gap-2 md:gap-2.5 mb-3 md:mb-4">
+                <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
                   <button
                     onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
                     className={`w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-lg md:rounded-xl border-2 flex items-center justify-center transition-all ${
@@ -1013,7 +1013,7 @@ const Dashboard = ({ onOpenScanner }) => {
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3 md:gap-4 mt-6 md:mt-8">
+            <div className="flex gap-1.5 md:gap-2 mt-6 md:mt-8">
               <button
                 onClick={() => {
                   setShowAddModal(false)
