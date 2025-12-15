@@ -83,27 +83,63 @@ class InfiniteCampusService {
   }
 
   /**
-   * Get grades from Infinite Campus
-   * Note: This requires a proxy/backend due to CORS restrictions
-   * For now, returns mock data structure
+   * Get grades from Infinite Campus via Edge Function proxy
    */
   async getAllGrades() {
     try {
-      if (!this.baseUrl) {
-        await this.findDistrictUrl()
+      console.log('🎓 Fetching grades from Infinite Campus...')
+
+      if (!this.districtName || !this.state || !this.username || !this.password) {
+        throw new Error('Infinite Campus credentials not configured')
       }
 
-      console.log('🎓 Fetching grades from Infinite Campus...')
-      console.log('⚠️  Note: Direct browser access blocked by CORS')
-      console.log('📝 Credentials configured:', {
-        district: this.districtName,
-        state: this.state,
-        url: this.baseUrl
+      // Get Supabase auth token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Not authenticated')
+      }
+
+      // Call Edge Function proxy
+      const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/infinite-campus-proxy`
+
+      console.log('📡 Calling Edge Function proxy...')
+
+      const response = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'getGrades',
+          district: this.districtName,
+          state: this.state,
+          username: this.username,
+          password: this.password
+        })
       })
 
-      // This would require a backend proxy to work due to CORS
-      // Return empty array for now - would need backend implementation
-      return []
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch grades')
+      }
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error('Grade fetch failed')
+      }
+
+      console.log(`✅ Retrieved ${data.grades.length} course grades`)
+
+      return data.grades.map(grade => ({
+        courseName: grade.courseName,
+        courseCode: grade.courseCode,
+        teacher: grade.teacher,
+        period: grade.period,
+        currentScore: grade.currentScore,
+        letterGrade: grade.letterGrade || this.scoreToLetterGrade(grade.currentScore)
+      }))
 
     } catch (error) {
       console.error('❌ Failed to fetch grades:', error)
