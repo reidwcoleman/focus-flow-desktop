@@ -96,14 +96,20 @@ class XPService {
    * Get level title based on level
    */
   getLevelTitle(level) {
-    if (level <= 5) return 'Freshman'
-    if (level <= 10) return 'Sophomore'
-    if (level <= 15) return 'Junior'
-    if (level <= 20) return 'Senior'
-    if (level <= 30) return 'Graduate'
-    if (level <= 40) return 'Scholar'
-    if (level <= 50) return 'Master'
-    return 'Legend'
+    if (level <= 5) return 'Rookie'
+    if (level <= 10) return 'Rising Star'
+    if (level <= 15) return 'Achiever'
+    if (level <= 20) return 'Champion'
+    if (level <= 25) return 'Elite'
+    if (level <= 30) return 'Master'
+    if (level <= 35) return 'Grandmaster'
+    if (level <= 40) return 'Titan'
+    if (level <= 45) return 'Legend'
+    if (level <= 50) return 'Mythic'
+    if (level <= 60) return 'Immortal'
+    if (level <= 75) return 'Divine'
+    if (level <= 100) return 'Transcendent'
+    return 'Apex'
   }
 
   /**

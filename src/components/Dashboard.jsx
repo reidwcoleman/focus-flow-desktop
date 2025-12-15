@@ -5,6 +5,8 @@ import assignmentsService from '../services/assignmentsService'
 import streakService from '../services/streakService'
 import assignmentParserService from '../services/assignmentParserService'
 import xpService from '../services/xpService'
+import subtasksService from '../services/subtasksService'
+import taskBreakdownService from '../services/taskBreakdownService'
 import StreakCalendar from './StreakCalendar'
 import XPToast from './XPToast'
 
@@ -32,6 +34,10 @@ const Dashboard = ({ onOpenScanner }) => {
     priority: 'medium',
     timeEstimate: '',
   })
+  const [subtasksByAssignment, setSubtasksByAssignment] = useState({})
+  const [expandedAssignments, setExpandedAssignments] = useState(new Set())
+  const [breakdownModal, setBreakdownModal] = useState(null)
+  const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
 
   useEffect(() => {
     loadUserName()
@@ -80,17 +86,41 @@ const Dashboard = ({ onOpenScanner }) => {
   const loadAssignments = async () => {
     setIsLoadingAssignments(true)
     try {
-      const { data, error } = await assignmentsService.getUpcomingAssignments()
+      const { data, error} = await assignmentsService.getUpcomingAssignments()
       if (error) throw error
 
       // Convert to app format
       const formatted = assignmentsService.toAppFormatBatch(data)
       setAssignments(formatted)
+
+      // Load subtasks for all assignments
+      await loadAllSubtasks(formatted)
     } catch (error) {
       console.error('Failed to load assignments:', error)
     } finally {
       setIsLoadingAssignments(false)
     }
+  }
+
+  const loadAllSubtasks = async (assignmentList) => {
+    const subtasksMap = {}
+    await Promise.all(
+      assignmentList.map(async (assignment) => {
+        const subtasks = await subtasksService.getSubtasks(assignment.id)
+        if (subtasks.length > 0) {
+          subtasksMap[assignment.id] = subtasks
+        }
+      })
+    )
+    setSubtasksByAssignment(subtasksMap)
+  }
+
+  const loadSubtasksForAssignment = async (assignmentId) => {
+    const subtasks = await subtasksService.getSubtasks(assignmentId)
+    setSubtasksByAssignment(prev => ({
+      ...prev,
+      [assignmentId]: subtasks
+    }))
   }
 
   const handleCreateAssignment = async () => {
@@ -274,6 +304,57 @@ const Dashboard = ({ onOpenScanner }) => {
       // Reload on error
       await loadAssignments()
     }
+  }
+
+  const handleGenerateBreakdown = async (assignment) => {
+    try {
+      setGeneratingBreakdown(true)
+      const aiSuggestions = await taskBreakdownService.generateSubtasks(assignment)
+      setBreakdownModal({ assignment, suggestions: aiSuggestions })
+    } catch (error) {
+      console.error('Failed to generate breakdown:', error)
+      alert(`Failed to generate AI breakdown: ${error.message}`)
+    } finally {
+      setGeneratingBreakdown(false)
+    }
+  }
+
+  const handleAddAllSubtasks = async () => {
+    if (!breakdownModal) return
+
+    try {
+      const { assignment, suggestions } = breakdownModal
+      await subtasksService.createSubtasksBulk(assignment.id, suggestions)
+      await loadSubtasksForAssignment(assignment.id)
+      setExpandedAssignments(prev => new Set([...prev, assignment.id]))
+      setBreakdownModal(null)
+    } catch (error) {
+      console.error('Failed to add subtasks:', error)
+      alert('Failed to add subtasks')
+    }
+  }
+
+  const handleToggleSubtask = async (subtask) => {
+    try {
+      await subtasksService.toggleSubtask(subtask.id, !subtask.completed)
+      await loadSubtasksForAssignment(subtask.assignment_id)
+      // Also reload assignments to update progress
+      await loadAssignments()
+    } catch (error) {
+      console.error('Failed to toggle subtask:', error)
+    }
+  }
+
+  const toggleAssignmentExpanded = (assignmentId) => {
+    setExpandedAssignments(prev => {
+      const next = new Set(prev)
+      if (next.has(assignmentId)) {
+        next.delete(assignmentId)
+      } else {
+        next.add(assignmentId)
+      }
+      return next
+    })
   }
 
   const getTimeOfDayGreeting = () => {
@@ -792,6 +873,70 @@ const Dashboard = ({ onOpenScanner }) => {
                     {assignment.completed ? 'Completed' : 'Mark as done'}
                   </span>
                 </div>
+
+                {/* AI Breakdown Button */}
+                {!assignment.completed && (
+                  <button
+                    onClick={() => handleGenerateBreakdown(assignment)}
+                    disabled={generatingBreakdown}
+                    className="w-full bg-gradient-to-r from-primary-500/10 to-accent-purple/10 border border-primary-500/30 text-primary-400 hover:from-primary-500/20 hover:to-accent-purple/20 hover:border-primary-500/50 font-semibold py-2 md:py-2.5 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-3 md:mt-4"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span className="text-xs md:text-sm">
+                      {generatingBreakdown ? 'Generating...' : 'AI Breakdown'}
+                    </span>
+                  </button>
+                )}
+
+                {/* Subtasks Section */}
+                {subtasksByAssignment[assignment.id] && subtasksByAssignment[assignment.id].length > 0 && (
+                  <div className="mt-4 border-t border-dark-border-glow pt-4">
+                    <button
+                      onClick={() => toggleAssignmentExpanded(assignment.id)}
+                      className="w-full flex items-center justify-between text-xs md:text-sm font-semibold text-dark-text-secondary hover:text-dark-text-primary transition-colors mb-2"
+                    >
+                      <span>Subtasks ({subtasksByAssignment[assignment.id].filter(s => s.completed).length}/{subtasksByAssignment[assignment.id].length})</span>
+                      <svg className={`w-4 h-4 transition-transform ${expandedAssignments.has(assignment.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {expandedAssignments.has(assignment.id) && (
+                      <div className="space-y-2">
+                        {subtasksByAssignment[assignment.id].map((subtask) => (
+                          <div key={subtask.id} className="flex items-start gap-2 bg-dark-bg-tertiary/50 rounded-lg p-2">
+                            <button
+                              onClick={() => handleToggleSubtask(subtask)}
+                              className={`mt-0.5 w-4 h-4 md:w-5 md:h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+                                subtask.completed
+                                  ? 'bg-green-500 border-green-500'
+                                  : 'border-dark-border-glow hover:border-primary-500'
+                              }`}
+                            >
+                              {subtask.completed && (
+                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <div className={`text-xs md:text-sm font-medium ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
+                                {subtask.title}
+                              </div>
+                              {subtask.description && (
+                                <div className="text-xs text-dark-text-muted mt-0.5">
+                                  {subtask.description}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -913,6 +1058,82 @@ const Dashboard = ({ onOpenScanner }) => {
           message={xpToast.message}
           onClose={() => setXPToast(null)}
         />
+      )}
+
+      {/* AI Breakdown Modal */}
+      {breakdownModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-dark-bg-secondary rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl border border-primary-500/30 animate-scaleIn max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-bold text-dark-text-primary mb-2">AI Task Breakdown</h3>
+                <p className="text-sm text-dark-text-secondary">{breakdownModal.assignment.title}</p>
+              </div>
+              <button
+                onClick={() => setBreakdownModal(null)}
+                className="w-10 h-10 rounded-xl bg-dark-bg-tertiary hover:bg-dark-bg-surface border border-dark-border-glow text-dark-text-muted hover:text-dark-text-primary transition-all flex items-center justify-center"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <p className="text-sm text-dark-text-muted mb-4">
+                AI suggests breaking this assignment into {breakdownModal.suggestions.length} actionable subtasks:
+              </p>
+
+              {breakdownModal.suggestions.map((suggestion, index) => (
+                <div key={index} className="bg-dark-bg-tertiary rounded-xl p-4 border border-dark-border-subtle hover:border-primary-500/30 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-primary-500/10 border border-primary-500/30 flex items-center justify-center flex-shrink-0 text-primary-400 font-bold text-sm">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-base font-semibold text-dark-text-primary mb-1">
+                        {suggestion.title}
+                      </h4>
+                      {suggestion.description && (
+                        <p className="text-sm text-dark-text-muted">
+                          {suggestion.description}
+                        </p>
+                      )}
+                      {suggestion.confidence && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="h-1.5 bg-dark-bg-surface rounded-full flex-1">
+                            <div
+                              className="h-full bg-gradient-to-r from-primary-500 to-accent-cyan rounded-full"
+                              style={{ width: `${suggestion.confidence * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-dark-text-muted">
+                            {Math.round(suggestion.confidence * 100)}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleAddAllSubtasks}
+                className="flex-1 bg-gradient-to-r from-primary-600 to-accent-cyan text-white font-semibold py-3 rounded-xl hover:shadow-glow-cyan-lg transition-all"
+              >
+                Add All Subtasks
+              </button>
+              <button
+                onClick={() => setBreakdownModal(null)}
+                className="px-6 bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-secondary font-semibold py-3 rounded-xl hover:bg-dark-bg-surface transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

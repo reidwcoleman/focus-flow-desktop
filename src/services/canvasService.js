@@ -59,6 +59,7 @@ export const canvasService = {
 
     // Use Supabase Edge Function as proxy to bypass CORS
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
     const proxyUrl = `${SUPABASE_URL}/functions/v1/canvas-proxy`
 
     console.log('📡 Making Canvas API request:', {
@@ -75,6 +76,8 @@ export const canvasService = {
         method: options.method || 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY,
           'canvas-url': CANVAS_CONFIG.baseUrl,
           'canvas-token': CANVAS_CONFIG.accessToken,
           'canvas-endpoint': endpoint,
