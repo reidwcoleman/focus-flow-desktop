@@ -25,12 +25,16 @@ const CanvasHub = () => {
         return
       }
 
-      // Load all data in parallel
+      // Load synced data from database (faster and persisted)
       const [coursesData, assignmentsData, gradesData] = await Promise.all([
-        canvasService.getCourses().catch(() => []),
-        canvasService.getAllAssignments().catch(() => []),
-        canvasService.getAllGrades().catch(() => [])
+        canvasService.getSyncedCourses().catch(() => []),
+        canvasService.getSyncedAssignments().catch(() => []),
+        canvasService.getSyncedGrades().catch(() => [])
       ])
+
+      console.log('📚 Loaded synced courses:', coursesData?.length || 0)
+      console.log('📝 Loaded synced assignments:', assignmentsData?.length || 0)
+      console.log('📊 Loaded synced grades:', gradesData?.length || 0)
 
       setCourses(coursesData || [])
       setAssignments(assignmentsData || [])

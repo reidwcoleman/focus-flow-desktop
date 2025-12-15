@@ -424,7 +424,16 @@ export const canvasService = {
       console.error('Failed to get synced courses:', error)
       return []
     }
-    return data || []
+
+    // Transform to match UI format
+    return (data || []).map(course => ({
+      id: course.canvas_course_id,
+      name: course.name,
+      course_code: course.course_code,
+      term: course.term_name ? { name: course.term_name } : null,
+      enrollments: course.enrollment_type ? [{ type: course.enrollment_type }] : [],
+      syncedAt: course.synced_at,
+    }))
   },
 
   // Get synced grades from database
@@ -442,7 +451,17 @@ export const canvasService = {
       console.error('Failed to get synced grades:', error)
       return []
     }
-    return data || []
+
+    // Transform to match UI format (snake_case to camelCase)
+    return (data || []).map(grade => ({
+      courseId: grade.canvas_course_id,
+      courseName: grade.course_name,
+      currentGrade: grade.current_grade,
+      currentScore: grade.current_score,
+      finalGrade: grade.final_grade,
+      finalScore: grade.final_score,
+      syncedAt: grade.synced_at,
+    }))
   },
 
   // Get Canvas assignments from database
@@ -461,7 +480,22 @@ export const canvasService = {
       console.error('Failed to get synced Canvas assignments:', error)
       return []
     }
-    return data || []
+
+    // Transform to Canvas UI format (not the same as app format)
+    return (data || []).map(assignment => ({
+      id: `canvas-${assignment.canvas_assignment_id}`,
+      title: assignment.title,
+      subject: assignment.subject,
+      dueDate: assignment.due_date,
+      description: assignment.description,
+      points: assignment.points_possible,
+      courseId: assignment.canvas_course_id,
+      submitted: assignment.submitted,
+      grade: assignment.grade_received,
+      graded: !!assignment.grade_received,
+      htmlUrl: assignment.canvas_url,
+      source: 'canvas',
+    }))
   },
 
   // Calculate priority based on due date
