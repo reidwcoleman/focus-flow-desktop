@@ -4,6 +4,7 @@
  */
 
 import supabase from '../lib/supabase'
+import xpService from './xpService'
 
 class AppBlockingService {
   // ========================================
@@ -125,6 +126,23 @@ class AppBlockingService {
       if (error) throw error
 
       console.log('✅ Ended blocking session:', data)
+
+      // Award XP for completing focus session
+      try {
+        if (data.duration_minutes > 0) {
+          const xpResult = await xpService.awardXP('focus_session', {
+            durationMinutes: data.duration_minutes
+          })
+
+          if (xpResult) {
+            console.log(`🎯 Awarded ${xpResult.xpAwarded} XP for ${data.duration_minutes}min focus session`)
+          }
+        }
+      } catch (xpError) {
+        console.error('Failed to award focus session XP:', xpError)
+        // Don't fail the session end if XP fails
+      }
+
       return data
     } catch (error) {
       console.error('❌ Failed to end session:', error)

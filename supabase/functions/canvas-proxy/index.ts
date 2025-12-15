@@ -40,11 +40,13 @@ serve(async (req) => {
     })
 
     // Forward the request to Canvas
+    // Canvas API accepts tokens in Authorization header as "Bearer <token>"
     const canvasResponse = await fetch(url, {
       method: req.method,
       headers: {
         'Authorization': `Bearer ${canvasToken}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined,
     })

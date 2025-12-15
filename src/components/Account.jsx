@@ -135,18 +135,37 @@ export default function Account() {
     setSuccess('')
 
     try {
+      console.log('🧪 Testing Canvas connection...')
+
       // Reinitialize Canvas with new credentials
-      await canvasService.initializeFromProfile()
+      const initialized = await canvasService.initializeFromProfile()
+      console.log('📋 Canvas initialized:', initialized)
+
+      if (!initialized) {
+        throw new Error('Failed to initialize Canvas credentials. Please save your settings first.')
+      }
 
       // Try to fetch user info to test connection
+      console.log('👤 Fetching Canvas user info...')
       const userInfo = await canvasService.getCurrentUser()
 
       if (userInfo) {
+        console.log('✅ Canvas connection successful:', userInfo)
         setSuccess(`✅ Connected successfully! Welcome, ${userInfo.name || 'Canvas User'}!`)
         setTimeout(() => setSuccess(''), 5000)
       }
     } catch (err) {
-      setError(`Connection failed: ${err.message}`)
+      console.error('❌ Canvas connection test failed:', err)
+
+      // Provide detailed error message
+      let errorMsg = err.message
+      if (err.message.includes('401')) {
+        errorMsg = '❌ Invalid token. Please verify:\n1. Token is copied correctly (no extra spaces)\n2. Token hasn\'t expired\n3. Canvas URL is correct (e.g., https://school.instructure.com)'
+      } else if (err.message.includes('404')) {
+        errorMsg = '❌ Canvas URL not found. Format should be: https://your-school.instructure.com'
+      }
+
+      setError(errorMsg)
     } finally {
       setTesting(false)
     }
@@ -452,6 +471,91 @@ export default function Account() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Achievements Section */}
+      <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-3xl p-5 lg:p-8 border border-dark-border-glow shadow-dark-card hover:shadow-dark-soft-lg transition-all duration-200">
+        <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary mb-4 lg:mb-6 flex items-center gap-2 lg:gap-3">
+          <svg className="w-5 h-5 lg:w-7 lg:h-7 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+          </svg>
+          Achievements
+        </h2>
+
+        {loadingBadges ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-8 h-8 lg:w-10 lg:h-10 border-3 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
+          </div>
+        ) : badges.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-5xl lg:text-7xl mb-4 opacity-50">🏆</div>
+            <p className="text-dark-text-muted text-sm lg:text-lg">
+              No badges unlocked yet. Complete assignments, maintain streaks, and focus to earn achievements!
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+              {badges.map((badge) => {
+                const tier = BADGE_TIERS[badge.tier]
+                return (
+                  <div
+                    key={badge.id}
+                    className={`${tier.bgColor} ${tier.borderColor} border rounded-xl lg:rounded-2xl p-4 lg:p-5 transition-all duration-200 hover:scale-105 hover:shadow-lg`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="text-3xl lg:text-4xl">{badge.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-dark-text-primary font-semibold text-sm lg:text-base truncate">
+                            {badge.name}
+                          </h3>
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px] lg:text-xs font-bold uppercase tracking-wide"
+                            style={{ backgroundColor: `${tier.color}20`, color: tier.color }}
+                          >
+                            {badge.tier}
+                          </span>
+                        </div>
+                        <p className="text-dark-text-muted text-xs lg:text-sm mb-2">
+                          {badge.description}
+                        </p>
+                        <div className="flex items-center justify-between text-xs lg:text-sm">
+                          <span className="text-yellow-400 font-semibold">+{badge.xpReward} XP</span>
+                          <span className="text-dark-text-muted">
+                            {new Date(badge.unlockedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="mt-6 lg:mt-8 pt-6 lg:pt-8 border-t border-dark-border-glow">
+              <div className="flex items-center justify-center gap-6 lg:gap-8 text-center">
+                <div>
+                  <div className="text-2xl lg:text-3xl font-bold text-dark-text-primary">
+                    {badges.length}
+                  </div>
+                  <div className="text-xs lg:text-sm text-dark-text-muted">Badges Earned</div>
+                </div>
+                <div>
+                  <div className="text-2xl lg:text-3xl font-bold text-dark-text-primary">
+                    {Object.keys(BADGES).length}
+                  </div>
+                  <div className="text-xs lg:text-sm text-dark-text-muted">Total Badges</div>
+                </div>
+                <div>
+                  <div className="text-2xl lg:text-3xl font-bold text-yellow-400">
+                    {Math.round((badges.length / Object.keys(BADGES).length) * 100)}%
+                  </div>
+                  <div className="text-xs lg:text-sm text-dark-text-muted">Completion</div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Logout Button - Desktop Optimized */}
