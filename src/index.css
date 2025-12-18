@@ -34,8 +34,8 @@
     max-width: 100vw;
     overflow-x: hidden;
     position: relative;
-    zoom: 0.85;
-    -moz-transform: scale(0.85);
+    zoom: 0.75;
+    -moz-transform: scale(0.75);
     -moz-transform-origin: 0 0;
   }
 
