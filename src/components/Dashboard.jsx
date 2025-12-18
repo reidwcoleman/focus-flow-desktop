@@ -478,7 +478,7 @@ const Dashboard = ({ onOpenScanner }) => {
       {/* Streak Display - Clickable */}
       <button
         onClick={() => setShowStreakCalendar(true)}
-        className="w-full relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-4 md:p-5 lg:p-6 shadow-dark-soft border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
+        className="w-full relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-6 md:p-8 lg:p-10 shadow-dark-soft border border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
       >
         {/* Celebration overlay */}
         {showStreakCelebration && (
@@ -486,14 +486,14 @@ const Dashboard = ({ onOpenScanner }) => {
         )}
 
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-4 md:gap-6 lg:gap-8">
             {/* Fire icon with animation */}
             <div className={`relative ${showStreakCelebration ? 'animate-bounce' : ''}`}>
-              <div className="text-4xl md:text-5xl lg:text-6xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
+              <div className="text-6xl md:text-7xl lg:text-8xl xl:text-9xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">
                 🔥
               </div>
               {showStreakCelebration && (
-                <div className="absolute inset-0 text-5xl md:text-6xl lg:text-7xl animate-ping opacity-75">
+                <div className="absolute inset-0 text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] animate-ping opacity-75">
                   🔥
                 </div>
               )}
@@ -501,15 +501,15 @@ const Dashboard = ({ onOpenScanner }) => {
 
             {/* Streak info */}
             <div>
-              <div className="flex items-baseline gap-2 md:gap-2.5 mb-1 md:mb-1.5">
-                <span className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
+              <div className="flex items-baseline gap-3 md:gap-4 mb-2 md:mb-3">
+                <span className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
                   {streak.currentStreak}
                 </span>
-                <span className="text-base md:text-lg lg:text-xl font-bold text-orange-300">
+                <span className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-orange-300">
                   {streak.currentStreak === 1 ? 'day' : 'days'}
                 </span>
               </div>
-              <p className="text-sm md:text-base lg:text-lg text-dark-text-secondary font-medium">
+              <p className="text-base md:text-xl lg:text-2xl xl:text-3xl text-dark-text-secondary font-medium">
                 Current streak
               </p>
             </div>
@@ -518,12 +518,12 @@ const Dashboard = ({ onOpenScanner }) => {
           {/* Longest streak badge */}
           {streak.longestStreak > 0 && (
             <div className="text-right">
-              <div className="inline-flex items-center gap-2 md:gap-2.5 px-3 md:px-4 lg:px-5 py-2 md:py-2.5 lg:py-3 rounded-xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 backdrop-blur-sm">
-                <svg className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="inline-flex items-center gap-3 md:gap-4 px-4 md:px-6 lg:px-8 py-3 md:py-4 lg:py-5 rounded-2xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 backdrop-blur-sm">
+                <svg className="w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <div className="text-left">
-                  <div className="text-sm md:text-base lg:text-lg font-bold text-yellow-300">
+                  <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-yellow-300">
                     {streak.longestStreak} best
                   </div>
                 </div>
@@ -534,8 +534,8 @@ const Dashboard = ({ onOpenScanner }) => {
 
         {/* Motivational message */}
         {showStreakCelebration && (
-          <div className="mt-4 md:mt-5 text-center animate-fadeIn">
-            <p className="text-sm md:text-base font-bold text-orange-300">
+          <div className="mt-6 md:mt-8 text-center animate-fadeIn">
+            <p className="text-base md:text-xl lg:text-2xl font-bold text-orange-300">
               🎉 Streak increased! Keep it going!
             </p>
           </div>
@@ -547,47 +547,47 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
 
         {/* Tap hint */}
-        <div className="absolute top-4 md:top-5 lg:top-6 right-4 md:right-5 lg:right-6 flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg bg-dark-bg-tertiary/70 backdrop-blur-sm border border-orange-500/30">
-          <svg className="w-4 h-4 md:w-5 md:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute top-5 md:top-7 lg:top-8 right-5 md:right-7 lg:right-8 flex items-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-3 rounded-xl bg-dark-bg-tertiary/70 backdrop-blur-sm border border-orange-500/30">
+          <svg className="w-5 h-5 md:w-6 md:h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
-          <span className="text-xs md:text-sm font-semibold text-orange-300">Tap to view calendar</span>
+          <span className="text-sm md:text-base font-semibold text-orange-300">Tap to view calendar</span>
         </div>
       </button>
 
       {/* XP Display Widget */}
       {xpData && (
-        <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-4 md:p-5 lg:p-6 shadow-dark-soft border border-yellow-500/30">
+        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-6 md:p-8 lg:p-10 shadow-dark-soft border border-yellow-500/30">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 md:gap-4">
-              <div className="text-4xl md:text-5xl lg:text-6xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
+            <div className="flex items-center gap-4 md:gap-6 lg:gap-8">
+              <div className="text-6xl md:text-7xl lg:text-8xl xl:text-9xl filter drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]">
                 ⭐
               </div>
               <div>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-2xl md:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
                     Level {xpData.level}
                   </span>
                 </div>
-                <p className="text-sm md:text-base lg:text-lg text-dark-text-secondary font-medium">
+                <p className="text-base md:text-xl lg:text-2xl xl:text-3xl text-dark-text-secondary font-medium">
                   {xpData.levelTitle}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-lg md:text-xl lg:text-2xl font-bold text-yellow-400">
+              <div className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-yellow-400">
                 {xpData.totalXP.toLocaleString()} XP
               </div>
-              <div className="text-sm md:text-base lg:text-lg text-dark-text-muted">
+              <div className="text-base md:text-xl lg:text-2xl xl:text-3xl text-dark-text-muted">
                 {xpData.xpToNext} to next level
               </div>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-3 md:mt-4 h-2 md:h-2.5 lg:h-3 bg-dark-bg-tertiary rounded-full overflow-hidden">
+          <div className="mt-4 md:mt-6 h-3 md:h-4 lg:h-5 bg-dark-bg-tertiary rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(250,204,21,0.5)]"
               style={{ width: `${xpData.progressPercent}%` }}
