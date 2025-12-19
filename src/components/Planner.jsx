@@ -284,14 +284,14 @@ const Planner = () => {
     <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-6 md:pb-8 lg:pb-10 animate-fadeIn">
       {/* Header with Stats */}
       <div>
-        <div className="flex items-start justify-between mb-3 md:mb-4 lg:mb-6">
+        <div className="flex items-start justify-between mb-4 md:mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-dark-text-primary mb-1 md:mb-2">Smart Calendar</h1>
-            <p className="text-sm md:text-base lg:text-lg text-dark-text-secondary">AI-powered activity planning</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">Smart Calendar</h1>
+            <p className="text-sm md:text-base text-dark-text-secondary">AI-powered activity planning</p>
           </div>
           <div className="text-right">
-            <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-primary-500">{activities.length}</div>
-            <div className="text-[10px] md:text-xs lg:text-sm text-dark-text-muted">activities</div>
+            <div className="text-xl md:text-2xl lg:text-3xl font-bold text-primary-500">{activities.length}</div>
+            <div className="text-xs md:text-sm text-dark-text-muted">activities</div>
           </div>
         </div>
 
@@ -303,20 +303,20 @@ const Planner = () => {
             <StatCardSkeleton />
           </div>
         ) : activities.length > 0 && (
-          <div className="flex gap-2 md:gap-3 lg:gap-4 xl:gap-5 mt-2 md:mt-3 lg:mt-4 animate-fadeIn">
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-primary-500/50 transition-all">
-              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Total Hours</div>
-              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-dark-text-primary mt-1">{getTotalHours().toFixed(1)}h</div>
+          <div className="flex gap-3 md:gap-4 mt-3 md:mt-4 animate-fadeIn">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-3 md:p-4 border border-dark-border-subtle">
+              <div className="text-xs md:text-sm text-dark-text-muted">Total Hours</div>
+              <div className="text-xl md:text-2xl lg:text-3xl font-bold text-dark-text-primary mt-1">{getTotalHours().toFixed(1)}h</div>
             </div>
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-green-500/50 transition-all">
-              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Completed</div>
-              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-green-500 mt-1">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-3 md:p-4 border border-dark-border-subtle">
+              <div className="text-xs md:text-sm text-dark-text-muted">Completed</div>
+              <div className="text-xl md:text-2xl lg:text-3xl font-bold text-green-500 mt-1">
                 {activities.filter(a => a.is_completed).length}
               </div>
             </div>
-            <div className="flex-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl lg:rounded-3xl p-2.5 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow hover:border-amber-500/50 transition-all">
-              <div className="text-xs md:text-sm lg:text-base text-dark-text-muted">Pending</div>
-              <div className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-amber-500 mt-1">
+            <div className="flex-1 bg-dark-bg-secondary rounded-xl p-3 md:p-4 border border-dark-border-subtle">
+              <div className="text-xs md:text-sm text-dark-text-muted">Pending</div>
+              <div className="text-xl md:text-2xl lg:text-3xl font-bold text-amber-500 mt-1">
                 {activities.filter(a => !a.is_completed).length}
               </div>
             </div>
@@ -325,7 +325,7 @@ const Planner = () => {
       </div>
 
       {/* AI Activity Input */}
-      <div className="bg-gradient-to-br from-primary-500/10 via-dark-bg-secondary to-accent-purple/10 rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 xl:p-8 border border-dark-border-glow shadow-dark-soft-lg hover:shadow-dark-soft-xl transition-all">
+      <div className="bg-dark-bg-secondary rounded-xl md:rounded-2xl p-4 md:p-5 lg:p-6 border border-dark-border-subtle">
         {/* Success/Error Messages */}
         {success && (
           <div className="mb-3 md:mb-4 lg:mb-5 p-2.5 md:p-3 lg:p-4 rounded-xl md:rounded-2xl bg-green-500/10 border border-green-500/30 animate-fadeIn">
@@ -351,7 +351,7 @@ const Planner = () => {
           <button
             onClick={handleAiCreate}
             disabled={aiProcessing || !aiInput.trim()}
-            className="px-4 md:px-5 lg:px-6 xl:px-8 py-2.5 md:py-3 lg:py-4 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base lg:text-lg font-semibold rounded-xl md:rounded-2xl hover:shadow-glow-cyan transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-1.5 md:gap-2"
+            className="px-4 md:px-5 lg:px-6 py-2.5 md:py-3 lg:py-4 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2"
           >
             {aiProcessing ? (
               <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -425,29 +425,29 @@ const Planner = () => {
       {/* View Mode Toggle & Filters */}
       <div className="space-y-2 md:space-y-3 lg:space-y-4">
         {/* View Toggle */}
-        <div className="flex gap-2 md:gap-3 lg:gap-4">
+        <div className="flex gap-2 md:gap-3">
           <button
             onClick={() => setViewMode('calendar')}
-            className={`flex-1 py-2 md:py-3 lg:py-4 px-3 md:px-4 lg:px-6 rounded-xl md:rounded-2xl font-semibold text-sm md:text-base lg:text-lg transition-all active:scale-95 flex items-center justify-center gap-2 md:gap-3 ${
+            className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-xl font-semibold text-sm md:text-base transition-all flex items-center justify-center gap-2 ${
               viewMode === 'calendar'
-                ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
-                : 'bg-dark-bg-secondary text-dark-text-secondary border border-dark-border-glow hover:border-primary-500/50'
+                ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+                : 'bg-dark-bg-secondary text-dark-text-secondary border border-dark-border-subtle'
             }`}
           >
-            <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <span className="hidden md:inline">Calendar</span>
           </button>
           <button
             onClick={() => setViewMode('upcoming')}
-            className={`flex-1 py-2 md:py-3 lg:py-4 px-3 md:px-4 lg:px-6 rounded-xl md:rounded-2xl font-semibold text-sm md:text-base lg:text-lg transition-all active:scale-95 flex items-center justify-center gap-2 md:gap-3 ${
+            className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-xl font-semibold text-sm md:text-base transition-all flex items-center justify-center gap-2 ${
               viewMode === 'upcoming'
-                ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
-                : 'bg-dark-bg-secondary text-dark-text-secondary border border-dark-border-glow hover:border-primary-500/50'
+                ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+                : 'bg-dark-bg-secondary text-dark-text-secondary border border-dark-border-subtle'
             }`}
           >
-            <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
             </svg>
             <span className="hidden md:inline">Upcoming</span>
@@ -455,15 +455,15 @@ const Planner = () => {
         </div>
 
         {/* Activity Type Filters */}
-        <div className="flex gap-1.5 md:gap-2 lg:gap-3 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-2 md:gap-3 overflow-x-auto pb-1 scrollbar-hide">
           {activityTypes.map(type => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-3 md:px-4 lg:px-5 py-1.5 md:py-2 lg:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm lg:text-base font-semibold whitespace-nowrap transition-all active:scale-95 hover:scale-105 ${
+              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-semibold whitespace-nowrap transition-all ${
                 filterType === type
-                  ? 'bg-primary-500 text-white shadow-glow-cyan-sm'
-                  : 'bg-dark-bg-tertiary text-dark-text-secondary border border-dark-border-subtle hover:border-primary-500/50'
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-dark-bg-tertiary text-dark-text-secondary border border-dark-border-subtle'
               }`}
             >
               {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -473,7 +473,7 @@ const Planner = () => {
 
         {/* Color Legend - Only show in calendar mode */}
         {viewMode === 'calendar' && (
-          <div className="bg-gradient-to-br from-dark-bg-secondary to-dark-bg-tertiary rounded-xl md:rounded-2xl p-3 md:p-4 lg:p-5 border-2 border-dark-border-glow shadow-dark-soft-md">
+          <div className="bg-dark-bg-secondary rounded-xl p-3 md:p-4 border border-dark-border-subtle">
             <div className="flex items-center gap-2 mb-3">
               <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
@@ -537,7 +537,7 @@ const Planner = () => {
           <CalendarSkeleton />
         ) : (
           <div
-            className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 xl:p-8 border border-dark-border-glow shadow-dark-soft-md hover:shadow-dark-soft-lg transition-all animate-fadeIn"
+            className="bg-dark-bg-secondary rounded-xl md:rounded-2xl p-4 md:p-5 lg:p-6 border border-dark-border-subtle animate-fadeIn"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
@@ -545,26 +545,26 @@ const Planner = () => {
             <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-dark-text-primary">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
-            <div className="flex gap-1.5 md:gap-2 lg:gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={goToToday}
-                className="px-2.5 md:px-3 lg:px-4 xl:px-5 py-1.5 md:py-2 lg:py-2.5 rounded-lg md:rounded-xl bg-primary-500/10 border border-primary-500/30 text-primary-500 text-xs md:text-sm lg:text-base font-semibold hover:bg-primary-500/20 hover:scale-105 transition-all active:scale-95"
+                className="px-3 md:px-4 py-1.5 md:py-2 rounded-lg bg-primary-500/10 border border-primary-500/30 text-primary-500 text-xs md:text-sm font-semibold transition-colors"
               >
                 Today
               </button>
               <button
                 onClick={previousMonth}
-                className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary hover:border-primary-500 hover:scale-105 transition-all active:scale-95"
+                className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-primary transition-colors"
               >
-                <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 md:w-5 md:h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <button
                 onClick={nextMonth}
-                className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary hover:border-primary-500 hover:scale-105 transition-all active:scale-95"
+                className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-primary transition-colors"
               >
-                <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 md:w-5 md:h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
@@ -591,17 +591,17 @@ const Planner = () => {
                   key={index}
                   onClick={() => day && setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
                   disabled={!day}
-                  className={`aspect-square rounded-lg md:rounded-xl lg:rounded-2xl p-0.5 md:p-1 lg:p-1.5 transition-all text-center hover:scale-110 relative ${
+                  className={`aspect-square rounded-lg p-1 transition-all text-center relative ${
                     !day
                       ? 'invisible'
                       : isSelected(day)
-                      ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white shadow-glow-cyan ring-2 ring-primary-400 ring-offset-2 ring-offset-dark-bg-secondary'
+                      ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white'
                       : isToday(day)
-                      ? 'bg-primary-500/20 border-2 md:border-[3px] border-primary-500 text-dark-text-primary font-bold'
+                      ? 'bg-primary-500/20 border-2 border-primary-500 text-dark-text-primary font-bold'
                       : hasActivities
-                      ? 'bg-gradient-to-br from-amber-500/40 via-orange-500/30 to-red-500/20 border-[3px] md:border-4 border-amber-500 text-dark-text-primary font-bold shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] animate-pulse-slow'
-                      : 'bg-dark-bg-tertiary text-dark-text-muted hover:bg-dark-navy-dark hover:border-primary-500/50 border border-dark-border-subtle'
-                  } active:scale-95`}
+                      ? 'bg-amber-500/20 border-2 border-amber-500 text-dark-text-primary font-bold'
+                      : 'bg-dark-bg-tertiary text-dark-text-muted border border-dark-border-subtle'
+                  }`}
                 >
                   {day && (
                     <div className="flex flex-col items-center justify-center h-full relative">
@@ -609,10 +609,10 @@ const Planner = () => {
                         {day}
                       </span>
                       {hasActivities && dayActivities.length > 0 && (
-                        <div className={`absolute -top-1 -right-1 min-w-[24px] h-[24px] md:min-w-[28px] md:h-[28px] lg:min-w-[32px] lg:h-[32px] flex items-center justify-center rounded-full text-xs md:text-sm lg:text-base font-black border-2 border-white ${
+                        <div className={`absolute -top-1 -right-1 min-w-[20px] h-[20px] md:min-w-[24px] md:h-[24px] flex items-center justify-center rounded-full text-xs md:text-sm font-bold border-2 ${
                           isSelected(day)
-                            ? 'bg-white text-primary-500 shadow-xl'
-                            : 'bg-gradient-to-br from-red-500 via-orange-500 to-amber-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-pulse'
+                            ? 'bg-white text-primary-500 border-white'
+                            : 'bg-amber-500 text-white border-amber-600'
                         }`}>
                           {dayActivities.length}
                         </div>
@@ -660,8 +660,8 @@ const Planner = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 xl:p-8 border border-dark-border-glow shadow-dark-soft-md hover:shadow-dark-soft-lg transition-all animate-fadeIn">
-          <h3 className="text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-dark-text-primary mb-3 md:mb-4 lg:mb-6">Next 7 Days</h3>
+          <div className="bg-dark-bg-secondary rounded-xl md:rounded-2xl p-4 md:p-5 lg:p-6 border border-dark-border-subtle animate-fadeIn">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-dark-text-primary mb-3 md:mb-4">Next 7 Days</h3>
 
           {getFilteredActivities(getUpcomingActivities()).length === 0 ? (
             <div className="text-center py-8 md:py-12 lg:py-16">
@@ -794,8 +794,8 @@ const Planner = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 xl:p-8 border border-dark-border-glow shadow-dark-soft-md hover:shadow-dark-soft-lg transition-all animate-fadeIn">
-          <h3 className="text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-dark-text-primary mb-3 md:mb-4 lg:mb-6">
+          <div className="bg-dark-bg-secondary rounded-xl md:rounded-2xl p-4 md:p-5 lg:p-6 border border-dark-border-subtle animate-fadeIn">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-dark-text-primary mb-3 md:mb-4">
             {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </h3>
 

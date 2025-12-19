@@ -296,7 +296,7 @@ export default function Account() {
     <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-8 lg:pb-12">
       {/* Header - Desktop Optimized */}
       <div className="text-center mb-8 lg:mb-12">
-        <div className="w-20 h-20 lg:w-32 lg:h-32 mx-auto mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan-lg">
+        <div className="w-20 h-20 lg:w-32 lg:h-32 mx-auto mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center ">
           <svg className="w-10 h-10 lg:w-16 lg:h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
@@ -324,7 +324,7 @@ export default function Account() {
         {/* Left Column: Profile & Account Info */}
         <div className="space-y-6 lg:space-y-8">
           {/* Profile Name Card */}
-          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-3xl p-5 lg:p-8 border border-dark-border-glow shadow-dark-card hover:shadow-dark-soft-lg transition-all duration-200">
+          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
             <div className="flex items-center justify-between mb-3 lg:mb-5">
               <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary flex items-center gap-2 lg:gap-3">
                 <svg className="w-5 h-5 lg:w-7 lg:h-7 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,7 +348,7 @@ export default function Account() {
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+                  className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                   placeholder="Enter your name"
                   autoFocus
                 />
@@ -356,7 +356,7 @@ export default function Account() {
                   <button
                     onClick={handleSaveName}
                     disabled={saving}
-                    className="flex-1 bg-gradient-to-r from-primary-600 to-accent-cyan text-white font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:shadow-glow-cyan-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-gradient-to-r from-primary-600 to-accent-cyan text-white font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover: transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? 'Saving...' : 'Save'}
                   </button>
@@ -366,7 +366,7 @@ export default function Account() {
                       setNewName(profile?.full_name || user?.email?.split('@')[0] || '')
                     }}
                     disabled={saving}
-                    className="flex-1 bg-dark-bg-primary border border-dark-border-glow text-dark-text-secondary font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-dark-bg-surface transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-dark-bg-primary border border-dark-border-subtle text-dark-text-secondary font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-dark-bg-surface transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -380,7 +380,7 @@ export default function Account() {
           </div>
 
           {/* Account Info Card */}
-          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-3xl p-5 lg:p-8 border border-dark-border-glow shadow-dark-card hover:shadow-dark-soft-lg transition-all duration-200">
+          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
             <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary mb-4 lg:mb-6 flex items-center gap-2 lg:gap-3">
               <svg className="w-5 h-5 lg:w-7 lg:h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -412,7 +412,7 @@ export default function Account() {
         {/* Right Column: Canvas Integration */}
         <div className="space-y-6 lg:space-y-8">
           {/* Canvas Integration Card */}
-          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-3xl p-5 lg:p-8 border border-dark-border-glow shadow-dark-card hover:shadow-dark-soft-lg transition-all duration-200">
+          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
             <div className="flex items-center justify-between mb-3 lg:mb-5">
               <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary flex items-center gap-2 lg:gap-3">
                 <svg className="w-5 h-5 lg:w-7 lg:h-7 text-accent-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -441,7 +441,7 @@ export default function Account() {
                     type="url"
                     value={canvasUrl}
                     onChange={(e) => setCanvasUrl(e.target.value)}
-                    className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+                    className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                     placeholder="https://wcpss.instructure.com"
                     autoFocus
                   />
@@ -460,7 +460,7 @@ export default function Account() {
                       type={showCanvasToken ? 'text' : 'password'}
                       value={canvasToken}
                       onChange={(e) => setCanvasToken(e.target.value)}
-                      className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 pr-12 lg:pr-14 text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all font-mono text-sm lg:text-base"
+                      className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 pr-12 lg:pr-14 text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all font-mono text-sm lg:text-base"
                       placeholder="Paste your Canvas API token"
                     />
                     <button
@@ -501,7 +501,7 @@ export default function Account() {
                       setCanvasToken(profile?.canvas_token || '')
                     }}
                     disabled={saving}
-                    className="flex-1 bg-dark-bg-primary border border-dark-border-glow text-dark-text-secondary font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-dark-bg-surface transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-dark-bg-primary border border-dark-border-subtle text-dark-text-secondary font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-dark-bg-surface transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -564,7 +564,7 @@ export default function Account() {
           </div>
 
           {/* Infinite Campus Integration Card */}
-          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-3xl p-5 lg:p-8 border border-dark-border-glow shadow-dark-card hover:shadow-dark-soft-lg transition-all duration-200">
+          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
             <div className="flex items-center justify-between mb-3 lg:mb-5">
               <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary flex items-center gap-2 lg:gap-3">
                 <svg className="w-5 h-5 lg:w-7 lg:h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -593,7 +593,7 @@ export default function Account() {
                     type="text"
                     value={icDistrict}
                     onChange={(e) => setIcDistrict(e.target.value)}
-                    className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+                    className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                     placeholder="Wake County"
                     autoFocus
                   />
@@ -612,7 +612,7 @@ export default function Account() {
                     value={icState}
                     onChange={(e) => setIcState(e.target.value.toUpperCase())}
                     maxLength={2}
-                    className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+                    className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                     placeholder="NC"
                   />
                   <p className="text-xs lg:text-sm text-dark-text-muted mt-1.5 lg:mt-2">
@@ -629,7 +629,7 @@ export default function Account() {
                     type="text"
                     value={icUsername}
                     onChange={(e) => setIcUsername(e.target.value)}
-                    className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+                    className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
                     placeholder="Your IC username"
                   />
                 </div>
@@ -644,7 +644,7 @@ export default function Account() {
                       type={showIcPassword ? 'text' : 'password'}
                       value={icPassword}
                       onChange={(e) => setIcPassword(e.target.value)}
-                      className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 pr-12 lg:pr-14 text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all text-sm lg:text-base"
+                      className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 pr-12 lg:pr-14 text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all text-sm lg:text-base"
                       placeholder="Your IC password"
                     />
                     <button
@@ -687,7 +687,7 @@ export default function Account() {
                       setIcPassword(profile?.ic_password || '')
                     }}
                     disabled={saving}
-                    className="flex-1 bg-dark-bg-primary border border-dark-border-glow text-dark-text-secondary font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-dark-bg-surface transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-dark-bg-primary border border-dark-border-subtle text-dark-text-secondary font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-dark-bg-surface transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -752,7 +752,7 @@ export default function Account() {
       </div>
 
       {/* Achievements Section */}
-      <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-3xl p-5 lg:p-8 border border-dark-border-glow shadow-dark-card hover:shadow-dark-soft-lg transition-all duration-200">
+      <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
         <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary mb-4 lg:mb-6 flex items-center gap-2 lg:gap-3">
           <svg className="w-5 h-5 lg:w-7 lg:h-7 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -810,7 +810,7 @@ export default function Account() {
                 )
               })}
             </div>
-            <div className="mt-6 lg:mt-8 pt-6 lg:pt-8 border-t border-dark-border-glow">
+            <div className="mt-6 lg:mt-8 pt-6 lg:pt-8 border-t border-dark-border-subtle">
               <div className="flex items-center justify-center gap-6 lg:gap-8 text-center">
                 <div>
                   <div className="text-2xl lg:text-3xl font-bold text-dark-text-primary">

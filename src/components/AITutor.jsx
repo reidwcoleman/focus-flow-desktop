@@ -515,7 +515,7 @@ const AITutor = () => {
             <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary mt-0.5">
               {aiService.isConfigured() ? (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse-soft shadow-glow-cyan"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
                   Powered by {aiService.getProviderName()}
                 </span>
               ) : (
@@ -542,7 +542,7 @@ const AITutor = () => {
             {/* New chat button */}
             <button
               onClick={startNewChat}
-              className="p-2.5 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan hover:from-primary-600 hover:to-accent-cyan-dark text-white transition-all duration-200 active:scale-95 shadow-glow-cyan"
+              className="p-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-cyan hover:from-primary-600 hover:to-accent-cyan-dark text-white transition-all duration-200 active:scale-95"
               title="New chat"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -553,7 +553,7 @@ const AITutor = () => {
         </div>
 
         {/* Usage Counter */}
-        <div className="mt-3 flex items-center justify-between px-3 py-2 bg-primary-500/10 rounded-xl border border-primary-500/30 shadow-dark-soft">
+        <div className="mt-3 flex items-center justify-between px-3 py-2 bg-primary-500/10 rounded-xl border border-primary-500/30">
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -577,7 +577,7 @@ const AITutor = () => {
 
         {/* Mode Indicator Banners */}
         {ultraThinkEnabled && (
-          <div className="mt-2.5 p-2.5 md:p-3 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-xl border border-purple-400/50 shadow-dark-soft animate-fadeIn">
+          <div className="mt-2.5 p-2.5 md:p-3 bg-purple-500/10 rounded-xl border border-purple-400/50 animate-fadeIn">
             <div className="flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 flex-1">
                 <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-purple-500/80 to-purple-700/80 flex items-center justify-center shadow-md border border-purple-400/30">
@@ -603,7 +603,7 @@ const AITutor = () => {
         )}
 
         {deepResearchEnabled && (
-          <div className="mt-2.5 p-2.5 md:p-3 bg-gradient-to-r from-blue-500/20 to-cyan-600/20 rounded-xl border border-blue-400/50 shadow-dark-soft animate-fadeIn">
+          <div className="mt-2.5 p-2.5 md:p-3 bg-blue-500/10 rounded-xl border border-blue-400/50 animate-fadeIn">
             <div className="flex items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5 flex-1">
                 <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-blue-500/80 to-cyan-700/80 flex items-center justify-center shadow-md border border-blue-400/30">
@@ -630,7 +630,7 @@ const AITutor = () => {
 
         {/* AI Data Access Info Banner */}
         {showDataInfo && (
-          <div className="mt-3 p-3 bg-gradient-to-r from-accent-cyan/10 to-primary-500/10 rounded-xl border border-accent-cyan/30 shadow-dark-soft animate-fadeIn">
+          <div className="mt-3 p-3 bg-dark-bg-secondary rounded-xl border border-accent-cyan/30 animate-fadeIn">
             <div className="flex items-start justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500/30 to-accent-cyan/30 flex items-center justify-center border border-primary-500/40">
@@ -748,7 +748,7 @@ const AITutor = () => {
             <button
               key={index}
               onClick={() => handleQuickQuestion(question)}
-              className="flex-shrink-0 px-3 md:px-3.5 lg:px-4 py-1.5 md:py-2 bg-dark-bg-secondary border border-dark-border-glow hover:border-accent-purple hover:bg-accent-purple/10 rounded-full text-xs md:text-sm lg:text-base font-medium text-dark-text-primary hover:text-accent-purple-light transition-all duration-200 active:scale-95 shadow-dark-soft"
+              className="flex-shrink-0 px-3 md:px-3.5 lg:px-4 py-1.5 md:py-2 bg-dark-bg-secondary border border-dark-border-subtle hover:border-accent-purple hover:bg-accent-purple/10 rounded-full text-xs md:text-sm lg:text-base font-medium text-dark-text-primary hover:text-accent-purple-light transition-all duration-200 active:scale-95"
             >
               {question}
             </button>
@@ -767,12 +767,12 @@ const AITutor = () => {
           >
             {/* Message Content */}
             <div className={`flex flex-col ${message.role === 'user' ? 'max-w-[85%] md:max-w-[75%] lg:max-w-[65%] items-end' : 'w-full items-start'}`}>
-              <div className={`w-full rounded-2xl ${
+              <div className={`w-full rounded-xl ${
                 message.role === 'assistant'
                   ? message.isError
-                    ? 'bg-red-900/20 border border-red-700/40 shadow-dark-soft px-4 md:px-5 py-3 md:py-3.5'
-                    : 'bg-dark-bg-secondary border border-dark-border-glow shadow-dark-soft-md px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5'
-                  : 'bg-gradient-to-br from-accent-purple via-accent-purple-dark to-accent-purple-dark text-white shadow-glow-purple px-3 md:px-4 lg:px-5 py-2 md:py-3 lg:py-4'
+                    ? 'bg-red-900/20 border border-red-700/40 px-4 md:px-5 py-3 md:py-3.5'
+                    : 'bg-dark-bg-secondary border border-dark-border-subtle px-4 md:px-5 lg:px-6 py-3 md:py-4 lg:py-5'
+                  : 'bg-gradient-to-r from-accent-purple to-accent-purple-dark text-white px-3 md:px-4 lg:px-5 py-2 md:py-3 lg:py-4'
               }`}>
                 {/* Show image if message has one */}
                 {message.image && (
@@ -806,7 +806,7 @@ const AITutor = () => {
             {/* User Avatar */}
             {message.role === 'user' && (
               <div className="flex-shrink-0 mt-1">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary-500 to-accent-cyan flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -819,7 +819,7 @@ const AITutor = () => {
         {/* Typing Indicator */}
         {isTyping && (
           <div ref={lastMessageRef} className="w-full animate-fadeInUp">
-            <div className="bg-dark-bg-secondary border border-dark-border-glow rounded-2xl px-4 py-3 shadow-dark-soft-md">
+            <div className="bg-dark-bg-secondary border border-dark-border-subtle rounded-xl px-4 py-3">
               <div className="flex gap-1">
                 <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
@@ -832,20 +832,20 @@ const AITutor = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="flex-shrink-0 mb-3 p-3 bg-red-900/20 border border-red-700/40 rounded-xl animate-fadeIn shadow-dark-soft">
+        <div className="flex-shrink-0 mb-3 p-3 bg-red-900/20 border border-red-700/40 rounded-xl animate-fadeIn">
           <p className="text-sm text-red-400 font-medium">{error}</p>
         </div>
       )}
 
       {/* Premium Input Area */}
-      <div className="flex-shrink-0 bg-dark-bg-secondary rounded-2xl p-3 shadow-dark-soft-md border border-dark-border-glow focus-within:border-accent-purple focus-within:shadow-glow-purple transition-all duration-200">
+      <div className="flex-shrink-0 bg-dark-bg-secondary rounded-xl p-3 border border-dark-border-subtle focus-within:border-accent-purple transition-all duration-200">
         {/* Image Preview */}
         {uploadedImage && (
           <div className="mb-3 relative inline-block animate-fadeIn">
             <img
               src={uploadedImage}
               alt="Uploaded"
-              className="max-w-[200px] max-h-[200px] rounded-xl border-2 border-dark-border-glow shadow-dark-soft object-cover"
+              className="max-w-[200px] max-h-[200px] rounded-xl border-2 border-dark-border-subtle object-cover"
             />
             <button
               onClick={() => setUploadedImage(null)}
@@ -873,7 +873,7 @@ const AITutor = () => {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
-            className="flex-shrink-0 w-9 h-9 rounded-lg bg-dark-bg-tertiary hover:bg-primary-500/20 border border-dark-border-glow hover:border-primary-500/50 flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+            className="flex-shrink-0 w-9 h-9 rounded-lg bg-dark-bg-tertiary hover:bg-primary-500/20 border border-dark-border-subtle hover:border-primary-500/50 flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
             title="Upload or scan image"
           >
             <svg className="w-5 h-5 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -887,8 +887,8 @@ const AITutor = () => {
             disabled={isLoading}
             className={`flex-shrink-0 w-9 h-9 rounded-lg border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center ${
               !ultraThinkEnabled && !deepResearchEnabled
-                ? 'bg-gradient-to-br from-green-500/30 to-emerald-600/30 border-green-500 shadow-glow-green'
-                : 'bg-dark-bg-tertiary border-dark-border-glow hover:border-green-500/50 hover:bg-green-500/10'
+                ? 'bg-green-500/20 border-green-500'
+                : 'bg-dark-bg-tertiary border-dark-border-subtle hover:border-green-500/50 hover:bg-green-500/10'
             }`}
             title={!ultraThinkEnabled && !deepResearchEnabled ? 'Regular Chat: Standard mode active' : 'Switch to Regular Chat mode'}
           >
@@ -903,8 +903,8 @@ const AITutor = () => {
             disabled={isLoading}
             className={`relative flex-shrink-0 flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${
               ultraThinkEnabled
-                ? 'bg-purple-500/25 border-purple-400/60 shadow-md'
-                : 'bg-dark-bg-tertiary border-dark-border-glow hover:border-purple-500/50 hover:bg-purple-500/10'
+                ? 'bg-purple-500/20 border-purple-400/60'
+                : 'bg-dark-bg-tertiary border-dark-border-subtle hover:border-purple-500/50 hover:bg-purple-500/10'
             }`}
             title={ultraThinkEnabled ? 'UltraThink mode enabled - Click to disable' : 'Enable UltraThink for advanced reasoning'}
           >
@@ -922,8 +922,8 @@ const AITutor = () => {
             disabled={isLoading}
             className={`relative flex-shrink-0 flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${
               deepResearchEnabled
-                ? 'bg-blue-500/25 border-blue-400/60 shadow-md'
-                : 'bg-dark-bg-tertiary border-dark-border-glow hover:border-blue-500/50 hover:bg-blue-500/10'
+                ? 'bg-blue-500/20 border-blue-400/60'
+                : 'bg-dark-bg-tertiary border-dark-border-subtle hover:border-blue-500/50 hover:bg-blue-500/10'
             }`}
             title={deepResearchEnabled ? 'Deep Research mode enabled - Click to disable' : 'Enable Deep Research for extensive analysis'}
           >
@@ -955,7 +955,7 @@ const AITutor = () => {
           <button
             onClick={handleSend}
             disabled={(!inputValue.trim() && !uploadedImage) || isLoading}
-            className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark hover:from-accent-purple-dark hover:to-accent-purple-dark disabled:from-dark-bg-tertiary disabled:to-dark-navy-dark flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed active:scale-95 shadow-glow-purple disabled:shadow-none"
+            className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-r from-accent-purple to-accent-purple-dark hover:from-accent-purple-dark hover:to-accent-purple-dark disabled:from-dark-bg-tertiary disabled:to-dark-navy-dark flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed active:scale-95"
           >
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -975,7 +975,7 @@ const AITutor = () => {
           onClick={() => setShowHistory(false)}
         >
           <div
-            className="w-full max-w-md bg-dark-bg-secondary rounded-3xl border border-dark-border-glow shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-fadeInUp"
+            className="w-full max-w-md bg-dark-bg-secondary rounded-2xl border border-dark-border-subtle overflow-hidden flex flex-col max-h-[80vh] animate-fadeInUp"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

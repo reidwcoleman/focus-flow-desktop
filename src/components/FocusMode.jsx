@@ -307,7 +307,7 @@ const FocusMode = () => {
             <div className="flex items-center gap-4 md:gap-6 mb-4 md:mb-6">
             <button
               onClick={() => setCurrentView('home')}
-              className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full bg-dark-bg-secondary border border-dark-border-glow flex items-center justify-center hover:border-primary-500 hover:scale-110 transition-all active:scale-95"
+              className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full bg-dark-bg-secondary border border-dark-border-subtle flex items-center justify-center hover:border-primary-500 hover:scale-110 transition-all active:scale-95"
             >
               <svg className="w-5 h-5 md:w-6 md:h-6 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -326,7 +326,7 @@ const FocusMode = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search apps..."
-              className="w-full px-4 md:px-6 py-3 md:py-4 pl-11 md:pl-14 rounded-2xl bg-dark-bg-secondary border border-dark-border-glow text-dark-text-primary text-base md:text-lg placeholder:text-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+              className="w-full px-4 md:px-6 py-3 md:py-4 pl-11 md:pl-14 rounded-2xl bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-primary text-base md:text-lg placeholder:text-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
             />
             <svg className="w-5 h-5 md:w-6 md:h-6 text-dark-text-muted absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -449,7 +449,7 @@ const FocusMode = () => {
 
         {/* Stats */}
         {stats && stats.totalSessions > 0 && (
-          <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-xl rounded-3xl p-6 md:p-8 lg:p-10 border border-[rgba(255,255,255,0.1)] animate-opal-card-enter">
+          <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-[rgba(255,255,255,0.1)] animate-opal-card-enter">
             <div className="grid grid-cols-3 gap-4 md:gap-8 lg:gap-12 text-center">
               <div>
                 <div className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#A0FFF9]">{stats.totalHoursBlocked || 0}h</div>
@@ -478,7 +478,7 @@ const FocusMode = () => {
             return (
               <div
                 key={list.id}
-                className="bg-[rgba(255,255,255,0.05)] backdrop-blur-xl rounded-2xl md:rounded-3xl p-6 md:p-7 lg:p-8 border border-[rgba(255,255,255,0.1)] hover:border-[rgba(124,92,255,0.5)] hover:scale-[1.02] transition-all duration-300 animate-opal-card-enter"
+                className="bg-[rgba(255,255,255,0.05)] backdrop-blur-xl rounded-2xl p-6 md:p-7 lg:p-8 border border-[rgba(255,255,255,0.1)] hover:border-[rgba(124,92,255,0.5)] hover:scale-[1.02] transition-all duration-300 animate-opal-card-enter"
                 style={{ animationDelay: `${index * 0.08}s` }}
               >
                 <div className="flex items-center justify-between mb-4 md:mb-5 lg:mb-6">
@@ -542,7 +542,7 @@ const FocusMode = () => {
 
       {/* Database Setup Reminder */}
       {(!blockingLists || blockingLists.length === 0) && (
-        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl md:rounded-3xl p-4 md:p-6 border border-amber-500/30">
+        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl p-4 md:p-6 border border-amber-500/30">
           <div className="flex gap-3 md:gap-4">
             <div className="flex-shrink-0 text-2xl md:text-3xl lg:text-4xl">⚠️</div>
             <div>

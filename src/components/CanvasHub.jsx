@@ -109,7 +109,7 @@ const CanvasHub = () => {
           <p className="text-sm text-dark-text-secondary mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-xl hover:shadow-glow-cyan transition-all active:scale-95"
+            className="px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-xl hover: transition-all active:scale-95"
           >
             Retry
           </button>
@@ -121,14 +121,14 @@ const CanvasHub = () => {
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-900/30 to-red-900/30 p-4 md:p-5 lg:p-6 shadow-dark-soft-lg border border-orange-700/40">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-900/30 to-red-900/30 p-4 md:p-5 lg:p-6  border border-orange-700/40">
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary tracking-tight">Canvas LMS</h2>
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover:shadow-glow-cyan transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover: transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {syncing ? (
                 <>
@@ -153,12 +153,12 @@ const CanvasHub = () => {
       </div>
 
       {/* View Tabs */}
-      <div className="flex gap-2 p-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl border border-dark-border-glow">
+      <div className="flex gap-2 p-1 bg-dark-bg-secondary rounded-xl md:rounded-2xl border border-dark-border-subtle">
         <button
           onClick={() => setActiveView('courses')}
           className={`flex-1 py-2 md:py-2.5 lg:py-3 px-3 md:px-4 lg:px-5 rounded-xl font-semibold text-xs md:text-sm transition-all ${
             activeView === 'courses'
-              ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
+              ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white '
               : 'text-dark-text-secondary hover:text-dark-text-primary'
           }`}
         >
@@ -168,7 +168,7 @@ const CanvasHub = () => {
           onClick={() => setActiveView('assignments')}
           className={`flex-1 py-2 md:py-2.5 lg:py-3 px-3 md:px-4 lg:px-5 rounded-xl font-semibold text-xs md:text-sm transition-all ${
             activeView === 'assignments'
-              ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
+              ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white '
               : 'text-dark-text-secondary hover:text-dark-text-primary'
           }`}
         >
@@ -178,7 +178,7 @@ const CanvasHub = () => {
           onClick={() => setActiveView('grades')}
           className={`flex-1 py-2 md:py-2.5 lg:py-3 px-3 md:px-4 lg:px-5 rounded-xl font-semibold text-xs md:text-sm transition-all ${
             activeView === 'grades'
-              ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white shadow-glow-cyan'
+              ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white '
               : 'text-dark-text-secondary hover:text-dark-text-primary'
           }`}
         >
@@ -193,7 +193,7 @@ const CanvasHub = () => {
             Your Courses ({courses.length})
           </h3>
           {courses.length === 0 ? (
-            <div className="text-center py-8 bg-dark-bg-secondary rounded-2xl md:rounded-3xl border border-dark-border-glow">
+            <div className="text-center py-8 bg-dark-bg-secondary rounded-2xl border border-dark-border-subtle">
               <div className="text-4xl mb-3">📚</div>
               <p className="text-dark-text-secondary">No courses found</p>
             </div>
@@ -201,7 +201,7 @@ const CanvasHub = () => {
             courses.map((course) => (
               <div
                 key={course.id}
-                className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light transition-all"
+                className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle  transition-all"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -239,7 +239,7 @@ const CanvasHub = () => {
             Assignments ({assignments.length})
           </h3>
           {assignments.length === 0 ? (
-            <div className="text-center py-8 bg-dark-bg-secondary rounded-2xl md:rounded-3xl border border-dark-border-glow">
+            <div className="text-center py-8 bg-dark-bg-secondary rounded-2xl border border-dark-border-subtle">
               <div className="text-4xl mb-3">📝</div>
               <p className="text-dark-text-secondary">No assignments found</p>
             </div>
@@ -249,7 +249,7 @@ const CanvasHub = () => {
               return (
                 <div
                   key={assignment.id}
-                  className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light transition-all"
+                  className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle  transition-all"
                 >
                   {/* Subject/Course Badge */}
                   <div className="flex items-center gap-2 mb-2">
@@ -326,7 +326,7 @@ const CanvasHub = () => {
             Course Grades ({grades.length})
           </h3>
           {grades.length === 0 ? (
-            <div className="text-center py-8 bg-dark-bg-secondary rounded-2xl md:rounded-3xl border border-dark-border-glow">
+            <div className="text-center py-8 bg-dark-bg-secondary rounded-2xl border border-dark-border-subtle">
               <div className="text-4xl mb-3">📊</div>
               <p className="text-dark-text-secondary">No grades available</p>
             </div>
@@ -344,7 +344,7 @@ const CanvasHub = () => {
               return (
                 <div
                   key={grade.courseId}
-                  className="bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-4 md:p-5 lg:p-6 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light transition-all"
+                  className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle  transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
