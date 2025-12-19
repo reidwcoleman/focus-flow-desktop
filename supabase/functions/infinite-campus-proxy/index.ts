@@ -162,11 +162,15 @@ async function handleLogin(body: any): Promise<Response> {
       redirect: 'manual' // Don't follow redirects automatically
     })
 
+    console.log(`🔑 Login response status: ${loginResponse.status}`)
+
     // Check for session cookies
     const cookies = loginResponse.headers.get('set-cookie')
+    console.log(`🍪 Cookies received: ${cookies ? 'Yes' : 'No'}`)
 
     if (!cookies || loginResponse.status !== 302) {
-      throw new Error('Login failed - invalid credentials')
+      console.error(`❌ Login failed - Status: ${loginResponse.status}, Cookies: ${cookies ? 'present' : 'missing'}`)
+      throw new Error(`Login failed - Status ${loginResponse.status}. Please verify your WakeID credentials.`)
     }
 
     // Extract session ID from cookies
@@ -228,7 +232,12 @@ async function handleGetGrades(body: any): Promise<Response> {
       }
     })
 
+    console.log(`📊 Grades response status: ${gradesResponse.status}`)
+
     if (!gradesResponse.ok) {
+      console.error(`❌ Failed to fetch grades - Status: ${gradesResponse.status}`)
+      const responseText = await gradesResponse.text()
+      console.error(`Response preview: ${responseText.substring(0, 500)}`)
       throw new Error(`Failed to fetch grades: ${gradesResponse.status}`)
     }
 
