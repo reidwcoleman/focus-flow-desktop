@@ -80,13 +80,23 @@ async function handleLogin(body: any): Promise<Response> {
   const districtCode = district.toLowerCase().replace(/\s+/g, '')
   const stateCode = state.toLowerCase()
 
+  // Special handling for known districts
+  const knownDistricts: { [key: string]: string } = {
+    'wakecounty-nc': 'https://920.ncsis.gov',
+    'wake-nc': 'https://920.ncsis.gov',
+  }
+
+  const districtKey = `${districtCode}-${stateCode}`
+
   // Try multiple URL patterns (order matters - most common first)
-  const urlPatterns = [
-    `https://${districtCode}.infinitecampus.org`,                    // Pattern 1: just district
-    `https://${stateCode}-${districtCode}.infinitecampus.org`,       // Pattern 2: state-district
-    `https://${stateCode}${districtCode}.infinitecampus.org`,        // Pattern 3: stateDistrict
-    `https://${districtCode}${stateCode}.infinitecampus.org`,        // Pattern 4: districtState (KY pattern)
-  ]
+  const urlPatterns = knownDistricts[districtKey]
+    ? [knownDistricts[districtKey]]  // Use known URL first
+    : [
+        `https://${districtCode}.infinitecampus.org`,                    // Pattern 1: just district
+        `https://${stateCode}-${districtCode}.infinitecampus.org`,       // Pattern 2: state-district
+        `https://${stateCode}${districtCode}.infinitecampus.org`,        // Pattern 3: stateDistrict
+        `https://${districtCode}${stateCode}.infinitecampus.org`,        // Pattern 4: districtState (KY pattern)
+      ]
 
   let baseUrl = ''
   let loginPageHtml = ''
@@ -96,7 +106,13 @@ async function handleLogin(body: any): Promise<Response> {
   for (const testUrl of urlPatterns) {
     try {
       console.log(`📡 Trying: ${testUrl}`)
-      const loginPageUrl = `${testUrl}/campus/portal/students/${districtCode}.jsp`
+
+      // Wake County uses a different path format
+      const isWakeCounty = testUrl.includes('ncsis.gov')
+      const loginPageUrl = isWakeCounty
+        ? `${testUrl}/campus/portal/students/psu920wakeco.jsp`
+        : `${testUrl}/campus/portal/students/${districtCode}.jsp`
+
       const loginPageResponse = await fetch(loginPageUrl)
 
       if (loginPageResponse.ok) {
@@ -121,13 +137,19 @@ async function handleLogin(body: any): Promise<Response> {
     const appNameMatch = loginPageHtml.match(/name="appName"\s+value="([^"]+)"/)
     const appName = appNameMatch ? appNameMatch[1] : districtCode
 
+    // Determine the correct portal URL
+    const isWakeCounty = baseUrl.includes('ncsis.gov')
+    const portalUrl = isWakeCounty
+      ? `${baseUrl}/campus/portal/students/psu920wakeco.jsp`
+      : `${baseUrl}/campus/portal/students/${districtCode}.jsp`
+
     // Step 2: Perform login POST request
     const loginData = new URLSearchParams({
       username: username,
       password: password,
       appName: appName,
       lang: 'en',
-      portalUrl: `${baseUrl}/campus/portal/students/${districtCode}.jsp`
+      portalUrl: portalUrl
     })
 
     const loginResponse = await fetch(`${baseUrl}/campus/verify.jsp`, {
