@@ -13,15 +13,13 @@ const corsHeaders = {
 }
 
 interface LoginRequest {
-  district: string
-  state: string
+  lunchNumber: string
   username: string
   password: string
 }
 
 interface GradesRequest {
-  district: string
-  state: string
+  lunchNumber: string
   username: string
   password: string
 }

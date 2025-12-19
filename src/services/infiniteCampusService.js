@@ -22,28 +22,20 @@ class InfiniteCampusService {
   async initializeFromProfile() {
     const profile = authService.getUserProfile()
 
-    if (!profile?.ic_district_name ||
-        !profile?.ic_state ||
+    if (!profile?.ic_lunch_number ||
         !profile?.ic_username ||
         !profile?.ic_password) {
       console.log('⚠️ Infinite Campus not configured')
       return false
     }
 
-    this.districtName = profile.ic_district_name
-    this.state = profile.ic_state
+    this.lunchNumber = profile.ic_lunch_number
     this.username = profile.ic_username
     this.password = profile.ic_password
 
-    // Construct base URL from district and state
-    // Format: https://<state><district>.infinitecampus.org
-    const districtCode = this.districtName.toLowerCase().replace(/\s+/g, '')
-    this.baseUrl = `https://${this.state.toLowerCase()}${districtCode}.infinitecampus.org`
-
     console.log('✅ Infinite Campus initialized:', {
-      district: this.districtName,
-      state: this.state,
-      baseUrl: this.baseUrl,
+      lunchNumber: this.lunchNumber,
+      username: this.username,
       hasCredentials: !!(this.username && this.password)
     })
 
@@ -89,7 +81,7 @@ class InfiniteCampusService {
     try {
       console.log('🎓 Fetching grades from Infinite Campus...')
 
-      if (!this.districtName || !this.state || !this.username || !this.password) {
+      if (!this.lunchNumber || !this.username || !this.password) {
         throw new Error('Infinite Campus credentials not configured')
       }
 
@@ -112,8 +104,7 @@ class InfiniteCampusService {
         },
         body: JSON.stringify({
           action: 'getGrades',
-          district: this.districtName,
-          state: this.state,
+          lunchNumber: this.lunchNumber,
           username: this.username,
           password: this.password
         })
