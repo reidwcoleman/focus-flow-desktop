@@ -222,10 +222,10 @@ async function handleGetGrades(body: any): Promise<Response> {
 
     // Try multiple possible grades paths for Wake County
     const gradePaths = isWakeCounty ? [
-      `${baseUrl}/campus/portal/portal.xsl?x=portal.PortalOutline&contentType=text/xml&lang=en&personID=&studentFirstName=&lastName=&sortBy=undefined`,
-      `${baseUrl}/campus/students/grades.jsp`,
-      `${baseUrl}/campus/portal/psu920wakeco.jsp?tab=studentGrades`,
-      `${baseUrl}/campus/portal/students/psu920wakeco.jsp?tab=studentGrades`,
+      `${baseUrl}/campus/portal/students/psu920wakeco.jsp`,  // Main authenticated student portal
+      `${baseUrl}/campus/resources/portal/grades`,
+      `${baseUrl}/campus/nav-wrapper/grades/report/card`,
+      `${baseUrl}/campus/portal/portal.xsl?x=resource.PortletResourceManager.Grades`,
     ] : [`${baseUrl}/campus/portal/${districtCode}/grades.jsp`]
 
     let gradesHtml = ''
@@ -329,20 +329,43 @@ function parseGradesFromHtml(html: string): Array<{
       }
     }
 
-    // Fallback: If no grades found with structured parsing, try simpler approach
+    // Fallback: If no grades found with structured parsing, try broader patterns
     if (grades.length === 0) {
-      // Look for any percentage patterns in the HTML
-      const percentMatches = html.matchAll(/([A-Z][a-z\s]+(?:[A-Z][a-z]+)*)\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*%\s*\(([A-F][+-]?)\)/g)
+      console.log('⚠️ No grades found with standard parsing, trying fallback patterns...')
 
-      for (const match of percentMatches) {
-        grades.push({
-          courseName: match[1].trim(),
-          courseCode: match[1].trim(),
-          teacher: '',
-          period: '',
-          currentScore: parseFloat(match[2]),
-          letterGrade: match[3]
-        })
+      // Try multiple patterns for different Infinite Campus HTML structures
+      const patterns = [
+        // Pattern 1: Standard format with percentage and letter grade
+        /([A-Z][a-z\s]+(?:[A-Z][a-z]+)*)\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*%\s*\(([A-F][+-]?)\)/g,
+        // Pattern 2: Just percentage
+        /<td[^>]*>([^<]+)<\/td>\s*<td[^>]*>(\d+(?:\.\d+)?)\s*%<\/td>/g,
+        // Pattern 3: Course name and grade in adjacent cells
+        /<td[^>]*class="[^"]*course[^"]*"[^>]*>([^<]+)<\/td>[\s\S]*?<td[^>]*>([A-F][+-]?|\d+(?:\.\d+)?%?)<\/td>/gi,
+      ]
+
+      for (const pattern of patterns) {
+        const matches = html.matchAll(pattern)
+        for (const match of matches) {
+          const courseName = match[1]?.trim()
+          const gradeValue = match[2]?.trim()
+          const letterGrade = match[3]?.trim() || null
+
+          if (courseName && gradeValue) {
+            // Parse percentage if it exists
+            const percentMatch = gradeValue.match(/(\d+(?:\.\d+)?)/)
+            const percentage = percentMatch ? parseFloat(percentMatch[1]) : null
+
+            grades.push({
+              courseName: courseName,
+              courseCode: courseName,
+              teacher: '',
+              period: '',
+              currentScore: percentage,
+              letterGrade: letterGrade || (gradeValue.match(/[A-F][+-]?/) ? gradeValue : null)
+            })
+          }
+        }
+        if (grades.length > 0) break
       }
     }
   } catch (error) {
