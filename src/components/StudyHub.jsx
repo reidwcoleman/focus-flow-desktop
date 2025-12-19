@@ -658,89 +658,29 @@ const StudyHub = () => {
 
   // Render overview (default view)
   return (
-    <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
-      {/* Header */}
+    <div className="space-y-4 md:space-y-5 pb-6 md:pb-8">
+      {/* Simplified Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">Study Hub</h1>
-          <p className="text-dark-text-secondary">Your notes and flashcards</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary">Study Hub</h1>
+          <p className="text-sm text-dark-text-muted mt-0.5">
+            {notesLoading || flashcardsLoading ? 'Loading...' : `${notesStats.totalNotes} notes • ${flashcardsStats.totalDecks} decks${dueCards.length > 0 ? ` • ${dueCards.length} due` : ''}`}
+          </p>
         </div>
-      </div>
-
-      {/* Daily Review Widget */}
-      {dueCards.length > 0 && (
-        <div className="bg-gradient-to-br from-accent-purple to-accent-purple-dark rounded-2xl p-4 md:p-5 lg:p-6 -lg border border-accent-purple/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-lg">Daily Review</h3>
-                <p className="text-white/90 text-sm">{dueCards.length} cards waiting</p>
-              </div>
-            </div>
-            <button
-              onClick={startDailyReview}
-              className="px-5 py-2.5 bg-white text-accent-purple font-semibold rounded-xl   transition-all active:scale-95"
-            >
-              Start
-            </button>
-          </div>
-          <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-white rounded-full transition-all duration-300"
-              style={{ width: '35%' }}
-            ></div>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {/* Notes Card */}
-        <button
-          onClick={() => setActiveSection('notes')}
-          className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle  transition-all active:scale-95 text-left"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center ">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-          </div>
-          <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">
-            {notesLoading ? '...' : notesStats.totalNotes}
-          </div>
-          <div className="text-dark-text-secondary text-sm font-medium">Notes</div>
-        </button>
-
-        {/* Flashcards Card */}
-        <button
-          onClick={() => setActiveSection('flashcards')}
-          className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle  transition-all active:scale-95 text-left"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-          </div>
-          <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">
-            {flashcardsLoading ? '...' : flashcardsStats.totalDecks}
-          </div>
-          <div className="text-dark-text-secondary text-sm font-medium">Decks</div>
-        </button>
+        {dueCards.length > 0 && (
+          <button
+            onClick={startDailyReview}
+            className="px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+          >
+            Review ({dueCards.length})
+          </button>
+        )}
       </div>
 
       {/* Recent Notes Section */}
-      <div className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary">Recent Notes</h3>
+      <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5 border border-dark-border-subtle">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base md:text-lg font-bold text-dark-text-primary">Recent Notes</h3>
           <button
             onClick={() => setActiveSection('allNotes')}
             className="text-primary-500 text-sm font-semibold hover:text-primary-400 transition-colors"
@@ -792,9 +732,9 @@ const StudyHub = () => {
       </div>
 
       {/* Flashcard Decks Section */}
-      <div className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary">Flashcard Decks</h3>
+      <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5 border border-dark-border-subtle">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base md:text-lg font-bold text-dark-text-primary">Flashcard Decks</h3>
           <button
             onClick={() => setActiveSection('allFlashcards')}
             className="text-primary-500 text-sm font-semibold hover:text-primary-400 transition-colors"
