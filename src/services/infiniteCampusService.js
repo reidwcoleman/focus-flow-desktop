@@ -42,35 +42,13 @@ class InfiniteCampusService {
   }
 
   /**
-   * Find district URL
-   * Some districts have custom URLs, this tries common patterns
+   * Find district URL (deprecated for NCEdCloud)
+   * Wake County uses NCEdCloud SSO, not direct Infinite Campus URLs
    */
   async findDistrictUrl() {
-    const patterns = [
-      // Pattern 1: state + district
-      `https://${this.state.toLowerCase()}${this.districtName.toLowerCase().replace(/\s+/g, '')}.infinitecampus.org`,
-      // Pattern 2: just district name
-      `https://${this.districtName.toLowerCase().replace(/\s+/g, '')}.infinitecampus.org`,
-      // Pattern 3: district with 'ky' suffix (Kentucky pattern)
-      `https://${this.districtName.toLowerCase().replace(/\s+/g, '')}ky.infinitecampus.org`,
-    ]
-
-    for (const url of patterns) {
-      try {
-        const response = await fetch(`${url}/campus/portal/students/${this.districtName.toLowerCase().replace(/\s+/g, '')}.jsp`, {
-          method: 'HEAD',
-          mode: 'no-cors'
-        })
-        this.baseUrl = url
-        return url
-      } catch (error) {
-        continue
-      }
-    }
-
-    // Default to first pattern
-    this.baseUrl = patterns[0]
-    return patterns[0]
+    // For Wake County with NCEdCloud, we use the fixed URL
+    this.baseUrl = 'https://920.ncsis.gov'
+    return this.baseUrl
   }
 
   /**
@@ -216,7 +194,7 @@ class InfiniteCampusService {
       if (!initialized) {
         return {
           success: false,
-          message: 'Please configure Infinite Campus credentials first'
+          message: 'Please configure Infinite Campus credentials (lunch number, username, password)'
         }
       }
 
@@ -224,13 +202,13 @@ class InfiniteCampusService {
 
       return {
         success: true,
-        message: `District found! Configuration ready for ${this.districtName}, ${this.state}`,
+        message: `✅ NCEdCloud credentials configured! Ready to sync grades for lunch number ${this.lunchNumber}`,
         config: {
-          district: this.districtName,
-          state: this.state,
+          lunchNumber: this.lunchNumber,
+          username: this.username,
           url: this.baseUrl
         },
-        note: 'Actual grade sync requires backend proxy (browser CORS limitation)'
+        note: 'Click "Sync Grades" to fetch your grades from Infinite Campus via NCEdCloud'
       }
     } catch (error) {
       return {
