@@ -76,18 +76,47 @@ serve(async (req) => {
 async function handleLogin(body: any): Promise<Response> {
   const { district, state, username, password }: LoginRequest = body
 
-  // Construct Infinite Campus URL
+  // Construct Infinite Campus URL - try multiple patterns
   const districtCode = district.toLowerCase().replace(/\s+/g, '')
-  const baseUrl = `https://${state.toLowerCase()}${districtCode}.infinitecampus.org`
+  const stateCode = state.toLowerCase()
 
-  console.log(`📡 Attempting login to: ${baseUrl}`)
+  // Try multiple URL patterns (order matters - most common first)
+  const urlPatterns = [
+    `https://${districtCode}.infinitecampus.org`,                    // Pattern 1: just district
+    `https://${stateCode}-${districtCode}.infinitecampus.org`,       // Pattern 2: state-district
+    `https://${stateCode}${districtCode}.infinitecampus.org`,        // Pattern 3: stateDistrict
+    `https://${districtCode}${stateCode}.infinitecampus.org`,        // Pattern 4: districtState (KY pattern)
+  ]
+
+  let baseUrl = ''
+  let loginPageHtml = ''
+  let lastError = null
+
+  // Try each URL pattern until one works
+  for (const testUrl of urlPatterns) {
+    try {
+      console.log(`📡 Trying: ${testUrl}`)
+      const loginPageUrl = `${testUrl}/campus/portal/students/${districtCode}.jsp`
+      const loginPageResponse = await fetch(loginPageUrl)
+
+      if (loginPageResponse.ok) {
+        baseUrl = testUrl
+        loginPageHtml = await loginPageResponse.text()
+        console.log(`✅ Found working URL: ${baseUrl}`)
+        break
+      }
+    } catch (error) {
+      lastError = error
+      console.log(`❌ Failed: ${testUrl}`)
+      continue
+    }
+  }
+
+  if (!baseUrl || !loginPageHtml) {
+    throw new Error(`Could not find valid Infinite Campus URL for ${district}, ${state}. Tried: ${urlPatterns.join(', ')}`)
+  }
 
   try {
-    // Step 1: Get login page to extract CSRF token and form data
-    const loginPageUrl = `${baseUrl}/campus/portal/students/${districtCode}.jsp`
-    const loginPageResponse = await fetch(loginPageUrl)
-    const loginPageHtml = await loginPageResponse.text()
-
     // Extract appName from hidden input
     const appNameMatch = loginPageHtml.match(/name="appName"\s+value="([^"]+)"/)
     const appName = appNameMatch ? appNameMatch[1] : districtCode
