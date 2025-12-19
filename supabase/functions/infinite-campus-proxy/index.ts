@@ -168,9 +168,25 @@ async function handleLogin(body: any): Promise<Response> {
     const cookies = loginResponse.headers.get('set-cookie')
     console.log(`🍪 Cookies received: ${cookies ? 'Yes' : 'No'}`)
 
-    if (!cookies || loginResponse.status !== 302) {
-      console.error(`❌ Login failed - Status: ${loginResponse.status}, Cookies: ${cookies ? 'present' : 'missing'}`)
-      throw new Error(`Login failed - Status ${loginResponse.status}. Please verify your WakeID credentials.`)
+    // Check if login failed (no redirect or wrong status)
+    if (loginResponse.status !== 302) {
+      // Get the response body to check for error messages
+      const responseText = await loginResponse.text()
+      console.error(`❌ Login failed - Status: ${loginResponse.status}`)
+      console.error(`Response preview: ${responseText.substring(0, 500)}`)
+
+      // Check for common error indicators
+      if (responseText.includes('invalid') || responseText.includes('incorrect') || responseText.includes('failed')) {
+        throw new Error('❌ Invalid username or password. Please check your WakeID credentials and try again.')
+      }
+
+      throw new Error(`❌ Login failed (Status ${loginResponse.status}). Please verify your WakeID username and password are correct.`)
+    }
+
+    // No cookies means authentication failed even with 302
+    if (!cookies) {
+      console.error(`❌ Login failed - No session cookies received`)
+      throw new Error('❌ Invalid username or password. No session was created. Please check your credentials.')
     }
 
     // Extract ALL cookies, not just JSESSIONID
