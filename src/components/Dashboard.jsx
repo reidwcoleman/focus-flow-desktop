@@ -455,9 +455,11 @@ const Dashboard = ({ onOpenScanner }) => {
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-5 pb-6 md:pb-8 lg:pb-8">
       {/* Header */}
-      <div className="py-4 md:py-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-dark-text-primary mb-1">{getTimeOfDayGreeting()}, {userName}</h2>
-        <p className="text-dark-text-secondary text-sm md:text-base">
+      <div className="rounded-2xl bg-gradient-to-br from-dark-bg-secondary to-dark-bg-surface border border-dark-border-subtle p-6 md:p-8">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent mb-3">
+          {getTimeOfDayGreeting()}, {userName}
+        </h1>
+        <p className="text-dark-text-secondary text-base md:text-lg lg:text-xl font-medium">
           {assignments.length === 0
             ? 'No assignments - add one to get started!'
             : `You have ${assignments.length} assignment${assignments.length === 1 ? '' : 's'}`
