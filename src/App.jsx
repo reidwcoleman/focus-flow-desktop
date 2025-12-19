@@ -242,17 +242,28 @@ function App() {
         )}
 
         {/* Left Sidebar Navigation - Desktop Style */}
-        <aside className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'w-16' : 'w-64'} bg-dark-bg-secondary border-r border-dark-border-glow shadow-dark-soft fixed left-0 top-0 bottom-0 z-40 transition-all duration-200`}>
-          {/* Logo / Brand */}
-          <div className="p-5 xl:p-6 border-b border-dark-border-glow">
-            <h1 className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-primary-500 to-accent-cyan bg-clip-text text-transparent">
-              Focus Flow
-            </h1>
-            <p className="text-sm xl:text-base text-dark-text-muted mt-1.5">Your Academic OS</p>
-          </div>
+        <aside className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'w-20' : 'w-64'} bg-dark-bg-secondary border-r border-dark-border-glow shadow-dark-soft fixed left-0 top-0 bottom-0 z-40 transition-all duration-300`}>
+          {/* Logo / Brand - Hidden when collapsed */}
+          {!sidebarCollapsed && (
+            <div className="p-5 xl:p-6 border-b border-dark-border-glow">
+              <h1 className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-primary-500 to-accent-cyan bg-clip-text text-transparent">
+                Focus Flow
+              </h1>
+              <p className="text-sm xl:text-base text-dark-text-muted mt-1.5">Your Academic OS</p>
+            </div>
+          )}
 
-          {/* User Profile Section */}
-          {user && (
+          {/* Collapsed Logo Icon */}
+          {sidebarCollapsed && (
+            <div className="p-4 border-b border-dark-border-glow flex justify-center">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center">
+                <span className="text-white font-bold text-xl">FF</span>
+              </div>
+            </div>
+          )}
+
+          {/* User Profile Section - Hidden when collapsed */}
+          {user && !sidebarCollapsed && (
             <div className="px-5 xl:px-6 py-3 border-b border-dark-border-subtle">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 xl:w-12 xl:h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center text-white font-bold text-lg xl:text-xl">
@@ -270,8 +281,17 @@ function App() {
             </div>
           )}
 
+          {/* User Profile Icon - Shown when collapsed */}
+          {user && sidebarCollapsed && (
+            <div className="px-3 py-3 border-b border-dark-border-subtle flex justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center text-white font-bold text-base">
+                {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+              </div>
+            </div>
+          )}
+
           {/* Navigation Items */}
-          <nav className="flex-1 py-2.5 xl:py-3 px-4 xl:px-5 overflow-y-visible">
+          <nav className="flex-1 py-2.5 xl:py-3 px-3 xl:px-4 overflow-y-visible">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id
               const isCenter = tab.isCenter
@@ -285,12 +305,13 @@ function App() {
                       setShowScanner(true)
                       setActiveTab('dashboard')
                     }}
-                    className="w-full mb-1.5 px-4 py-2.5 rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan hover:shadow-dark-soft-lg transition-all flex items-center gap-3 text-white font-semibold"
+                    className={`w-full mb-1.5 ${sidebarCollapsed ? 'px-3 py-3 justify-center' : 'px-4 py-2.5'} rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan hover:shadow-dark-soft-lg transition-all flex items-center gap-3 text-white font-semibold`}
+                    title={sidebarCollapsed ? tab.label : undefined}
                   >
                     <div className="w-6 h-6 xl:w-7 xl:h-7">
                       {getIcon(tab.icon, true, false)}
                     </div>
-                    <span className="text-base xl:text-lg">{tab.label}</span>
+                    {!sidebarCollapsed && <span className="text-base xl:text-lg">{tab.label}</span>}
                   </button>
                 )
               }
@@ -299,47 +320,59 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => tab.id !== activeTab && setActiveTab(tab.id)}
-                  className={`w-full mb-1 px-4 py-2 rounded-lg transition-all flex items-center gap-3 group ${
+                  className={`w-full mb-1 ${sidebarCollapsed ? 'px-3 py-3 justify-center' : 'px-4 py-2'} rounded-lg transition-all flex items-center gap-3 group ${
                     isActive
                       ? 'bg-dark-bg-surface text-primary-500'
                       : 'text-dark-text-muted hover:bg-dark-bg-surface/50 hover:text-dark-text-secondary'
                   }`}
+                  title={sidebarCollapsed ? tab.label : undefined}
                 >
                   <div className={`w-5 h-5`}>
                     {getIcon(tab.icon, isActive, false)}
                   </div>
-                  <span className={`text-sm xl:text-base font-medium ${isActive ? 'font-semibold' : ''}`}>
-                    {tab.label}
-                  </span>
-                  {isActive && tab.id === 'tutor' && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-accent-purple animate-pulse shadow-glow-purple"></div>
-                  )}
-                  {!isActive && (
-                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                  {!sidebarCollapsed && (
+                    <>
+                      <span className={`text-sm xl:text-base font-medium ${isActive ? 'font-semibold' : ''}`}>
+                        {tab.label}
+                      </span>
+                      {isActive && tab.id === 'tutor' && (
+                        <div className="ml-auto w-2 h-2 rounded-full bg-accent-purple animate-pulse shadow-glow-purple"></div>
+                      )}
+                      {!isActive && (
+                        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </>
                   )}
                 </button>
               )
             })}
           </nav>
 
-          {/* Toggle Sidebar Button */}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="absolute bottom-4 -right-3 w-6 h-6 rounded-full bg-dark-bg-surface border border-dark-border-glow flex items-center justify-center hover:bg-dark-bg-tertiary transition-colors shadow-dark-soft"
-            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <svg className={`w-4 h-4 text-dark-text-muted transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+          {/* Toggle Sidebar Button - Larger and more accessible */}
+          <div className="p-3 border-t border-dark-border-glow">
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className={`w-full ${sidebarCollapsed ? 'px-3 py-3 justify-center' : 'px-4 py-2.5'} rounded-lg bg-dark-bg-surface border border-dark-border-glow flex items-center gap-3 hover:bg-dark-bg-tertiary hover:border-primary-500/30 transition-all shadow-dark-soft group`}
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <svg className={`w-5 h-5 text-dark-text-muted group-hover:text-primary-500 transition-all ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              {!sidebarCollapsed && (
+                <span className="text-sm font-medium text-dark-text-muted group-hover:text-primary-500 transition-colors">
+                  Collapse
+                </span>
+              )}
+            </button>
+          </div>
         </aside>
 
         {/* Main Content Area - Desktop optimized */}
-        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'} px-4 md:px-6 lg:px-8 py-4 md:py-6 overflow-y-auto overflow-x-hidden pb-24 md:pb-12 transition-all duration-200`}>
+        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} px-4 md:px-6 lg:px-8 py-4 md:py-6 overflow-y-auto overflow-x-hidden pb-24 md:pb-12 transition-all duration-300`}>
           <div className="max-w-[1800px] mx-auto w-full">
             <div className="relative w-full">
               <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'dashboard' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
