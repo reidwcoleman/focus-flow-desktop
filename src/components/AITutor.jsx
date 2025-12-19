@@ -509,42 +509,42 @@ const AITutor = () => {
     <div className="flex h-full gap-4">
       {/* Sidebar - Chat History */}
       {showHistory && (
-        <div className="w-64 bg-dark-bg-secondary rounded-lg border border-dark-border-subtle p-3 flex flex-col animate-fadeIn">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-dark-text-primary">Chat History</h3>
-            <button
-              onClick={() => setShowHistory(false)}
-              className="p-1 rounded hover:bg-dark-bg-tertiary transition-colors"
-            >
-              <svg className="w-4 h-4 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+        <div className="w-56 flex flex-col animate-fadeIn">
+          <div className="bg-dark-bg-secondary rounded-lg border border-dark-border-subtle p-3 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-dark-border-subtle">
+              <h3 className="text-sm font-semibold text-dark-text-primary">History</h3>
+              <span className="text-xs text-dark-text-muted">{chatHistory.length}</span>
+            </div>
 
-          <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin">
-            {chatHistory.length === 0 ? (
-              <p className="text-xs text-dark-text-muted text-center py-4">No saved chats yet</p>
-            ) : (
-              chatHistory.map((chat) => (
-                <button
-                  key={chat.id}
-                  onClick={() => loadChat(chat.id)}
-                  className={`w-full text-left p-2.5 rounded-lg transition-colors ${
-                    currentChatId === chat.id
-                      ? 'bg-primary-500/20 border border-primary-500/30'
-                      : 'hover:bg-dark-bg-tertiary border border-transparent'
-                  }`}
-                >
-                  <div className="text-xs font-medium text-dark-text-primary truncate mb-0.5">
-                    {chat.title || 'Untitled Chat'}
-                  </div>
-                  <div className="text-[10px] text-dark-text-muted">
-                    {new Date(chat.updated_at).toLocaleDateString()}
-                  </div>
-                </button>
-              ))
-            )}
+            <div className="flex-1 overflow-y-auto space-y-1 scrollbar-thin">
+              {chatHistory.length === 0 ? (
+                <div className="text-center py-8">
+                  <svg className="w-8 h-8 mx-auto mb-2 text-dark-text-muted opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <p className="text-xs text-dark-text-muted">No saved chats</p>
+                </div>
+              ) : (
+                chatHistory.map((chat) => (
+                  <button
+                    key={chat.id}
+                    onClick={() => loadChat(chat.id)}
+                    className={`w-full text-left p-2 rounded-lg transition-all ${
+                      currentChatId === chat.id
+                        ? 'bg-primary-500/10 border border-primary-500/30'
+                        : 'hover:bg-dark-bg-tertiary'
+                    }`}
+                  >
+                    <div className="text-xs font-medium text-dark-text-primary truncate mb-0.5">
+                      {chat.title || 'Untitled Chat'}
+                    </div>
+                    <div className="text-[10px] text-dark-text-muted">
+                      {new Date(chat.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
