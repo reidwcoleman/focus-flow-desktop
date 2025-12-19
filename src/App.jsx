@@ -24,6 +24,7 @@ function App() {
   const [profile, setProfile] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [dashboardKey, setDashboardKey] = useState(0)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   // Check auth state on mount
   useEffect(() => {
@@ -71,6 +72,18 @@ function App() {
       subscription.unsubscribe()
     }
   }, [])
+
+  // Persist sidebar collapsed state
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebarCollapsed')
+    if (saved !== null) {
+      setSidebarCollapsed(JSON.parse(saved))
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed))
+  }, [sidebarCollapsed])
 
   // Check streak when app becomes visible again (user returns to tab)
   useEffect(() => {
@@ -229,7 +242,7 @@ function App() {
         )}
 
         {/* Left Sidebar Navigation - Desktop Style */}
-        <aside className="hidden md:flex md:flex-col md:w-72 lg:w-80 xl:w-96 bg-dark-bg-secondary border-r border-dark-border-glow shadow-dark-soft-lg fixed left-0 top-0 bottom-0 z-40">
+        <aside className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'w-16' : 'w-64'} bg-dark-bg-secondary border-r border-dark-border-glow shadow-dark-soft fixed left-0 top-0 bottom-0 z-40 transition-all duration-200`}>
           {/* Logo / Brand */}
           <div className="p-5 xl:p-6 border-b border-dark-border-glow">
             <h1 className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-primary-500 to-accent-cyan bg-clip-text text-transparent">
@@ -272,7 +285,7 @@ function App() {
                       setShowScanner(true)
                       setActiveTab('dashboard')
                     }}
-                    className="w-full mb-1.5 px-4 xl:px-5 py-2.5 xl:py-3 rounded-xl bg-gradient-to-br from-primary-500 to-accent-cyan shadow-glow-cyan-lg hover:shadow-glow-cyan-xl hover:scale-[1.02] transition-all duration-200 flex items-center gap-3 text-white font-semibold"
+                    className="w-full mb-1.5 px-4 py-2.5 rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan hover:shadow-dark-soft-lg transition-all flex items-center gap-3 text-white font-semibold"
                   >
                     <div className="w-6 h-6 xl:w-7 xl:h-7">
                       {getIcon(tab.icon, true, false)}
@@ -286,13 +299,13 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => tab.id !== activeTab && setActiveTab(tab.id)}
-                  className={`w-full mb-1 px-4 xl:px-5 py-2 xl:py-2.5 rounded-xl transition-all duration-200 flex items-center gap-3 group ${
+                  className={`w-full mb-1 px-4 py-2 rounded-lg transition-all flex items-center gap-3 group ${
                     isActive
-                      ? 'bg-dark-bg-surface text-primary-500 shadow-rim-light scale-[1.02]'
-                      : 'text-dark-text-muted hover:bg-dark-bg-surface/50 hover:text-dark-text-secondary hover:scale-[1.01]'
+                      ? 'bg-dark-bg-surface text-primary-500'
+                      : 'text-dark-text-muted hover:bg-dark-bg-surface/50 hover:text-dark-text-secondary'
                   }`}
                 >
-                  <div className={`w-5 h-5 xl:w-6 xl:h-6 transition-transform group-hover:scale-110 ${isActive ? 'drop-shadow-[0_0_12px_rgba(88,166,255,0.6)]' : ''}`}>
+                  <div className={`w-5 h-5`}>
                     {getIcon(tab.icon, isActive, false)}
                   </div>
                   <span className={`text-sm xl:text-base font-medium ${isActive ? 'font-semibold' : ''}`}>
@@ -312,10 +325,21 @@ function App() {
               )
             })}
           </nav>
+
+          {/* Toggle Sidebar Button */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="absolute bottom-4 -right-3 w-6 h-6 rounded-full bg-dark-bg-surface border border-dark-border-glow flex items-center justify-center hover:bg-dark-bg-tertiary transition-colors shadow-dark-soft"
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <svg className={`w-4 h-4 text-dark-text-muted transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
         </aside>
 
         {/* Main Content Area - Desktop optimized */}
-        <main className="flex-1 md:ml-72 lg:ml-80 xl:ml-96 px-4 md:px-6 lg:px-8 xl:px-10 py-4 md:py-6 xl:py-8 overflow-y-auto overflow-x-hidden pb-24 md:pb-12">
+        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'} px-4 md:px-6 lg:px-8 py-4 md:py-6 overflow-y-auto overflow-x-hidden pb-24 md:pb-12 transition-all duration-200`}>
           <div className="max-w-[1800px] mx-auto w-full">
             <div className="relative w-full">
               <div className={`transition-opacity duration-200 overflow-x-hidden ${activeTab === 'dashboard' ? 'opacity-100 relative' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
