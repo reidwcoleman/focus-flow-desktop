@@ -50,9 +50,13 @@ const Planner = () => {
           const subtasks = await activitySubtasksService.getSubtasks(activity.id)
           if (subtasks.length > 0) {
             subtasksMap[activity.id] = subtasks
+            console.log(`Loaded ${subtasks.length} subtasks for activity: ${activity.title}`)
           }
         } catch (error) {
-          console.error(`Failed to load subtasks for activity ${activity.id}:`, error)
+          // Silently fail if table doesn't exist yet - migrations may not be applied
+          if (!error.message?.includes('relation') && !error.message?.includes('does not exist')) {
+            console.error(`Failed to load subtasks for activity ${activity.id}:`, error)
+          }
         }
       }
       setSubtasksByActivity(subtasksMap)
@@ -131,15 +135,23 @@ const Planner = () => {
   const generateAIContent = async (activity) => {
     try {
       setGeneratingAI(prev => ({ ...prev, [activity.id]: true }))
+      console.log('🤖 Generating AI content for:', activity.title)
 
       // Generate description and subtasks in parallel
       const [description, subtasks] = await Promise.all([
-        activityBreakdownService.generateDescription(activity).catch(() => null),
-        activityBreakdownService.generateSubtasks(activity).catch(() => [])
+        activityBreakdownService.generateDescription(activity).catch((err) => {
+          console.log('Description generation skipped:', err.message)
+          return null
+        }),
+        activityBreakdownService.generateSubtasks(activity).catch((err) => {
+          console.log('Subtask generation skipped:', err.message)
+          return []
+        })
       ])
 
       // Update activity with AI description if generated
       if (description) {
+        console.log('✅ Generated description:', description)
         await calendarService.updateActivity(activity.id, {
           ai_description: description
         })
@@ -147,8 +159,14 @@ const Planner = () => {
 
       // Create subtasks if generated
       if (subtasks && subtasks.length > 0) {
-        await activitySubtasksService.createSubtasksBulk(activity.id, subtasks)
-        await loadSubtasksForActivity(activity.id)
+        console.log(`✅ Generated ${subtasks.length} subtasks:`, subtasks.map(s => s.title))
+        try {
+          await activitySubtasksService.createSubtasksBulk(activity.id, subtasks)
+          await loadSubtasksForActivity(activity.id)
+          console.log('✅ Subtasks saved to database')
+        } catch (error) {
+          console.error('⚠️ Failed to save subtasks (table may not exist yet):', error.message)
+        }
       }
 
       // Reload activities to show updated description

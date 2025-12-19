@@ -82,97 +82,90 @@ async function handleLogin(body: any): Promise<Response> {
   const infiniteCampusUrl = 'https://920.ncsis.gov'
 
   try {
-    // Extract appName from hidden input
-    const appNameMatch = loginPageHtml.match(/name="appName"\s+value="([^"]+)"/)
-    const appName = appNameMatch ? appNameMatch[1] : districtCode
+    // Step 1: Authenticate with NCEdCloud
+    console.log('🔑 Step 1: Authenticating with NCEdCloud...')
 
-    // Determine the correct portal URL
-    const isWakeCounty = baseUrl.includes('ncsis.gov')
-    const portalUrl = isWakeCounty
-      ? `${baseUrl}/campus/portal/students/psu920wakeco.jsp`
-      : `${baseUrl}/campus/portal/students/${districtCode}.jsp`
-
-    // Step 2: Perform login POST request
-    const loginData = new URLSearchParams({
-      username: username,
+    const ncedLoginData = new URLSearchParams({
+      user: lunchNumber,
       password: password,
-      appName: appName,
-      lang: 'en',
-      portalUrl: portalUrl
+      goto: infiniteCampusUrl,
     })
 
-    const loginResponse = await fetch(`${baseUrl}/campus/verify.jsp`, {
+    const ncedLoginResponse = await fetch(`${ncedcloudLoginUrl}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
       },
-      body: loginData.toString(),
-      redirect: 'manual' // Don't follow redirects automatically
+      body: ncedLoginData.toString(),
+      redirect: 'manual'
     })
 
-    console.log(`🔑 Login response status: ${loginResponse.status}`)
+    console.log(`🔑 NCEdCloud response status: ${ncedLoginResponse.status}`)
 
-    // Check for session cookies
-    const cookies = loginResponse.headers.get('set-cookie')
-    console.log(`🍪 Cookies received: ${cookies ? 'Yes' : 'No'}`)
+    // Check for session cookies from NCEdCloud
+    const ncedCookies = ncedLoginResponse.headers.get('set-cookie')
+    console.log(`🍪 NCEdCloud cookies received: ${ncedCookies ? 'Yes' : 'No'}`)
 
-    // Check if login failed (no redirect or wrong status)
-    if (loginResponse.status !== 302) {
-      // Get the response body to check for error messages
-      const responseText = await loginResponse.text()
-      console.error(`❌ Login failed - Status: ${loginResponse.status}`)
+    // Check if NCEdCloud login failed
+    if (ncedLoginResponse.status !== 302 && ncedLoginResponse.status !== 200) {
+      const responseText = await ncedLoginResponse.text()
+      console.error(`❌ NCEdCloud login failed - Status: ${ncedLoginResponse.status}`)
       console.error(`Response preview: ${responseText.substring(0, 500)}`)
 
-      // Check for common error indicators
       if (responseText.includes('invalid') || responseText.includes('incorrect') || responseText.includes('failed')) {
-        throw new Error('❌ Invalid username or password. Please check your WakeID credentials and try again.')
+        throw new Error('❌ Invalid lunch number or password. Please check your credentials and try again.')
       }
 
-      throw new Error(`❌ Login failed (Status ${loginResponse.status}). Please verify your WakeID username and password are correct.`)
+      throw new Error(`❌ Login failed (Status ${ncedLoginResponse.status}). Please verify your lunch number and password are correct.`)
     }
 
-    // No cookies means authentication failed even with 302
-    if (!cookies) {
-      console.error(`❌ Login failed - No session cookies received`)
-      throw new Error('❌ Invalid username or password. No session was created. Please check your credentials.')
+    if (!ncedCookies) {
+      console.error(`❌ NCEdCloud login failed - No session cookies`)
+      throw new Error('❌ Invalid credentials. No session was created. Please check your lunch number and password.')
     }
 
-    // Extract ALL cookies, not just JSESSIONID
-    const allCookies = cookies.split(',').map(c => c.split(';')[0]).join('; ')
-    console.log(`🍪 All cookies: ${allCookies}`)
+    // Extract all NCEdCloud cookies
+    const allCookies = ncedCookies.split(',').map(c => c.split(';')[0]).join('; ')
+    console.log(`🍪 All NCEdCloud cookies: ${allCookies}`)
 
-    // Follow the redirect to establish the session fully
-    const redirectLocation = loginResponse.headers.get('location')
+    // Step 2: Follow redirect to Infinite Campus
+    const redirectLocation = ncedLoginResponse.headers.get('location')
+    console.log(`🔄 NCEdCloud redirect location: ${redirectLocation}`)
+
+    let icCookies = allCookies
+
     if (redirectLocation) {
-      const redirectUrl = redirectLocation.startsWith('http') ? redirectLocation : `${baseUrl}${redirectLocation}`
-      console.log(`🔄 Following redirect to: ${redirectUrl}`)
+      const redirectUrl = redirectLocation.startsWith('http') ? redirectLocation : `${infiniteCampusUrl}${redirectLocation}`
+      console.log(`🔄 Step 2: Following SSO redirect to IC: ${redirectUrl}`)
 
-      const redirectResponse = await fetch(redirectUrl, {
+      const icResponse = await fetch(redirectUrl, {
         headers: {
           'Cookie': allCookies,
           'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
-        }
+        },
+        redirect: 'manual'
       })
 
-      console.log(`🔄 Redirect response status: ${redirectResponse.status}`)
+      console.log(`🔄 IC SSO response status: ${icResponse.status}`)
 
-      // Get any additional cookies from redirect
-      const redirectCookies = redirectResponse.headers.get('set-cookie')
-      if (redirectCookies) {
-        const additionalCookies = redirectCookies.split(',').map(c => c.split(';')[0]).join('; ')
-        console.log(`🍪 Additional cookies from redirect: ${additionalCookies}`)
+      // Get IC session cookies
+      const icSessionCookies = icResponse.headers.get('set-cookie')
+      if (icSessionCookies) {
+        const additionalCookies = icSessionCookies.split(',').map(c => c.split(';')[0]).join('; ')
+        icCookies = `${allCookies}; ${additionalCookies}`
+        console.log(`🍪 IC session cookies: ${additionalCookies}`)
       }
     }
 
-    console.log('✅ Login successful, session established')
+    console.log('✅ NCEdCloud + IC authentication successful!')
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Login successful',
-        sessionId: allCookies,  // Return all cookies, not just JSESSIONID
-        baseUrl: baseUrl
+        message: 'Login successful via NCEdCloud',
+        sessionId: icCookies,
+        baseUrl: infiniteCampusUrl
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -185,20 +178,19 @@ async function handleLogin(body: any): Promise<Response> {
 }
 
 async function handleGetGrades(body: any): Promise<Response> {
-  const { district, state, username, password }: GradesRequest = body
+  const { lunchNumber, username, password }: GradesRequest = body
 
-  // First, login to get session
-  const loginBody = { action: 'login', district, state, username, password }
+  // First, login to get session via NCEdCloud
+  const loginBody = { action: 'login', lunchNumber, username, password }
 
   const loginResponse = await handleLogin(loginBody)
   const loginData = await loginResponse.json()
 
   if (!loginData.success || !loginData.sessionId) {
-    throw new Error('Failed to establish session')
+    throw new Error('Failed to establish NCEdCloud session')
   }
 
   const { sessionId, baseUrl } = loginData
-  const districtCode = district.toLowerCase().replace(/\s+/g, '')
 
   try {
     // Fetch grades page - use correct path for Wake County
