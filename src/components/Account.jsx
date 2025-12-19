@@ -28,8 +28,7 @@ export default function Account() {
   const [loadingBadges, setLoadingBadges] = useState(true)
 
   // Infinite Campus state
-  const [icDistrict, setIcDistrict] = useState('')
-  const [icState, setIcState] = useState('')
+  const [icLunchNumber, setIcLunchNumber] = useState('')
   const [icUsername, setIcUsername] = useState('')
   const [icPassword, setIcPassword] = useState('')
   const [showIcPassword, setShowIcPassword] = useState(false)
@@ -54,8 +53,7 @@ export default function Account() {
     setNewName(profile?.full_name || user?.email?.split('@')[0] || '')
     setCanvasUrl(profile?.canvas_url || '')
     setCanvasToken(profile?.canvas_token || '')
-    setIcDistrict(profile?.ic_district_name || '')
-    setIcState(profile?.ic_state || '')
+    setIcLunchNumber(profile?.ic_lunch_number || '')
     setIcUsername(profile?.ic_username || '')
     setIcPassword(profile?.ic_password || '')
   }
@@ -209,8 +207,8 @@ export default function Account() {
 
   // Infinite Campus handlers
   const handleSaveIC = async () => {
-    if (!icDistrict.trim() || !icState.trim() || !icUsername.trim() || !icPassword.trim()) {
-      setError('All Infinite Campus fields are required')
+    if (!icLunchNumber.trim() || !icUsername.trim() || !icPassword.trim()) {
+      setError('All Infinite Campus fields are required (lunch number, WakeID username, and password)')
       return
     }
 
@@ -220,8 +218,7 @@ export default function Account() {
 
     try {
       const result = await authService.updateUserProfile({
-        ic_district_name: icDistrict.trim(),
-        ic_state: icState.trim().toUpperCase(),
+        ic_lunch_number: icLunchNumber.trim(),
         ic_username: icUsername.trim(),
         ic_password: icPassword.trim()
       })
@@ -584,46 +581,28 @@ export default function Account() {
 
             {isEditingIC ? (
               <div className="space-y-4 lg:space-y-6">
-                {/* District Name */}
+                {/* Lunch Number */}
                 <div>
                   <label className="block text-sm lg:text-base font-medium text-dark-text-secondary mb-2 lg:mb-3">
-                    District Name
+                    Lunch Number (Student ID)
                   </label>
                   <input
                     type="text"
-                    value={icDistrict}
-                    onChange={(e) => setIcDistrict(e.target.value)}
+                    value={icLunchNumber}
+                    onChange={(e) => setIcLunchNumber(e.target.value)}
                     className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-                    placeholder="Wake County"
+                    placeholder="123456789"
                     autoFocus
                   />
                   <p className="text-xs lg:text-sm text-dark-text-muted mt-1.5 lg:mt-2">
-                    Example: Wake County, WCPSS, etc.
+                    Your student ID / lunch number
                   </p>
                 </div>
 
-                {/* State */}
+                {/* WakeID Username */}
                 <div>
                   <label className="block text-sm lg:text-base font-medium text-dark-text-secondary mb-2 lg:mb-3">
-                    State (2-letter code)
-                  </label>
-                  <input
-                    type="text"
-                    value={icState}
-                    onChange={(e) => setIcState(e.target.value.toUpperCase())}
-                    maxLength={2}
-                    className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-                    placeholder="NC"
-                  />
-                  <p className="text-xs lg:text-sm text-dark-text-muted mt-1.5 lg:mt-2">
-                    Example: NC, CA, TX, etc.
-                  </p>
-                </div>
-
-                {/* Username */}
-                <div>
-                  <label className="block text-sm lg:text-base font-medium text-dark-text-secondary mb-2 lg:mb-3">
-                    Username
+                    WakeID Username
                   </label>
                   <input
                     type="text"
@@ -681,8 +660,7 @@ export default function Account() {
                   <button
                     onClick={() => {
                       setIsEditingIC(false)
-                      setIcDistrict(profile?.ic_district_name || '')
-                      setIcState(profile?.ic_state || '')
+                      setIcLunchNumber(profile?.ic_lunch_number || '')
                       setIcUsername(profile?.ic_username || '')
                       setIcPassword(profile?.ic_password || '')
                     }}
@@ -697,13 +675,13 @@ export default function Account() {
               <div className="space-y-3 lg:space-y-5">
                 {/* Status */}
                 <div>
-                  <p className="text-sm lg:text-base text-dark-text-secondary mb-1 lg:mb-2">District:</p>
+                  <p className="text-sm lg:text-base text-dark-text-secondary mb-1 lg:mb-2">Lunch Number:</p>
                   <p className="text-dark-text-primary text-base lg:text-xl">
-                    {profile?.ic_district_name ? `${profile.ic_district_name}, ${profile.ic_state}` : 'Not configured'}
+                    {profile?.ic_lunch_number || 'Not configured'}
                   </p>
                 </div>
 
-                {profile?.ic_district_name && profile?.ic_username && (
+                {profile?.ic_lunch_number && profile?.ic_username && (
                   <>
                     <div className="flex items-center gap-2 text-xs lg:text-sm text-green-400">
                       <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -626,24 +626,20 @@ const Planner = () => {
                       </div>
                     )}
 
-                    <div className={`p-3 md:p-4 lg:p-5 xl:p-6 rounded-xl md:rounded-2xl border transition-all hover:scale-[1.01] ${
+                    <div className={`p-3 md:p-4 rounded-xl border transition-all ${
                       flyingAwayItems.has(activity.id)
                         ? 'animate-fly-away'
                         : activity.is_completed
-                        ? 'bg-dark-bg-tertiary border-dark-border-subtle opacity-60 duration-300'
-                        : 'bg-dark-bg-tertiary border-dark-border-glow duration-200 hover:border-primary-500/50'
-                    } ${
-                      activity.is_completed && !flyingAwayItems.has(activity.id)
-                        ? 'success-flash'
-                        : ''
+                        ? 'bg-dark-bg-tertiary border-dark-border-subtle opacity-60'
+                        : 'bg-dark-bg-tertiary border-dark-border-subtle'
                     }`}>
                       <div className="flex items-start gap-2.5 md:gap-3 lg:gap-4">
                         <button
                           onClick={() => handleToggleComplete(activity.id, activity.is_completed)}
-                          className={`mt-0.5 md:mt-1 w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 flex-shrink-0 rounded md:rounded-lg border-2 flex items-center justify-center transition-all hover:scale-110 ${
+                          className={`mt-0.5 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
                             activity.is_completed
                               ? 'bg-green-500 border-green-500'
-                              : 'border-dark-border-glow hover:border-primary-500'
+                              : 'border-dark-border-subtle hover:border-primary-500'
                           }`}
                         >
                           {activity.is_completed && (
@@ -691,14 +687,58 @@ const Planner = () => {
                             </span>
                           </div>
 
-                          {activity.description && (
-                            <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary mt-1.5 md:mt-2 lg:mt-2.5 line-clamp-2">{activity.description}</p>
+                          {(activity.ai_description || activity.description) && (
+                            <p className="text-sm text-dark-text-secondary mt-2 line-clamp-2">
+                              {activity.ai_description || activity.description}
+                            </p>
+                          )}
+
+                          {/* Subtasks */}
+                          {subtasksByActivity[activity.id] && subtasksByActivity[activity.id].length > 0 && (
+                            <div className="mt-3 space-y-1.5">
+                              {subtasksByActivity[activity.id].map((subtask) => (
+                                <div key={subtask.id} className="flex items-start gap-2 bg-dark-bg-surface/50 rounded-lg p-2">
+                                  <button
+                                    onClick={() => handleToggleSubtask(subtask)}
+                                    className={`mt-0.5 w-4 h-4 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+                                      subtask.completed
+                                        ? 'bg-green-500 border-green-500'
+                                        : 'border-dark-border-subtle hover:border-primary-500'
+                                    }`}
+                                  >
+                                    {subtask.completed && (
+                                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                  <div className="flex-1 min-w-0">
+                                    <div className={`text-xs font-medium ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
+                                      {subtask.title}
+                                    </div>
+                                    {subtask.description && (
+                                      <div className="text-xs text-dark-text-muted mt-0.5">
+                                        {subtask.description}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Generating AI indicator */}
+                          {generatingAI[activity.id] && (
+                            <div className="mt-2 flex items-center gap-2 text-xs text-primary-500">
+                              <div className="w-3 h-3 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
+                              <span>Generating AI content...</span>
+                            </div>
                           )}
                         </div>
 
                         <button
                           onClick={() => handleDeleteActivity(activity.id)}
-                          className="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-lg md:rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:scale-110 transition-all active:scale-95"
+                          className="flex-shrink-0 w-8 h-8 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
                         >
                           <svg className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -812,14 +852,58 @@ const Planner = () => {
                         </span>
                       </div>
 
-                      {activity.description && (
-                        <p className="text-xs text-dark-text-secondary mt-1.5 line-clamp-2">{activity.description}</p>
+                      {(activity.ai_description || activity.description) && (
+                        <p className="text-xs text-dark-text-secondary mt-1.5 line-clamp-2">
+                          {activity.ai_description || activity.description}
+                        </p>
+                      )}
+
+                      {/* Subtasks */}
+                      {subtasksByActivity[activity.id] && subtasksByActivity[activity.id].length > 0 && (
+                        <div className="mt-2 space-y-1.5">
+                          {subtasksByActivity[activity.id].map((subtask) => (
+                            <div key={subtask.id} className="flex items-start gap-2 bg-dark-bg-surface/50 rounded-lg p-2">
+                              <button
+                                onClick={() => handleToggleSubtask(subtask)}
+                                className={`mt-0.5 w-4 h-4 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+                                  subtask.completed
+                                    ? 'bg-green-500 border-green-500'
+                                    : 'border-dark-border-subtle hover:border-primary-500'
+                                }`}
+                              >
+                                {subtask.completed && (
+                                  <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </button>
+                              <div className="flex-1 min-w-0">
+                                <div className={`text-xs font-medium ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
+                                  {subtask.title}
+                                </div>
+                                {subtask.description && (
+                                  <div className="text-xs text-dark-text-muted mt-0.5">
+                                    {subtask.description}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Generating AI indicator */}
+                      {generatingAI[activity.id] && (
+                        <div className="mt-2 flex items-center gap-2 text-xs text-primary-500">
+                          <div className="w-3 h-3 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
+                          <span>Generating AI content...</span>
+                        </div>
                       )}
                     </div>
 
                     <button
                       onClick={() => handleDeleteActivity(activity.id)}
-                      className="flex-shrink-0 w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all active:scale-95"
+                      className="flex-shrink-0 w-7 h-7 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
                     >
                       <svg className="w-3.5 h-3.5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
