@@ -135,23 +135,11 @@ export default {
         'soft-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04)',
         'soft-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
         'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.04)',
-        'glow-primary': '0 0 20px rgba(14, 165, 233, 0.25)',
-        'glow-primary-lg': '0 0 40px rgba(14, 165, 233, 0.3)',
-        'glow-purple': '0 0 20px rgba(139, 92, 246, 0.25)',
-        'glow-purple-lg': '0 0 40px rgba(139, 92, 246, 0.3)',
         // Dark theme shadows
         'dark-soft': '0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3)',
         'dark-soft-md': '0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3)',
         'dark-soft-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4)',
         'dark-inner': 'inset 0 1px 3px 0 rgba(0, 0, 0, 0.5)',
-        'rim-light': '0 0 0 1px rgba(58, 79, 106, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
-        'glow-cyan': '0 0 20px rgba(88, 166, 255, 0.3)',
-        'glow-cyan-lg': '0 0 40px rgba(88, 166, 255, 0.4)',
-        // Opal glow shadows
-        'glow-opal': '0 0 20px rgba(78, 48, 189, 0.4)',
-        'glow-opal-lg': '0 0 40px rgba(78, 48, 189, 0.5)',
-        'glow-opal-xl': '0 0 60px rgba(78, 48, 189, 0.6)',
-        'glow-opal-cyan': '0 0 20px rgba(160, 255, 249, 0.3)',
       },
       borderRadius: {
         '4xl': '2rem',

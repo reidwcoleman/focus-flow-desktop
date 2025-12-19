@@ -454,31 +454,21 @@ const Dashboard = ({ onOpenScanner }) => {
 
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-5 pb-6 md:pb-8 lg:pb-8">
-      {/* Header with AI Status */}
-      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-dark-navy to-dark-navy-light p-4 md:p-5 lg:p-6 xl:p-7 shadow-dark-soft-lg border border-dark-border-glow">
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-2 md:mb-3">
-            <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse-soft shadow-glow-cyan"></div>
-            <span className="text-dark-text-primary text-xs md:text-sm lg:text-base font-medium tracking-tight">AI Active</span>
-          </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-dark-text-primary mb-1 md:mb-2 tracking-tight">{getTimeOfDayGreeting()}, {userName}</h2>
-          <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg">
-            {assignments.length === 0
-              ? 'No assignments - add one to get started!'
-              : `You have ${assignments.length} assignment${assignments.length === 1 ? '' : 's'}`
-            }
-          </p>
-        </div>
-
-        {/* Decorative gradient orbs */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 md:w-60 md:h-60 lg:w-72 lg:h-72 bg-primary-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 md:w-60 md:h-60 lg:w-72 lg:h-72 bg-dark-navy-dark/50 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Header */}
+      <div className="py-4 md:py-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-dark-text-primary mb-1">{getTimeOfDayGreeting()}, {userName}</h2>
+        <p className="text-dark-text-secondary text-sm md:text-base">
+          {assignments.length === 0
+            ? 'No assignments - add one to get started!'
+            : `You have ${assignments.length} assignment${assignments.length === 1 ? '' : 's'}`
+          }
+        </p>
       </div>
 
       {/* Streak Display - Clickable */}
       <button
         onClick={() => setShowStreakCalendar(true)}
-        className="w-full relative overflow-hidden rounded-3xl md:rounded-[2rem] bg-gradient-to-br from-orange-500/10 via-red-500/10 to-yellow-500/10 p-8 md:p-12 lg:p-16 shadow-dark-soft border-2 border-orange-500/30 hover:shadow-glow-orange transition-all active:scale-[0.98] text-left"
+        className="w-full relative overflow-hidden rounded-xl bg-dark-bg-secondary p-4 md:p-6 shadow-dark-soft border border-orange-500/30 hover:border-orange-500/50 transition-all active:scale-[0.98] text-left"
       >
         {/* Celebration overlay */}
         {showStreakCelebration && (
@@ -486,30 +476,23 @@ const Dashboard = ({ onOpenScanner }) => {
         )}
 
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-6 md:gap-10 lg:gap-12">
-            {/* Fire icon with animation */}
-            <div className={`relative ${showStreakCelebration ? 'animate-bounce' : ''}`}>
-              <div className="text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] filter drop-shadow-[0_0_20px_rgba(251,146,60,0.9)]">
-                🔥
-              </div>
-              {showStreakCelebration && (
-                <div className="absolute inset-0 text-9xl md:text-[10rem] lg:text-[12rem] xl:text-[14rem] animate-ping opacity-75">
-                  🔥
-                </div>
-              )}
+          <div className="flex items-center gap-4 md:gap-6">
+            {/* Fire icon */}
+            <div className="text-5xl md:text-6xl">
+              🔥
             </div>
 
             {/* Streak info */}
             <div>
-              <div className="flex items-baseline gap-4 md:gap-6 mb-3 md:mb-4">
-                <span className="text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400 leading-none">
+              <div className="flex items-baseline gap-2 md:gap-3 mb-1">
+                <span className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-yellow-400">
                   {streak.currentStreak}
                 </span>
-                <span className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-orange-300">
+                <span className="text-xl md:text-2xl font-bold text-orange-300">
                   {streak.currentStreak === 1 ? 'day' : 'days'}
                 </span>
               </div>
-              <p className="text-xl md:text-2xl lg:text-3xl xl:text-4xl text-dark-text-secondary font-medium">
+              <p className="text-sm md:text-base text-dark-text-secondary font-medium">
                 Current streak
               </p>
             </div>
@@ -518,12 +501,12 @@ const Dashboard = ({ onOpenScanner }) => {
           {/* Longest streak badge */}
           {streak.longestStreak > 0 && (
             <div className="text-right">
-              <div className="inline-flex items-center gap-4 md:gap-5 px-6 md:px-8 lg:px-10 py-4 md:py-6 lg:py-7 rounded-2xl md:rounded-3xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/30 backdrop-blur-sm">
-                <svg className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="inline-flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <div className="text-left">
-                  <div className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-yellow-300">
+                  <div className="text-base md:text-lg font-bold text-yellow-300">
                     {streak.longestStreak} best
                   </div>
                 </div>
@@ -534,68 +517,60 @@ const Dashboard = ({ onOpenScanner }) => {
 
         {/* Motivational message */}
         {showStreakCelebration && (
-          <div className="mt-8 md:mt-10 text-center animate-fadeIn">
-            <p className="text-xl md:text-2xl lg:text-3xl font-bold text-orange-300">
+          <div className="mt-4 text-center animate-fadeIn">
+            <p className="text-sm md:text-base font-bold text-orange-300">
               🎉 Streak increased! Keep it going!
             </p>
           </div>
         )}
 
-        {/* Subtle background pattern */}
-        <div className="absolute bottom-0 right-0 w-48 h-48 md:w-64 md:h-64 lg:w-96 lg:h-96 opacity-10 pointer-events-none">
-          <div className="text-[10rem] md:text-[14rem] lg:text-[18rem]">🔥</div>
-        </div>
-
         {/* Tap hint */}
-        <div className="absolute top-6 md:top-8 lg:top-10 right-6 md:right-8 lg:right-10 flex items-center gap-3 px-5 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-dark-bg-tertiary/70 backdrop-blur-sm border border-orange-500/30">
-          <svg className="w-6 h-6 md:w-7 md:h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute top-3 md:top-4 right-3 md:right-4 flex items-center gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg bg-dark-bg-tertiary/70 backdrop-blur-sm border border-orange-500/30">
+          <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
-          <span className="text-base md:text-lg font-semibold text-orange-300">Tap to view calendar</span>
+          <span className="text-xs md:text-sm font-semibold text-orange-300">Tap to view calendar</span>
         </div>
       </button>
 
       {/* XP Display Widget */}
       {xpData && (
-        <div className="relative overflow-hidden rounded-3xl md:rounded-[2rem] bg-gradient-to-br from-yellow-500/10 via-amber-500/10 to-orange-500/10 p-8 md:p-12 lg:p-16 shadow-dark-soft border-2 border-yellow-500/30">
+        <div className="relative overflow-hidden rounded-xl bg-dark-bg-secondary p-4 md:p-6 shadow-dark-soft border border-yellow-500/30">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6 md:gap-10 lg:gap-12">
-              <div className="text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] filter drop-shadow-[0_0_20px_rgba(250,204,21,0.9)]">
+            <div className="flex items-center gap-4 md:gap-6">
+              <div className="text-5xl md:text-6xl">
                 ⭐
               </div>
               <div>
-                <div className="flex items-baseline gap-4 mb-3">
-                  <span className="text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 leading-none">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400">
                     Level {xpData.level}
                   </span>
                 </div>
-                <p className="text-xl md:text-2xl lg:text-3xl xl:text-4xl text-dark-text-secondary font-medium">
+                <p className="text-sm md:text-base text-dark-text-secondary font-medium">
                   {xpData.levelTitle}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-yellow-400">
+              <div className="text-xl md:text-2xl font-bold text-yellow-400">
                 {xpData.totalXP.toLocaleString()} XP
               </div>
-              <div className="text-xl md:text-2xl lg:text-3xl xl:text-4xl text-dark-text-muted">
-                {xpData.xpToNext} to next level
+              <div className="text-sm md:text-base text-dark-text-muted">
+                {xpData.xpToNext} to next
               </div>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-6 md:mt-8 h-4 md:h-6 lg:h-8 bg-dark-bg-tertiary rounded-full overflow-hidden">
+          <div className="mt-3 md:mt-4 h-2 md:h-3 bg-dark-bg-tertiary rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 transition-all duration-500 ease-out shadow-[0_0_15px_rgba(250,204,21,0.6)]"
+              className="h-full bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 transition-all duration-500 ease-out"
               style={{ width: `${xpData.progressPercent}%` }}
             />
           </div>
-
-          {/* Decorative gradient orb */}
-          <div className="absolute -top-10 -right-10 w-32 h-32 md:w-48 md:h-48 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
         </div>
       )}
 
