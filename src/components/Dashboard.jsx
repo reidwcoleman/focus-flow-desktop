@@ -738,44 +738,26 @@ const Dashboard = ({ onOpenScanner }) => {
           {assignments.map((assignment) => (
             <div
               key={assignment.id}
-              className={`relative overflow-hidden rounded-2xl md:rounded-3xl transition-all active:scale-[0.99] ${
+              className={`relative overflow-hidden rounded-xl transition-all active:scale-[0.99] ${
                 assignment.aiCaptured
-                  ? 'bg-gradient-to-br from-primary-500/12 via-dark-bg-secondary to-accent-purple/12 border-2 border-primary-500/50 shadow-[0_0_25px_rgba(59,130,246,0.25)] hover:shadow-[0_0_35px_rgba(59,130,246,0.4)] hover:border-primary-500/70 ring-2 ring-primary-500/10 p-6 md:p-7 lg:p-8'
-                  : `${getSubjectBgColor(assignment.subject)} border border-dark-border-glow shadow-dark-soft-md hover:shadow-rim-light p-4 md:p-5 lg:p-6`
+                  ? 'bg-dark-bg-secondary border border-primary-500/40 p-4 md:p-6'
+                  : `${getSubjectBgColor(assignment.subject)} border border-dark-border-glow shadow-dark-soft hover:shadow-dark-soft-lg p-4 md:p-6`
               } ${
                 flyingAwayItems.has(assignment.id)
                   ? 'animate-fly-away'
                   : assignment.completed
                   ? 'duration-300 opacity-80'
                   : 'duration-200'
-              } ${
-                assignment.completed && !flyingAwayItems.has(assignment.id)
-                  ? 'success-flash'
-                  : ''
               }`}
             >
-              {/* AI Assignment Premium Decorations - Minimal & Clean */}
-              {assignment.aiCaptured && (
-                <>
-                  {/* Animated shimmer bar - subtle accent */}
-                  <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary-500/60 to-transparent animate-shimmer"></div>
-
-                  {/* Single background glow - cleaner */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-purple/5 rounded-2xl md:rounded-3xl pointer-events-none"></div>
-                </>
-              )}
-
               {/* AI Badge - Top Left Position */}
               {assignment.aiCaptured && (
-                <div className="absolute top-4 md:top-5 lg:top-6 left-4 md:left-5 lg:left-6 z-20">
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-purple rounded-full blur-md opacity-60 group-hover:opacity-90 animate-pulse-slow"></div>
-                    <div className="relative flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-gradient-to-r from-primary-500 via-accent-cyan to-accent-purple border-2 border-white/30 shadow-xl">
-                      <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span className="text-xs md:text-sm font-bold text-white tracking-tight">AI Generated</span>
-                    </div>
+                <div className="absolute top-4 left-4 z-20">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary-500 via-accent-cyan to-accent-purple border border-white/20">
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span className="text-xs font-bold text-white">AI Generated</span>
                   </div>
                 </div>
               )}
@@ -795,8 +777,8 @@ const Dashboard = ({ onOpenScanner }) => {
                 </div>
               )}
 
-              {/* Content Container - with proper spacing from badges */}
-              <div className={`relative ${assignment.aiCaptured ? 'mt-12 md:mt-14' : ''}`}>
+              {/* Content Container */}
+              <div className={`relative ${assignment.aiCaptured ? 'mt-10' : ''}`}>
                 {/* Subject Badge */}
                 <div className="flex items-center gap-2 md:gap-3 mb-2.5 md:mb-3">
                   <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${getSubjectColor(assignment.subject)} shadow-xs`}></div>
