@@ -220,7 +220,7 @@ async function handleGetGrades(body: any): Promise<Response> {
     // Fetch grades page - use correct path for Wake County
     const isWakeCounty = baseUrl.includes('ncsis.gov')
     const gradesUrl = isWakeCounty
-      ? `${baseUrl}/campus/portal/psu920wakeco/grades.jsp`
+      ? `${baseUrl}/campus/portal/students/grades.jsp`
       : `${baseUrl}/campus/portal/${districtCode}/grades.jsp`
 
     console.log(`📊 Fetching grades from: ${gradesUrl}`)
