@@ -506,255 +506,82 @@ const AITutor = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-8rem)] h-full relative">
-      {/* Clean Minimal Header */}
-      <div className="flex-shrink-0 mb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary tracking-tight">AI Tutor</h2>
-            <p className="text-xs md:text-sm lg:text-base text-dark-text-secondary mt-0.5">
-              {aiService.isConfigured() ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
-                  Powered by {aiService.getProviderName()}
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                  Demo Mode
-                </span>
-              )}
-            </p>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
-            {/* Auto-save indicator */}
-            {currentChatId && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-500/10 border border-green-500/30">
-                <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-xs font-medium text-green-500">Auto-saved</span>
-              </div>
+    <div className="flex flex-col h-full space-y-4">
+      {/* Simplified Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary">AI Tutor</h1>
+          <p className="text-sm text-dark-text-muted mt-0.5">
+            {authService.isPro()
+              ? `${usageCount}/250 chats used`
+              : `${aiService.getLimits().free - usageCount} free chats left`
+            }
+            {!authService.isPro() && (
+              <button onClick={() => setShowUpgradeModal(true)} className="ml-2 text-accent-purple hover:underline">
+                Upgrade
+              </button>
             )}
-
-            {/* New chat button */}
-            <button
-              onClick={startNewChat}
-              className="p-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-cyan hover:from-primary-600 hover:to-accent-cyan-dark text-white transition-all duration-200 active:scale-95"
-              title="New chat"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
-          </div>
+          </p>
         </div>
+        <button
+          onClick={startNewChat}
+          className="p-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-accent-cyan text-white hover:opacity-90 transition-opacity"
+          title="New chat"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
 
-        {/* Usage Counter */}
-        <div className="mt-3 flex items-center justify-between px-3 py-2 bg-primary-500/10 rounded-xl border border-primary-500/30">
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <span className="text-sm font-medium text-dark-text-primary">
-              {authService.isPro()
-                ? `${usageCount}/250 AI chats`
-                : `${aiService.getLimits().free - usageCount} free chats left`
-              }
-            </span>
-          </div>
-          {!authService.isPro() && (
-            <button
-              onClick={() => setShowUpgradeModal(true)}
-              className="text-xs font-semibold text-accent-purple hover:text-accent-purple-light transition-colors"
-            >
-              Upgrade
-            </button>
-          )}
-        </div>
-
-        {/* Mode Indicator Banners */}
-        {ultraThinkEnabled && (
-          <div className="mt-2.5 p-2.5 md:p-3 bg-purple-500/10 rounded-xl border border-purple-400/50 animate-fadeIn">
-            <div className="flex items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2.5 flex-1">
-                <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-purple-500/80 to-purple-700/80 flex items-center justify-center shadow-md border border-purple-400/30">
-                  <svg className="w-4.5 h-4.5 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm md:text-base font-bold text-purple-200">💭 UltraThink Active</h3>
-                  </div>
-                  <p className="text-xs text-purple-300/80 hidden md:block">Deep reasoning enabled</p>
-                </div>
-              </div>
-              <button
-                onClick={toggleUltraThink}
-                className="px-2.5 py-1 bg-purple-500/40 hover:bg-purple-500/60 border border-purple-400/50 rounded-lg text-white text-xs font-semibold transition-all active:scale-95"
-              >
-                Disable
-              </button>
-            </div>
-          </div>
-        )}
-
-        {deepResearchEnabled && (
-          <div className="mt-2.5 p-2.5 md:p-3 bg-blue-500/10 rounded-xl border border-blue-400/50 animate-fadeIn">
-            <div className="flex items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2.5 flex-1">
-                <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-blue-500/80 to-cyan-700/80 flex items-center justify-center shadow-md border border-blue-400/30">
-                  <svg className="w-4.5 h-4.5 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm md:text-base font-bold text-blue-200">📚 Deep Research - MAXIMUM MODE</h3>
-                  </div>
-                  <p className="text-xs text-blue-300/80 hidden md:block">Encyclopedic 32,000-token PhD-level research active</p>
-                </div>
-              </div>
-              <button
-                onClick={toggleDeepResearch}
-                className="px-2.5 py-1 bg-blue-500/40 hover:bg-blue-500/60 border border-blue-400/50 rounded-lg text-white text-xs font-semibold transition-all active:scale-95"
-              >
-                Disable
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* AI Data Access Info Banner */}
-        {showDataInfo && (
-          <div className="mt-3 p-3 bg-dark-bg-secondary rounded-xl border border-accent-cyan/30 animate-fadeIn">
-            <div className="flex items-start justify-between gap-2 mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500/30 to-accent-cyan/30 flex items-center justify-center border border-primary-500/40">
-                  <svg className="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-dark-text-primary">I have access to your data</h4>
-                  <p className="text-[11px] text-dark-text-secondary">Ask me about anything below</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowDataInfo(false)
-                  localStorage.setItem('ai_data_info_dismissed', 'true')
-                }}
-                className="flex-shrink-0 p-1 rounded-lg hover:bg-dark-bg-tertiary transition-all active:scale-95"
-                title="Dismiss"
-              >
-                <svg className="w-3.5 h-3.5 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Compact Mode Indicators */}
+      {(ultraThinkEnabled || deepResearchEnabled) && (
+        <div className="flex flex-wrap gap-2">
+          {ultraThinkEnabled && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 rounded-lg border border-purple-400/30 text-sm">
+              <span className="text-purple-300">💭 UltraThink</span>
+              <button onClick={toggleUltraThink} className="text-purple-400 hover:text-purple-300">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-
-            {/* Data sources grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
-              {/* Canvas Assignments */}
-              <div className="flex items-center gap-1.5 p-2 bg-dark-bg-tertiary rounded-lg border border-dark-border-subtle">
-                <svg className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          )}
+          {deepResearchEnabled && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 rounded-lg border border-blue-400/30 text-sm">
+              <span className="text-blue-300">📚 Deep Research</span>
+              <button onClick={toggleDeepResearch} className="text-blue-400 hover:text-blue-300">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                <span className="text-[11px] font-semibold text-dark-text-primary">Assignments</span>
-              </div>
-
-              {/* Calendar */}
-              <div className="flex items-center gap-1.5 p-2 bg-dark-bg-tertiary rounded-lg border border-dark-border-subtle">
-                <svg className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-[11px] font-semibold text-dark-text-primary">Calendar</span>
-              </div>
-
-              {/* Study Schedule */}
-              <div className="flex items-center gap-1.5 p-2 bg-dark-bg-tertiary rounded-lg border border-dark-border-subtle">
-                <svg className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-[11px] font-semibold text-dark-text-primary">Schedule</span>
-              </div>
-
-              {/* Notes */}
-              <div className="flex items-center gap-1.5 p-2 bg-dark-bg-tertiary rounded-lg border border-dark-border-subtle">
-                <svg className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                <span className="text-[11px] font-semibold text-dark-text-primary">Notes</span>
-              </div>
-
-              {/* Flashcards */}
-              <div className="flex items-center gap-1.5 p-2 bg-dark-bg-tertiary rounded-lg border border-dark-border-subtle">
-                <svg className="w-3.5 h-3.5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                <span className="text-[11px] font-semibold text-dark-text-primary">Flashcards</span>
-              </div>
-
-              {/* Study Streak */}
-              <div className="flex items-center gap-1.5 p-2 bg-dark-bg-tertiary rounded-lg border border-dark-border-subtle">
-                <svg className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                </svg>
-                <span className="text-[11px] font-semibold text-dark-text-primary">Streak</span>
-              </div>
+              </button>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Chat History Quick Access */}
-      {chatHistory.length > 0 && messages.length === 1 && (
-        <div className="flex-shrink-0 mb-4 animate-fadeIn">
-          <button
-            onClick={() => setShowHistory(true)}
-            className="w-full p-4 bg-gradient-to-r from-accent-purple/10 to-primary-500/10 border-2 border-accent-purple/30 rounded-2xl hover:from-accent-purple/20 hover:to-primary-500/20 hover:border-accent-purple/50 transition-all active:scale-[0.99] shadow-dark-soft relative overflow-hidden group"
-          >
-            {/* Animated gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-accent-purple/0 via-accent-purple/10 to-accent-purple/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-
-            <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-glow-purple animate-pulse-soft">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="text-sm font-bold text-dark-text-primary">📜 View Past Conversations</div>
-                  <div className="text-xs text-dark-text-secondary">{chatHistory.length} saved chat{chatHistory.length !== 1 ? 's' : ''} • Click to browse</div>
-                </div>
-              </div>
-              <svg className="w-5 h-5 text-accent-purple group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </button>
+          )}
         </div>
       )}
 
-      {/* Quick Questions */}
-      <div className="flex-shrink-0 mb-4">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
-          {quickQuestions.map((question, index) => (
-            <button
-              key={index}
-              onClick={() => handleQuickQuestion(question)}
-              className="flex-shrink-0 px-3 md:px-3.5 lg:px-4 py-1.5 md:py-2 bg-dark-bg-secondary border border-dark-border-subtle hover:border-accent-purple hover:bg-accent-purple/10 rounded-full text-xs md:text-sm lg:text-base font-medium text-dark-text-primary hover:text-accent-purple-light transition-all duration-200 active:scale-95"
-            >
-              {question}
-            </button>
-          ))}
+      {/* Info Banner - Compact */}
+      {showDataInfo && (
+        <div className="flex items-center justify-between p-3 bg-dark-bg-secondary rounded-lg border border-dark-border-subtle text-sm">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-dark-text-secondary">I have access to your assignments, calendar, and notes</span>
+          </div>
+          <button
+            onClick={() => {
+              setShowDataInfo(false)
+              localStorage.setItem('ai_data_info_dismissed', 'true')
+            }}
+            className="text-dark-text-muted hover:text-dark-text-secondary"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-      </div>
+      )}
 
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto space-y-3 mb-4 scroll-smooth scrollbar-thin">
