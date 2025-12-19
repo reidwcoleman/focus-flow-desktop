@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import authService from '../services/authService'
 import canvasService from '../services/canvasService'
+import infiniteCampusService from '../services/infiniteCampusService'
 import xpService from '../services/xpService'
 import { BADGES, BADGE_TIERS } from '../data/badges'
 
@@ -26,6 +27,16 @@ export default function Account() {
   const [badges, setBadges] = useState([])
   const [loadingBadges, setLoadingBadges] = useState(true)
 
+  // Infinite Campus state
+  const [icDistrict, setIcDistrict] = useState('')
+  const [icState, setIcState] = useState('')
+  const [icUsername, setIcUsername] = useState('')
+  const [icPassword, setIcPassword] = useState('')
+  const [showIcPassword, setShowIcPassword] = useState(false)
+  const [isEditingIC, setIsEditingIC] = useState(false)
+  const [testingIC, setTestingIC] = useState(false)
+  const [syncingIC, setSyncingIC] = useState(false)
+
   useEffect(() => {
     loadUserData()
     loadBadges()
@@ -43,6 +54,10 @@ export default function Account() {
     setNewName(profile?.full_name || user?.email?.split('@')[0] || '')
     setCanvasUrl(profile?.canvas_url || '')
     setCanvasToken(profile?.canvas_token || '')
+    setIcDistrict(profile?.ic_district_name || '')
+    setIcState(profile?.ic_state || '')
+    setIcUsername(profile?.ic_username || '')
+    setIcPassword(profile?.ic_password || '')
   }
 
   const loadBadges = async () => {
@@ -189,6 +204,83 @@ export default function Account() {
       setError(`Sync failed: ${err.message}`)
     } finally {
       setSyncing(false)
+    }
+  }
+
+  // Infinite Campus handlers
+  const handleSaveIC = async () => {
+    if (!icDistrict.trim() || !icState.trim() || !icUsername.trim() || !icPassword.trim()) {
+      setError('All Infinite Campus fields are required')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const result = await authService.updateUserProfile({
+        ic_district_name: icDistrict.trim(),
+        ic_state: icState.trim().toUpperCase(),
+        ic_username: icUsername.trim(),
+        ic_password: icPassword.trim()
+      })
+
+      if (result.error) {
+        setError(`Failed to update Infinite Campus credentials: ${result.error.message || 'Unknown error'}`)
+      } else {
+        setSuccess('Infinite Campus credentials saved! Test connection to verify.')
+        setIsEditingIC(false)
+        await loadUserData()
+        setTimeout(() => setSuccess(''), 5000)
+      }
+    } catch (err) {
+      setError(`Failed to update Infinite Campus credentials: ${err.message || 'Unknown error'}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleTestIC = async () => {
+    setTestingIC(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      await infiniteCampusService.initializeFromProfile()
+      const result = await infiniteCampusService.testConnection()
+
+      if (result.success) {
+        setSuccess(`✅ ${result.message}`)
+      } else {
+        setError(result.message)
+      }
+    } catch (err) {
+      setError(`Connection test failed: ${err.message}`)
+    } finally {
+      setTestingIC(false)
+    }
+  }
+
+  const handleSyncGrades = async () => {
+    setSyncingIC(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      await infiniteCampusService.initializeFromProfile()
+      const result = await infiniteCampusService.syncGrades(user.id)
+
+      if (result.error) {
+        setError(`Sync failed: ${result.error}`)
+      } else {
+        setSuccess(`✅ Synced ${result.synced} of ${result.total} grades from Infinite Campus!`)
+        setTimeout(() => setSuccess(''), 5000)
+      }
+    } catch (err) {
+      setError(`Sync failed: ${err.message}`)
+    } finally {
+      setSyncingIC(false)
     }
   }
 
@@ -462,6 +554,192 @@ export default function Account() {
                           </span>
                         ) : (
                           'Sync Assignments'
+                        )}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Infinite Campus Integration Card */}
+          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-3xl p-5 lg:p-8 border border-dark-border-glow shadow-dark-card hover:shadow-dark-soft-lg transition-all duration-200">
+            <div className="flex items-center justify-between mb-3 lg:mb-5">
+              <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary flex items-center gap-2 lg:gap-3">
+                <svg className="w-5 h-5 lg:w-7 lg:h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Infinite Campus
+              </h2>
+              {!isEditingIC && (
+                <button
+                  onClick={() => setIsEditingIC(true)}
+                  className="text-primary-500 hover:text-primary-400 transition-colors text-sm lg:text-base font-medium"
+                >
+                  Edit
+                </button>
+              )}
+            </div>
+
+            {isEditingIC ? (
+              <div className="space-y-4 lg:space-y-6">
+                {/* District Name */}
+                <div>
+                  <label className="block text-sm lg:text-base font-medium text-dark-text-secondary mb-2 lg:mb-3">
+                    District Name
+                  </label>
+                  <input
+                    type="text"
+                    value={icDistrict}
+                    onChange={(e) => setIcDistrict(e.target.value)}
+                    className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+                    placeholder="Wake County"
+                    autoFocus
+                  />
+                  <p className="text-xs lg:text-sm text-dark-text-muted mt-1.5 lg:mt-2">
+                    Example: Wake County, WCPSS, etc.
+                  </p>
+                </div>
+
+                {/* State */}
+                <div>
+                  <label className="block text-sm lg:text-base font-medium text-dark-text-secondary mb-2 lg:mb-3">
+                    State (2-letter code)
+                  </label>
+                  <input
+                    type="text"
+                    value={icState}
+                    onChange={(e) => setIcState(e.target.value.toUpperCase())}
+                    maxLength={2}
+                    className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+                    placeholder="NC"
+                  />
+                  <p className="text-xs lg:text-sm text-dark-text-muted mt-1.5 lg:mt-2">
+                    Example: NC, CA, TX, etc.
+                  </p>
+                </div>
+
+                {/* Username */}
+                <div>
+                  <label className="block text-sm lg:text-base font-medium text-dark-text-secondary mb-2 lg:mb-3">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    value={icUsername}
+                    onChange={(e) => setIcUsername(e.target.value)}
+                    className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 text-dark-text-primary text-sm lg:text-lg placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+                    placeholder="Your IC username"
+                  />
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm lg:text-base font-medium text-dark-text-secondary mb-2 lg:mb-3">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showIcPassword ? 'text' : 'password'}
+                      value={icPassword}
+                      onChange={(e) => setIcPassword(e.target.value)}
+                      className="w-full bg-dark-bg-primary border border-dark-border-glow rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 pr-12 lg:pr-14 text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all text-sm lg:text-base"
+                      placeholder="Your IC password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowIcPassword(!showIcPassword)}
+                      className="absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 text-dark-text-muted hover:text-dark-text-primary transition-colors"
+                    >
+                      {showIcPassword ? (
+                        <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs lg:text-sm text-dark-text-muted mt-1.5 lg:mt-2">
+                    Stored securely and encrypted
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-2 lg:gap-3">
+                  <button
+                    onClick={handleSaveIC}
+                    disabled={saving}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditingIC(false)
+                      setIcDistrict(profile?.ic_district_name || '')
+                      setIcState(profile?.ic_state || '')
+                      setIcUsername(profile?.ic_username || '')
+                      setIcPassword(profile?.ic_password || '')
+                    }}
+                    disabled={saving}
+                    className="flex-1 bg-dark-bg-primary border border-dark-border-glow text-dark-text-secondary font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-dark-bg-surface transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 lg:space-y-5">
+                {/* Status */}
+                <div>
+                  <p className="text-sm lg:text-base text-dark-text-secondary mb-1 lg:mb-2">District:</p>
+                  <p className="text-dark-text-primary text-base lg:text-xl">
+                    {profile?.ic_district_name ? `${profile.ic_district_name}, ${profile.ic_state}` : 'Not configured'}
+                  </p>
+                </div>
+
+                {profile?.ic_district_name && profile?.ic_username && (
+                  <>
+                    <div className="flex items-center gap-2 text-xs lg:text-sm text-green-400">
+                      <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Configured
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 lg:gap-3 pt-2 lg:pt-3">
+                      <button
+                        onClick={handleTestIC}
+                        disabled={testingIC}
+                        className="flex-1 bg-dark-bg-primary border border-blue-500/50 text-blue-500 font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-blue-500/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {testingIC ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                            Testing...
+                          </span>
+                        ) : (
+                          'Test Connection'
+                        )}
+                      </button>
+                      <button
+                        onClick={handleSyncGrades}
+                        disabled={syncingIC}
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {syncingIC ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Syncing...
+                          </span>
+                        ) : (
+                          'Sync Grades'
                         )}
                       </button>
                     </div>
