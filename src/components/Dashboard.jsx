@@ -575,7 +575,7 @@ const Dashboard = ({ onOpenScanner }) => {
       )}
 
       {/* AI Assignment Input */}
-      <div className="bg-gradient-to-br from-primary-500/10 via-dark-bg-secondary to-accent-purple/10 rounded-2xl p-3 md:p-4 lg:p-5 xl:p-6 border border-dark-border-glow shadow-dark-soft-lg hover:shadow-dark-soft-xl transition-all">
+      <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-6 border border-dark-border-glow shadow-dark-soft">
         {/* Success/Error Messages */}
         {aiSuccess && (
           <div className="mb-3 md:mb-4 lg:mb-5 p-2.5 md:p-3 lg:p-4 rounded-xl md:rounded-2xl bg-green-500/10 border border-green-500/30 animate-fadeIn">
@@ -601,7 +601,7 @@ const Dashboard = ({ onOpenScanner }) => {
           <button
             onClick={handleAiCreateAssignment}
             disabled={aiProcessing || !aiInput.trim()}
-            className="px-4 md:px-5 lg:px-6 xl:px-8 py-2.5 md:py-3 lg:py-4 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base lg:text-lg font-semibold rounded-xl md:rounded-2xl hover:shadow-glow-cyan transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-1.5 md:gap-2"
+            className="px-4 md:px-5 py-2.5 md:py-3 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base font-semibold rounded-lg hover:shadow-dark-soft-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2"
           >
             {aiProcessing ? (
               <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -673,19 +673,19 @@ const Dashboard = ({ onOpenScanner }) => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
         <button
           onClick={onOpenScanner}
-          className="relative overflow-hidden bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-3 md:p-4 lg:p-5 shadow-dark-soft-md border border-dark-border-glow hover:shadow-rim-light hover:border-primary-500/30 transition-all duration-200 active:scale-[0.98]">
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center shadow-glow-cyan">
-              <svg className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          className="relative overflow-hidden bg-dark-bg-secondary rounded-xl p-3 md:p-4 shadow-dark-soft border border-dark-border-glow hover:shadow-dark-soft-lg hover:border-primary-500/30 transition-all active:scale-[0.98]">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center">
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
             <div className="text-left">
-              <div className="font-semibold text-dark-text-primary text-sm md:text-base lg:text-lg tracking-tight">Scan</div>
+              <div className="font-semibold text-dark-text-primary text-sm md:text-base">Scan</div>
               <div className="text-xs md:text-sm text-dark-text-muted">Homework</div>
             </div>
           </div>
@@ -693,15 +693,15 @@ const Dashboard = ({ onOpenScanner }) => {
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="relative overflow-hidden bg-dark-bg-secondary rounded-2xl md:rounded-3xl p-3 md:p-4 lg:p-5 shadow-dark-soft-md border border-dark-border-glow hover:shadow-glow-green hover:border-green-500/30 transition-all duration-200 active:scale-[0.98]">
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center shadow-glow-green">
-              <svg className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          className="relative overflow-hidden bg-dark-bg-secondary rounded-xl p-3 md:p-4 shadow-dark-soft border border-dark-border-glow hover:shadow-dark-soft-lg hover:border-green-500/30 transition-all active:scale-[0.98]">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center">
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </div>
             <div className="text-left">
-              <div className="font-semibold text-dark-text-primary text-sm md:text-base lg:text-lg tracking-tight">Add</div>
+              <div className="font-semibold text-dark-text-primary text-sm md:text-base">Add</div>
               <div className="text-xs md:text-sm text-dark-text-muted">Assignment</div>
             </div>
           </div>
@@ -723,7 +723,7 @@ const Dashboard = ({ onOpenScanner }) => {
               <button
                 onClick={loadCanvasAssignments}
                 disabled={isLoadingCanvas}
-                className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 lg:px-5 py-1.5 md:py-2 lg:py-3 text-sm md:text-base lg:text-lg bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg md:rounded-xl hover:shadow-glow-cyan transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover:shadow-dark-soft-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
