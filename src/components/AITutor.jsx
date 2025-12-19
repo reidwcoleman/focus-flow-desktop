@@ -506,33 +506,90 @@ const AITutor = () => {
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4">
-      {/* Simplified Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary">AI Tutor</h1>
-          <p className="text-sm text-dark-text-muted mt-0.5">
-            {authService.isPro()
-              ? `${usageCount}/250 chats used`
-              : `${aiService.getLimits().free - usageCount} free chats left`
-            }
-            {!authService.isPro() && (
-              <button onClick={() => setShowUpgradeModal(true)} className="ml-2 text-accent-purple hover:underline">
-                Upgrade
+    <div className="flex h-full gap-4">
+      {/* Sidebar - Chat History */}
+      {showHistory && (
+        <div className="w-64 bg-dark-bg-secondary rounded-lg border border-dark-border-subtle p-3 flex flex-col animate-fadeIn">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold text-dark-text-primary">Chat History</h3>
+            <button
+              onClick={() => setShowHistory(false)}
+              className="p-1 rounded hover:bg-dark-bg-tertiary transition-colors"
+            >
+              <svg className="w-4 h-4 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin">
+            {chatHistory.length === 0 ? (
+              <p className="text-xs text-dark-text-muted text-center py-4">No saved chats yet</p>
+            ) : (
+              chatHistory.map((chat) => (
+                <button
+                  key={chat.id}
+                  onClick={() => loadChat(chat.id)}
+                  className={`w-full text-left p-2.5 rounded-lg transition-colors ${
+                    currentChatId === chat.id
+                      ? 'bg-primary-500/20 border border-primary-500/30'
+                      : 'hover:bg-dark-bg-tertiary border border-transparent'
+                  }`}
+                >
+                  <div className="text-xs font-medium text-dark-text-primary truncate mb-0.5">
+                    {chat.title || 'Untitled Chat'}
+                  </div>
+                  <div className="text-[10px] text-dark-text-muted">
+                    {new Date(chat.updated_at).toLocaleDateString()}
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col space-y-3">
+        {/* Simplified Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary">AI Tutor</h1>
+            <p className="text-sm text-dark-text-muted mt-0.5">
+              {authService.isPro()
+                ? `${usageCount}/250 chats used`
+                : `${aiService.getLimits().free - usageCount} free chats left`
+              }
+              {!authService.isPro() && (
+                <button onClick={() => setShowUpgradeModal(true)} className="ml-2 text-accent-purple hover:underline">
+                  Upgrade
+                </button>
+              )}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {chatHistory.length > 0 && (
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className="p-2.5 rounded-lg bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/30 transition-all"
+                title="Chat history"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </button>
             )}
-          </p>
+            <button
+              onClick={startNewChat}
+              className="p-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-accent-cyan text-white hover:opacity-90 transition-opacity"
+              title="New chat"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <button
-          onClick={startNewChat}
-          className="p-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-accent-cyan text-white hover:opacity-90 transition-opacity"
-          title="New chat"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
-      </div>
 
       {/* Compact Mode Indicators */}
       {(ultraThinkEnabled || deepResearchEnabled) && (
@@ -795,96 +852,6 @@ const AITutor = () => {
         </div>
       </div>
 
-      {/* Chat History Modal */}
-      {showHistory && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fadeIn flex items-center justify-center p-4"
-          onClick={() => setShowHistory(false)}
-        >
-          <div
-            className="w-full max-w-md bg-dark-bg-secondary rounded-2xl border border-dark-border-subtle overflow-hidden flex flex-col max-h-[80vh] animate-fadeInUp"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="p-4 border-b border-dark-border-glow">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-glow-purple-sm">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-bold text-dark-text-primary">Past Conversations</h3>
-                </div>
-                <button
-                  onClick={() => setShowHistory(false)}
-                  className="p-1.5 rounded-lg hover:bg-dark-bg-tertiary transition-all active:scale-95"
-                >
-                  <svg className="w-5 h-5 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <p className="text-xs text-dark-text-muted">Click any chat to continue where you left off</p>
-            </div>
-
-            {/* Chat List */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {chatHistory.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-dark-bg-tertiary flex items-center justify-center border border-dark-border-glow">
-                    <svg className="w-8 h-8 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                  </div>
-                  <p className="text-sm text-dark-text-secondary font-medium">No chat history yet</p>
-                  <p className="text-xs text-dark-text-muted mt-1">Your conversations are auto-saved!</p>
-                  <p className="text-xs text-dark-text-muted">Start chatting and they'll appear here.</p>
-                </div>
-              ) : (
-                chatHistory.map((chat) => (
-                  <div
-                    key={chat.id}
-                    className={`group p-3 rounded-xl border transition-all cursor-pointer ${
-                      currentChatId === chat.id
-                        ? 'bg-primary-500/10 border-primary-500/40 shadow-glow-cyan-sm'
-                        : 'bg-dark-bg-tertiary border-dark-border-subtle hover:border-primary-500/30 hover:bg-dark-navy-dark'
-                    }`}
-                    onClick={() => loadChat(chat.id)}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold text-dark-text-primary truncate mb-1">
-                          {chat.title}
-                        </h4>
-                        <p className="text-xs text-dark-text-muted">
-                          {new Date(chat.updated_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteChat(chat.id)
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all active:scale-95"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Mode Explanation Modal */}
       {modeExplanation && (
@@ -935,23 +902,23 @@ const AITutor = () => {
       {/* Upgrade Modal */}
       {showUpgradeModal && !authService.isPro() && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-dark-bg-secondary rounded-3xl shadow-2xl border border-dark-border-glow max-w-sm md:max-w-md lg:max-w-lg w-full p-6 md:p-8 lg:p-10 animate-fadeInUp">
+          <div className="bg-dark-bg-secondary rounded-2xl border border-dark-border-subtle max-w-md w-full p-6 md:p-8 animate-fadeInUp">
             {/* Icon */}
-            <div className="flex justify-center mb-4 md:mb-6">
-              <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center shadow-glow-purple">
-                <svg className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
             </div>
 
             {/* Title */}
-            <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary text-center mb-2 md:mb-3">
+            <h3 className="text-2xl md:text-3xl font-bold text-dark-text-primary text-center mb-2">
               Upgrade to Pro
             </h3>
 
             {/* Description */}
-            <p className="text-sm md:text-base lg:text-lg text-dark-text-secondary text-center mb-6 md:mb-8">
+            <p className="text-sm md:text-base text-dark-text-secondary text-center mb-6">
               You've used all your free AI chats. Upgrade to Pro for 250 chats per month plus exclusive features!
             </p>
 
