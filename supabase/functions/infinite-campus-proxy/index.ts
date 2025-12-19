@@ -259,9 +259,15 @@ async function handleGetGrades(body: any): Promise<Response> {
     }
 
     // Parse grades from HTML
+    console.log(`📄 HTML length: ${gradesHtml.length} characters`)
+    console.log(`📄 HTML preview: ${gradesHtml.substring(0, 1000)}`)
+
     const grades = parseGradesFromHtml(gradesHtml)
 
     console.log(`📊 Found ${grades.length} course grades`)
+    if (grades.length > 0) {
+      console.log(`📊 Sample grade: ${JSON.stringify(grades[0])}`)
+    }
 
     return new Response(
       JSON.stringify({
