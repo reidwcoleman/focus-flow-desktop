@@ -9,8 +9,7 @@ import authService from './authService'
 
 class InfiniteCampusService {
   constructor() {
-    this.districtName = null
-    this.state = null
+    this.lunchNumber = null
     this.username = null
     this.password = null
     this.baseUrl = null
