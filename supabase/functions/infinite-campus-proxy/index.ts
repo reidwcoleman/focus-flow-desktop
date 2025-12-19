@@ -243,6 +243,13 @@ async function handleGetGrades(body: any): Promise<Response> {
     console.log(`📊 Found ${grades.length} course grades`)
     if (grades.length > 0) {
       console.log(`📊 Sample grade: ${JSON.stringify(grades[0])}`)
+    } else {
+      console.error('⚠️ WARNING: 0 grades found! HTML parsing failed.')
+      console.error(`⚠️ HTML length: ${gradesHtml.length}`)
+      console.error(`⚠️ HTML contains "grade": ${gradesHtml.toLowerCase().includes('grade')}`)
+      console.error(`⚠️ HTML contains "class": ${gradesHtml.toLowerCase().includes('class')}`)
+      console.error(`⚠️ HTML contains "score": ${gradesHtml.toLowerCase().includes('score')}`)
+      console.error(`⚠️ First 2000 chars: ${gradesHtml.substring(0, 2000)}`)
     }
 
     return new Response(
