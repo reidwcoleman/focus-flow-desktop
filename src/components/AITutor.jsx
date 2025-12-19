@@ -568,17 +568,19 @@ const AITutor = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {chatHistory.length > 0 && (
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="p-2.5 rounded-lg bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/30 transition-all"
-                title="Chat history"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-            )}
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className={`p-2.5 rounded-lg border transition-all ${
+                showHistory
+                  ? 'bg-primary-500 border-primary-500 text-white'
+                  : 'bg-dark-bg-secondary border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/30'
+              }`}
+              title={showHistory ? "Hide history" : "Show history"}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
             <button
               onClick={startNewChat}
               className="p-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-accent-cyan text-white hover:opacity-90 transition-opacity"
@@ -990,6 +992,7 @@ const AITutor = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
