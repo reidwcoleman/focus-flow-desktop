@@ -219,29 +219,44 @@ async function handleGetGrades(body: any): Promise<Response> {
   try {
     // Fetch grades page - use correct path for Wake County
     const isWakeCounty = baseUrl.includes('ncsis.gov')
-    const gradesUrl = isWakeCounty
-      ? `${baseUrl}/campus/portal/students/grades.jsp`
-      : `${baseUrl}/campus/portal/${districtCode}/grades.jsp`
 
-    console.log(`📊 Fetching grades from: ${gradesUrl}`)
+    // Try multiple possible grades paths for Wake County
+    const gradePaths = isWakeCounty ? [
+      `${baseUrl}/campus/portal/portal.xsl?x=portal.PortalOutline&contentType=text/xml&lang=en&personID=&studentFirstName=&lastName=&sortBy=undefined`,
+      `${baseUrl}/campus/students/grades.jsp`,
+      `${baseUrl}/campus/portal/psu920wakeco.jsp?tab=studentGrades`,
+      `${baseUrl}/campus/portal/students/psu920wakeco.jsp?tab=studentGrades`,
+    ] : [`${baseUrl}/campus/portal/${districtCode}/grades.jsp`]
 
-    const gradesResponse = await fetch(gradesUrl, {
-      headers: {
-        'Cookie': `JSESSIONID=${sessionId}`,
-        'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
+    let gradesHtml = ''
+    let gradesUrl = ''
+
+    for (const testPath of gradePaths) {
+      console.log(`📊 Trying grades path: ${testPath}`)
+
+      const gradesResponse = await fetch(testPath, {
+        headers: {
+          'Cookie': `JSESSIONID=${sessionId}`,
+          'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
+        }
+      })
+
+      console.log(`📊 Grades response status for ${testPath}: ${gradesResponse.status}`)
+
+      if (gradesResponse.ok) {
+        gradesHtml = await gradesResponse.text()
+        gradesUrl = testPath
+        console.log(`✅ Found working grades URL: ${gradesUrl}`)
+        break
+      } else {
+        console.log(`❌ Failed - Status: ${gradesResponse.status}`)
       }
-    })
-
-    console.log(`📊 Grades response status: ${gradesResponse.status}`)
-
-    if (!gradesResponse.ok) {
-      console.error(`❌ Failed to fetch grades - Status: ${gradesResponse.status}`)
-      const responseText = await gradesResponse.text()
-      console.error(`Response preview: ${responseText.substring(0, 500)}`)
-      throw new Error(`Failed to fetch grades: ${gradesResponse.status}`)
     }
 
-    const gradesHtml = await gradesResponse.text()
+    if (!gradesHtml) {
+      console.error(`❌ All grades paths failed. Tried: ${gradePaths.join(', ')}`)
+      throw new Error(`Failed to fetch grades: No valid grades path found`)
+    }
 
     // Parse grades from HTML
     const grades = parseGradesFromHtml(gradesHtml)
