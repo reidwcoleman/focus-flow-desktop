@@ -6,6 +6,8 @@
 import { useState, useEffect, useRef } from 'react'
 import calendarService from '../services/calendarService'
 import activityParserService from '../services/activityParserService'
+import activityBreakdownService from '../services/activityBreakdownService'
+import activitySubtasksService from '../services/activitySubtasksService'
 import { CalendarSkeleton, ActivitySkeleton, StatCardSkeleton } from './LoadingSkeleton'
 
 const Planner = () => {
@@ -22,6 +24,8 @@ const Planner = () => {
   const [viewMode, setViewMode] = useState('calendar') // 'calendar' or 'upcoming'
   const [filterType, setFilterType] = useState('all') // 'all' or specific activity type
   const [flyingAwayItems, setFlyingAwayItems] = useState(new Set())
+  const [subtasksByActivity, setSubtasksByActivity] = useState({})
+  const [generatingAI, setGeneratingAI] = useState({}) // Track which activities are generating AI content
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
@@ -36,6 +40,28 @@ const Planner = () => {
   useEffect(() => {
     loadDayActivities()
   }, [selectedDate, activities])
+
+  useEffect(() => {
+    // Load subtasks for all visible activities
+    const loadAllSubtasks = async () => {
+      const subtasksMap = {}
+      for (const activity of activities) {
+        try {
+          const subtasks = await activitySubtasksService.getSubtasks(activity.id)
+          if (subtasks.length > 0) {
+            subtasksMap[activity.id] = subtasks
+          }
+        } catch (error) {
+          console.error(`Failed to load subtasks for activity ${activity.id}:`, error)
+        }
+      }
+      setSubtasksByActivity(subtasksMap)
+    }
+
+    if (activities.length > 0) {
+      loadAllSubtasks()
+    }
+  }, [activities])
 
   const loadActivities = async () => {
     setLoading(true)
@@ -76,7 +102,15 @@ const Planner = () => {
       const activityData = await activityParserService.parseActivity(aiInput)
 
       // Create activity in database
-      await calendarService.createActivity(activityData)
+      const createdActivity = await calendarService.createActivity({
+        ...activityData,
+        ai_generated: true
+      })
+
+      // Generate AI description and subtasks in parallel
+      if (createdActivity?.id) {
+        generateAIContent(createdActivity)
+      }
 
       // Reload activities
       await loadActivities()
@@ -91,6 +125,59 @@ const Planner = () => {
       setTimeout(() => setError(''), 5000)
     } finally {
       setAiProcessing(false)
+    }
+  }
+
+  const generateAIContent = async (activity) => {
+    try {
+      setGeneratingAI(prev => ({ ...prev, [activity.id]: true }))
+
+      // Generate description and subtasks in parallel
+      const [description, subtasks] = await Promise.all([
+        activityBreakdownService.generateDescription(activity).catch(() => null),
+        activityBreakdownService.generateSubtasks(activity).catch(() => [])
+      ])
+
+      // Update activity with AI description if generated
+      if (description) {
+        await calendarService.updateActivity(activity.id, {
+          ai_description: description
+        })
+      }
+
+      // Create subtasks if generated
+      if (subtasks && subtasks.length > 0) {
+        await activitySubtasksService.createSubtasksBulk(activity.id, subtasks)
+        await loadSubtasksForActivity(activity.id)
+      }
+
+      // Reload activities to show updated description
+      await loadActivities()
+    } catch (error) {
+      console.error('Failed to generate AI content:', error)
+    } finally {
+      setGeneratingAI(prev => ({ ...prev, [activity.id]: false }))
+    }
+  }
+
+  const loadSubtasksForActivity = async (activityId) => {
+    try {
+      const subtasks = await activitySubtasksService.getSubtasks(activityId)
+      setSubtasksByActivity(prev => ({
+        ...prev,
+        [activityId]: subtasks
+      }))
+    } catch (error) {
+      console.error('Failed to load subtasks:', error)
+    }
+  }
+
+  const handleToggleSubtask = async (subtask) => {
+    try {
+      await activitySubtasksService.toggleSubtask(subtask.id, !subtask.completed)
+      await loadSubtasksForActivity(subtask.activity_id)
+    } catch (error) {
+      console.error('Failed to toggle subtask:', error)
     }
   }
 
