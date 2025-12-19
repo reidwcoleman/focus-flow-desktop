@@ -173,12 +173,31 @@ async function handleLogin(body: any): Promise<Response> {
       throw new Error(`Login failed - Status ${loginResponse.status}. Please verify your WakeID credentials.`)
     }
 
-    // Extract session ID from cookies
-    const sessionMatch = cookies.match(/JSESSIONID=([^;]+)/)
-    const sessionId = sessionMatch ? sessionMatch[1] : null
+    // Extract ALL cookies, not just JSESSIONID
+    const allCookies = cookies.split(',').map(c => c.split(';')[0]).join('; ')
+    console.log(`🍪 All cookies: ${allCookies}`)
 
-    if (!sessionId) {
-      throw new Error('Login failed - no session created')
+    // Follow the redirect to establish the session fully
+    const redirectLocation = loginResponse.headers.get('location')
+    if (redirectLocation) {
+      const redirectUrl = redirectLocation.startsWith('http') ? redirectLocation : `${baseUrl}${redirectLocation}`
+      console.log(`🔄 Following redirect to: ${redirectUrl}`)
+
+      const redirectResponse = await fetch(redirectUrl, {
+        headers: {
+          'Cookie': allCookies,
+          'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
+        }
+      })
+
+      console.log(`🔄 Redirect response status: ${redirectResponse.status}`)
+
+      // Get any additional cookies from redirect
+      const redirectCookies = redirectResponse.headers.get('set-cookie')
+      if (redirectCookies) {
+        const additionalCookies = redirectCookies.split(',').map(c => c.split(';')[0]).join('; ')
+        console.log(`🍪 Additional cookies from redirect: ${additionalCookies}`)
+      }
     }
 
     console.log('✅ Login successful, session established')
@@ -187,7 +206,7 @@ async function handleLogin(body: any): Promise<Response> {
       JSON.stringify({
         success: true,
         message: 'Login successful',
-        sessionId: sessionId,
+        sessionId: allCookies,  // Return all cookies, not just JSESSIONID
         baseUrl: baseUrl
       }),
       {
@@ -236,7 +255,7 @@ async function handleGetGrades(body: any): Promise<Response> {
 
       const gradesResponse = await fetch(testPath, {
         headers: {
-          'Cookie': `JSESSIONID=${sessionId}`,
+          'Cookie': sessionId,  // sessionId now contains all cookies
           'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
         }
       })
