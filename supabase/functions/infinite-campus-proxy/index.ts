@@ -50,12 +50,14 @@ serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    const { action } = await req.json()
+    // Parse body once and pass to handlers
+    const body = await req.json()
+    const { action } = body
 
     if (action === 'login') {
-      return await handleLogin(req)
+      return await handleLogin(body)
     } else if (action === 'getGrades') {
-      return await handleGetGrades(req)
+      return await handleGetGrades(body)
     } else {
       throw new Error('Invalid action')
     }
@@ -71,8 +73,8 @@ serve(async (req) => {
   }
 })
 
-async function handleLogin(req: Request): Promise<Response> {
-  const { district, state, username, password }: LoginRequest = await req.json()
+async function handleLogin(body: any): Promise<Response> {
+  const { district, state, username, password }: LoginRequest = body
 
   // Construct Infinite Campus URL
   const districtCode = district.toLowerCase().replace(/\s+/g, '')
@@ -143,16 +145,13 @@ async function handleLogin(req: Request): Promise<Response> {
   }
 }
 
-async function handleGetGrades(req: Request): Promise<Response> {
-  const { district, state, username, password }: GradesRequest = await req.json()
+async function handleGetGrades(body: any): Promise<Response> {
+  const { district, state, username, password }: GradesRequest = body
 
   // First, login to get session
-  const loginReq = new Request(req.url, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'login', district, state, username, password })
-  })
+  const loginBody = { action: 'login', district, state, username, password }
 
-  const loginResponse = await handleLogin(loginReq)
+  const loginResponse = await handleLogin(loginBody)
   const loginData = await loginResponse.json()
 
   if (!loginData.success || !loginData.sessionId) {
