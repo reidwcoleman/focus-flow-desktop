@@ -247,26 +247,26 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
   }, [mode])
 
   return (
-    <div className="fixed inset-0 z-50 bg-neutral-900 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-dark-bg-primary flex items-center justify-center">
       {/* Responsive container - mobile to desktop */}
-      <div className="w-full h-full max-w-[28rem] md:max-w-4xl lg:max-w-6xl mx-auto bg-neutral-900 relative">
+      <div className="w-full h-full max-w-[28rem] md:max-w-4xl lg:max-w-7xl xl:max-w-[90rem] mx-auto bg-dark-bg-primary relative">
         {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-neutral-900 to-transparent p-4 md:p-6">
+        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-dark-bg-primary to-transparent p-4 md:p-6 lg:p-8">
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <button
               onClick={onClose}
-              className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-all"
+              className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg bg-dark-bg-secondary border border-dark-border-subtle flex items-center justify-center text-dark-text-primary hover:bg-dark-bg-tertiary transition-all"
             >
-              <svg className="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <h2 className="text-white font-semibold text-base md:text-xl">
+            <h2 className="text-dark-text-primary font-bold text-base md:text-xl lg:text-2xl">
               {scanMode === 'homework' && 'Scan Homework'}
               {scanMode === 'notes' && 'Scan Notes'}
               {scanMode === 'flashcards' && 'Scan Textbook'}
             </h2>
-            <div className="w-10 md:w-12"></div>
+            <div className="w-10 md:w-12 lg:w-14"></div>
           </div>
 
         {/* Mode Selector */}
@@ -274,30 +274,30 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
           <div className="flex gap-2 md:gap-3 px-1">
             <button
               onClick={() => setScanMode('homework')}
-              className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-xl text-sm md:text-base font-semibold transition-all duration-200 ${
+              className={`flex-1 py-2 md:py-3 lg:py-3.5 px-3 md:px-4 lg:px-6 rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-all ${
                 scanMode === 'homework'
-                  ? 'bg-white text-neutral-900 shadow-soft'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+                  : 'bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
               }`}
             >
               Homework
             </button>
             <button
               onClick={() => setScanMode('notes')}
-              className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-xl text-sm md:text-base font-semibold transition-all duration-200 ${
+              className={`flex-1 py-2 md:py-3 lg:py-3.5 px-3 md:px-4 lg:px-6 rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-all ${
                 scanMode === 'notes'
-                  ? 'bg-white text-neutral-900 shadow-soft'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+                  : 'bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
               }`}
             >
               Notes
             </button>
             <button
               onClick={() => setScanMode('flashcards')}
-              className={`flex-1 py-2 md:py-3 px-3 md:px-4 rounded-xl text-sm md:text-base font-semibold transition-all duration-200 ${
+              className={`flex-1 py-2 md:py-3 lg:py-3.5 px-3 md:px-4 lg:px-6 rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-all ${
                 scanMode === 'flashcards'
-                  ? 'bg-white text-neutral-900 shadow-soft'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+                  : 'bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
               }`}
             >
               Flashcards
@@ -318,17 +318,17 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
 
           {/* Camera Frame Overlay */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[90%] h-[70%] border-4 border-white/50 rounded-3xl shadow-glow-lg"></div>
+            <div className="w-[90%] md:w-[80%] lg:w-[70%] h-[70%] md:h-[75%] lg:h-[80%] border-4 md:border-[6px] border-primary-500/50 rounded-2xl"></div>
           </div>
 
           {/* Bottom Controls */}
-          <div className="absolute bottom-0 left-0 right-0 pb-8 bg-gradient-to-t from-neutral-900 to-transparent">
-            <div className="flex items-center justify-center gap-6">
+          <div className="absolute bottom-0 left-0 right-0 pb-8 md:pb-12 lg:pb-16 bg-gradient-to-t from-dark-bg-primary to-transparent">
+            <div className="flex items-center justify-center gap-6 md:gap-8 lg:gap-12">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-all"
+                className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-lg bg-dark-bg-secondary border-2 border-dark-border-subtle flex items-center justify-center text-dark-text-primary hover:bg-dark-bg-tertiary hover:border-primary-500/50 transition-all"
               >
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </button>

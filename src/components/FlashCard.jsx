@@ -47,26 +47,28 @@ const FlashCard = ({ card, className = '', showDifficulty = false }) => {
       >
         {/* Front Side */}
         <div
-          className="absolute inset-0 backface-hidden bg-gradient-to-br from-dark-bg-secondary via-dark-bg-secondary to-dark-bg-tertiary rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 shadow-dark-soft-md border border-dark-border-glow ring-1 ring-white/5 flex flex-col"
+          className="absolute inset-0 backface-hidden bg-gradient-to-br from-dark-bg-secondary via-dark-bg-secondary to-dark-bg-tertiary rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 shadow-dark-soft-md border border-dark-border-glow ring-1 ring-white/5 flex flex-col overflow-hidden"
           style={{ backfaceVisibility: 'hidden' }}
         >
           {/* Difficulty Badge */}
           {showDifficulty && card.difficulty && (
-            <div className="absolute top-6 md:top-8 lg:top-10 right-6 md:right-8 lg:right-10">
+            <div className="absolute top-6 md:top-8 lg:top-10 right-6 md:right-8 lg:right-10 z-10">
               <div className={`px-3 md:px-4 lg:px-5 py-1.5 md:py-2 lg:py-2.5 rounded-full ${difficultyConfig.bg} ${difficultyConfig.text} text-xs md:text-sm lg:text-base font-bold uppercase tracking-wide`}>
                 {difficultyConfig.label}
               </div>
             </div>
           )}
 
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center max-w-4xl">
-              <div className="text-dark-text-secondary text-xs sm:text-sm md:text-base lg:text-lg font-bold uppercase tracking-wider mb-3 sm:mb-4 md:mb-6 lg:mb-8">
-                Question
+          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-dark-border-subtle scrollbar-track-transparent">
+            <div className="flex-1 flex items-center justify-center py-4">
+              <div className="text-center max-w-4xl w-full px-4">
+                <div className="text-dark-text-secondary text-xs sm:text-sm md:text-base lg:text-lg font-bold uppercase tracking-wider mb-3 sm:mb-4 md:mb-6">
+                  Question
+                </div>
+                <p className="text-dark-text-primary text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold leading-relaxed whitespace-pre-wrap">
+                  {card.front}
+                </p>
               </div>
-              <p className="text-dark-text-primary text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold leading-relaxed">
-                {card.front}
-              </p>
             </div>
           </div>
 
@@ -88,20 +90,22 @@ const FlashCard = ({ card, className = '', showDifficulty = false }) => {
 
         {/* Back Side */}
         <div
-          className="absolute inset-0 backface-hidden bg-gradient-to-br from-primary-500 via-primary-500 to-primary-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 shadow-soft-xl ring-1 ring-white/10 flex flex-col text-white"
+          className="absolute inset-0 backface-hidden bg-gradient-to-br from-primary-500 via-primary-500 to-primary-600 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 shadow-soft-xl ring-1 ring-white/10 flex flex-col text-white overflow-hidden"
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'
           }}
         >
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center max-w-4xl">
-              <div className="text-white/80 text-xs sm:text-sm md:text-base lg:text-lg font-bold uppercase tracking-wider mb-3 sm:mb-4 md:mb-6 lg:mb-8">
-                Answer
+          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+            <div className="flex-1 flex items-center justify-center py-4">
+              <div className="text-center max-w-4xl w-full px-4">
+                <div className="text-white/80 text-xs sm:text-sm md:text-base lg:text-lg font-bold uppercase tracking-wider mb-3 sm:mb-4 md:mb-6">
+                  Answer
+                </div>
+                <p className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold leading-relaxed whitespace-pre-wrap">
+                  {card.back}
+                </p>
               </div>
-              <p className="text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold leading-relaxed">
-                {card.back}
-              </p>
             </div>
           </div>
 

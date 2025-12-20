@@ -379,10 +379,10 @@ const StudySession = ({ deckId, cards, onComplete, onExit }) => {
       </div>
 
       {/* Flashcard */}
-      <div className="h-full flex items-center justify-center px-4 sm:px-6 md:px-6 lg:px-8 xl:px-10 pt-20 sm:pt-28 md:pt-32 lg:pt-36 pb-32 sm:pb-40 md:pb-48 lg:pb-56">
+      <div className="h-full flex items-center justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-40 sm:pb-44 md:pb-48 lg:pb-52">
         <div
           ref={cardRef}
-          className={`w-full max-w-md md:max-w-xl lg:max-w-2xl xl:max-w-3xl transition-all ${cardEntering ? 'duration-300' : 'duration-200'}`}
+          className={`w-full max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl transition-all ${cardEntering ? 'duration-300' : 'duration-200'}`}
           style={{
             transform: cardExiting
               ? `translateX(${cardExiting === 'right' ? '150%' : '-150%'}) rotate(${cardExiting === 'right' ? '30deg' : '-30deg'})`
