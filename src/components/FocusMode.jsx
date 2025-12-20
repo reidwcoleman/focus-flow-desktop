@@ -450,7 +450,7 @@ const FocusMode = () => {
 
         {/* Stats */}
         {stats && stats.totalSessions > 0 && (
-          <div className="bg-[rgba(255,255,255,0.05)] backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-[rgba(255,255,255,0.1)] animate-opal-card-enter">
+          <div className="bg-dark-bg-tertiary/50 rounded-lg p-6 md:p-8 border border-dark-border-subtle">
             <div className="grid grid-cols-3 gap-4 md:gap-8 lg:gap-12 text-center">
               <div>
                 <div className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#A0FFF9]">{stats.totalHoursBlocked || 0}h</div>
@@ -479,8 +479,7 @@ const FocusMode = () => {
             return (
               <div
                 key={list.id}
-                className="bg-[rgba(255,255,255,0.05)] backdrop-blur-xl rounded-2xl p-6 md:p-7 lg:p-8 border border-[rgba(255,255,255,0.1)] hover:border-[rgba(124,92,255,0.5)] hover:scale-[1.02] transition-all duration-300 animate-opal-card-enter"
-                style={{ animationDelay: `${index * 0.08}s` }}
+                className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 md:p-5 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
               >
                 <div className="flex items-center justify-between mb-4 md:mb-5 lg:mb-6">
                   <div className="flex items-center gap-3 md:gap-4">
@@ -495,18 +494,18 @@ const FocusMode = () => {
                 </div>
 
                 {/* App Preview */}
-                <div className="flex gap-2 md:gap-3 mb-4 md:mb-5 lg:mb-6">
+                <div className="flex gap-2 md:gap-3 mb-4">
                   {previewApps.map(app => (
                     <div
                       key={app.id}
-                      className={`w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br ${app.gradient} flex items-center justify-center text-lg md:text-xl lg:text-2xl shadow-soft-sm hover:scale-110 transition-transform`}
+                      className={`w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br ${app.gradient} flex items-center justify-center text-lg md:text-xl transition-transform hover:scale-105`}
                     >
                       {app.icon}
                     </div>
                   ))}
                   {appCount > 4 && (
-                    <div className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-xl md:rounded-2xl bg-dark-bg-tertiary border border-dark-border-subtle flex items-center justify-center">
-                      <span className="text-xs md:text-sm lg:text-base text-dark-text-muted font-semibold">+{appCount - 4}</span>
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-dark-bg-tertiary border border-dark-border-subtle flex items-center justify-center">
+                      <span className="text-xs md:text-sm text-dark-text-muted font-semibold">+{appCount - 4}</span>
                     </div>
                   )}
                 </div>

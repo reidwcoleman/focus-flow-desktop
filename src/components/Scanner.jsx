@@ -424,9 +424,9 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                   </div>
 
                   {/* Assignment Card */}
-                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
+                  <div className="bg-dark-bg-tertiary/50 rounded-lg p-4 md:p-5 border border-dark-border-subtle">
                     <div className="flex items-start gap-3 mb-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center shadow-glow">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
@@ -500,7 +500,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                   </div>
 
                   {/* Notes Card */}
-                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
+                  <div className="bg-dark-bg-tertiary/50 rounded-lg p-4 md:p-5 border border-dark-border-subtle">
                     {/* Editable Title Input */}
                     <div className="mb-4">
                       <label className="block text-white/70 text-sm font-medium mb-2">Note Title</label>
@@ -514,7 +514,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                     </div>
 
                     <div className="flex items-start gap-3 mb-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-accent-purple to-accent-pink flex items-center justify-center shadow-glow-purple">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-accent-purple to-accent-pink flex items-center justify-center">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
@@ -533,7 +533,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                     </div>
 
                     {/* Formatted Content Preview */}
-                    <div className="bg-white/5 rounded-xl p-4 mb-4 max-h-60 overflow-y-auto scrollbar-thin">
+                    <div className="bg-dark-bg-secondary rounded-lg p-4 mb-4 max-h-60 overflow-y-auto scrollbar-thin">
                       <div className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap">
                         {(typeof notesData.formattedContent === 'string' && notesData.formattedContent.includes('{'))
                           ? notesData.rawText
@@ -588,9 +588,9 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
               {flashcardsData && (
                 <>
                   {/* Deck Header */}
-                  <div className="bg-gradient-to-br from-accent-cyan to-primary-500 rounded-2xl p-5 shadow-soft-lg">
+                  <div className="bg-gradient-to-br from-accent-cyan to-primary-500 rounded-lg p-4 md:p-5">
                     <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
@@ -607,11 +607,11 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
                   </div>
 
                   {/* Flashcards Preview */}
-                  <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
+                  <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin">
                     {flashcardsData.flashcards.map((card, index) => (
                       <div
                         key={index}
-                        className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20"
+                        className="bg-dark-bg-tertiary/50 rounded-lg p-3 md:p-4 border border-dark-border-subtle"
                       >
                         <div className="flex items-start gap-3 mb-3">
                           <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-accent-cyan/30 flex items-center justify-center">
