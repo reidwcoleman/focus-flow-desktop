@@ -321,7 +321,7 @@ export default function Account() {
         {/* Left Column: Profile & Account Info */}
         <div className="space-y-6 lg:space-y-8">
           {/* Profile Name Card */}
-          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
+          <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
             <div className="flex items-center justify-between mb-3 lg:mb-5">
               <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary flex items-center gap-2 lg:gap-3">
                 <svg className="w-5 h-5 lg:w-7 lg:h-7 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -377,7 +377,7 @@ export default function Account() {
           </div>
 
           {/* Account Info Card */}
-          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
+          <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
             <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary mb-4 lg:mb-6 flex items-center gap-2 lg:gap-3">
               <svg className="w-5 h-5 lg:w-7 lg:h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -409,7 +409,7 @@ export default function Account() {
         {/* Right Column: Canvas Integration */}
         <div className="space-y-6 lg:space-y-8">
           {/* Canvas Integration Card */}
-          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
+          <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
             <div className="flex items-center justify-between mb-3 lg:mb-5">
               <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary flex items-center gap-2 lg:gap-3">
                 <svg className="w-5 h-5 lg:w-7 lg:h-7 text-accent-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -561,7 +561,7 @@ export default function Account() {
           </div>
 
           {/* Infinite Campus Integration Card */}
-          <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
+          <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
             <div className="flex items-center justify-between mb-3 lg:mb-5">
               <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary flex items-center gap-2 lg:gap-3">
                 <svg className="w-5 h-5 lg:w-7 lg:h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -730,7 +730,7 @@ export default function Account() {
       </div>
 
       {/* Achievements Section */}
-      <div className="bg-dark-bg-secondary rounded-2xl lg:rounded-2xl p-5 lg:p-8 border border-dark-border-subtle  hover: transition-all duration-200">
+      <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
         <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary mb-4 lg:mb-6 flex items-center gap-2 lg:gap-3">
           <svg className="w-5 h-5 lg:w-7 lg:h-7 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -757,7 +757,7 @@ export default function Account() {
                 return (
                   <div
                     key={badge.id}
-                    className={`${tier.bgColor} ${tier.borderColor} border rounded-xl lg:rounded-2xl p-4 lg:p-5 transition-all duration-200 hover:scale-105 hover:shadow-lg`}
+                    className={`${tier.bgColor} ${tier.borderColor} border rounded-lg p-4 lg:p-5 transition-all hover:scale-105`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-3xl lg:text-4xl">{badge.icon}</div>

@@ -69,7 +69,7 @@ const Analytics = () => {
   return (
     <div className="space-y-6 lg:space-y-8 pb-6 lg:pb-10 animate-fadeIn">
       {/* Overall Performance - Desktop Optimized */}
-      <div className="relative overflow-hidden rounded-2xl bg-dark-bg-secondary p-6 lg:p-8 border border-dark-border-subtle">
+      <div className="relative overflow-hidden rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary p-6 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-6 lg:mb-8">
             <div>
@@ -84,19 +84,19 @@ const Analytics = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-4 lg:gap-8">
-            <div className="bg-dark-bg-tertiary rounded-xl p-4 lg:p-6 border border-dark-border-subtle hover:border-primary-500/30 transition-all duration-200">
+            <div className="bg-dark-bg-secondary rounded-lg p-4 lg:p-6 border border-dark-border-subtle hover:border-primary-500/30 transition-all">
               <div className="text-3xl lg:text-5xl font-bold text-dark-text-primary mb-1 lg:mb-3">
                 {assignmentStats.total}
               </div>
               <div className="text-dark-text-secondary text-xs lg:text-sm font-medium">Assignments</div>
             </div>
-            <div className="bg-dark-bg-tertiary rounded-xl p-4 lg:p-6 border border-dark-border-subtle hover:border-accent-cyan/30 transition-all duration-200">
+            <div className="bg-dark-bg-secondary rounded-lg p-4 lg:p-6 border border-dark-border-subtle hover:border-accent-cyan/30 transition-all">
               <div className="text-3xl lg:text-5xl font-bold text-dark-text-primary mb-1 lg:mb-3">
                 {studyStats.totalHours}h
               </div>
               <div className="text-dark-text-secondary text-xs lg:text-sm font-medium">Study Hours</div>
             </div>
-            <div className="bg-dark-bg-tertiary rounded-xl p-4 lg:p-6 border border-dark-border-subtle hover:border-green-500/30 transition-all duration-200">
+            <div className="bg-dark-bg-secondary rounded-lg p-4 lg:p-6 border border-dark-border-subtle hover:border-green-500/30 transition-all">
               <div className="text-3xl lg:text-5xl font-bold text-dark-text-primary mb-1 lg:mb-3">
                 {assignmentStats.onTimeRate}%
               </div>
@@ -114,7 +114,7 @@ const Analytics = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Subject Breakdown */}
         {subjectBreakdown.length > 0 && (
-          <div className="bg-dark-bg-secondary rounded-2xl p-5 lg:p-6 border border-dark-border-subtle">
+          <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-6 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
             <div className="flex items-center justify-between mb-4 lg:mb-6">
               <h3 className="font-bold text-dark-text-primary text-base lg:text-2xl">Subject Breakdown</h3>
               <div className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-1 lg:py-2 rounded-lg bg-primary-500/10 border border-primary-500/30">
@@ -160,7 +160,7 @@ const Analytics = () => {
         )}
 
         {/* Weekly Activity Chart */}
-        <div className="bg-dark-bg-secondary rounded-2xl p-5 lg:p-6 border border-dark-border-subtle">
+        <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-6 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
           <h3 className="font-bold text-dark-text-primary text-base lg:text-2xl mb-4 lg:mb-6">This Week's Activity</h3>
 
           <div className="flex items-end justify-between gap-2 lg:gap-4 h-40 lg:h-56 mb-4 lg:mb-6">
@@ -213,7 +213,7 @@ const Analytics = () => {
 
       {/* Strengths & Improvements - Desktop Optimized */}
       <div className="grid grid-cols-2 gap-3 lg:gap-6">
-        <div className="bg-green-900/10 border border-green-700/40 rounded-xl p-4 lg:p-6 transition-all duration-200">
+        <div className="bg-green-900/10 border border-green-700/40 rounded-lg p-4 lg:p-6 transition-all">
           <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-xl bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center mb-3 lg:mb-5">
             <svg className="w-5 h-5 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -229,7 +229,7 @@ const Analytics = () => {
           </p>
         </div>
 
-        <div className="bg-amber-900/10 border border-amber-700/40 rounded-xl p-4 lg:p-6 transition-all duration-200">
+        <div className="bg-amber-900/10 border border-amber-700/40 rounded-lg p-4 lg:p-6 transition-all">
           <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-xl bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center mb-3 lg:mb-5">
             <svg className="w-5 h-5 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -247,7 +247,7 @@ const Analytics = () => {
       </div>
 
       {/* AI Insights - Desktop Optimized */}
-      <div className="bg-dark-bg-secondary rounded-2xl p-5 lg:p-8 border border-dark-border-subtle transition-all duration-200">
+      <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
         <div className="flex gap-3 lg:gap-6">
           <div className="flex-shrink-0">
             <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-xl bg-gradient-to-br from-accent-purple to-accent-purple-dark flex items-center justify-center">
