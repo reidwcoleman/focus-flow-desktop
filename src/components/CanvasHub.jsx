@@ -120,7 +120,7 @@ const CanvasHub = () => {
   }
 
   return (
-    <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
+    <div className="space-y-4 md:space-y-5 pb-6 md:pb-8">
       {/* Header */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-900/30 to-red-900/30 p-4 md:p-5 lg:p-6  border border-orange-700/40">
         <div className="relative z-10">
@@ -189,7 +189,7 @@ const CanvasHub = () => {
 
       {/* Courses View */}
       {activeView === 'courses' && (
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-3">
           <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary tracking-tight">
             Your Courses ({courses.length})
           </h3>
@@ -202,7 +202,7 @@ const CanvasHub = () => {
             courses.map((course) => (
               <div
                 key={course.id}
-                className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle  transition-all"
+                className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -235,7 +235,7 @@ const CanvasHub = () => {
 
       {/* Assignments View */}
       {activeView === 'assignments' && (
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-3">
           <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary tracking-tight">
             Assignments ({assignments.length})
           </h3>
@@ -250,7 +250,7 @@ const CanvasHub = () => {
               return (
                 <div
                   key={assignment.id}
-                  className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle  transition-all"
+                  className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
                 >
                   {/* Subject/Course Badge */}
                   <div className="flex items-center gap-2 mb-2">
@@ -322,7 +322,7 @@ const CanvasHub = () => {
 
       {/* Grades View */}
       {activeView === 'grades' && (
-        <div className="space-y-3 md:space-y-4">
+        <div className="space-y-3">
           <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary tracking-tight">
             Course Grades ({grades.length})
           </h3>
@@ -345,7 +345,7 @@ const CanvasHub = () => {
               return (
                 <div
                   key={grade.courseId}
-                  className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle  transition-all"
+                  className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">

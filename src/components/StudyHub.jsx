@@ -273,7 +273,7 @@ const StudyHub = () => {
                 <div
                   key={note.id}
                   onClick={() => setSelectedNote(note)}
-                  className="flex items-start gap-3 p-4 rounded-xl bg-dark-bg-tertiary hover:bg-dark-navy-dark border border-dark-border-subtle hover:border-dark-border-subtle transition-all cursor-pointer active:scale-[0.98]"
+                  className="flex items-start gap-3 p-4 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all cursor-pointer"
                 >
                   <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent-purple/20 flex items-center justify-center border border-accent-purple/30">
                     <svg className="w-5 h-5 text-accent-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -632,7 +632,7 @@ const StudyHub = () => {
                 <div
                   key={deck.id}
                   onClick={() => openDeckPreview(deck.id)}
-                  className="flex items-center gap-3 p-4 rounded-xl bg-dark-bg-tertiary hover:bg-dark-navy-dark border border-dark-border-subtle hover:border-dark-border-subtle transition-all cursor-pointer active:scale-95"
+                  className="flex items-center gap-3 p-4 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all cursor-pointer"
                 >
                   <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center border border-primary-500/30">
                     <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
