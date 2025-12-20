@@ -484,22 +484,60 @@ const StudySession = ({ deckId, cards, onComplete, onExit }) => {
         )}
       </div>
 
-      {/* Swipe Instructions */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-neutral-900/90 to-transparent safe-area-inset-bottom pointer-events-none">
-        <div className="max-w-md md:max-w-4xl lg:max-w-6xl mx-auto px-5 md:px-8 py-8 md:py-10">
-          <div className="flex items-center justify-center gap-8 md:gap-12 text-white/80">
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-amber-500/20 flex items-center justify-center">
-                <span className="text-lg md:text-2xl">←</span>
+      {/* Action Buttons - Desktop-friendly click interface */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark-bg via-dark-bg/95 to-transparent safe-area-inset-bottom">
+        <div className="max-w-md md:max-w-4xl lg:max-w-6xl mx-auto px-5 md:px-8 py-6 md:py-8 lg:py-10">
+          <div className="flex items-center justify-center gap-4 md:gap-6">
+            {/* Needs Work Button */}
+            <button
+              onClick={() => {
+                setCardExiting('left')
+                setTimeout(() => {
+                  handleRating(2)
+                  setCardExiting(null)
+                  setCardEntering(true)
+                  setTimeout(() => setCardEntering(false), 300)
+                }, 300)
+              }}
+              disabled={cardExiting !== null}
+              className="flex-1 max-w-xs py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm md:text-base lg:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center justify-center gap-2 md:gap-3">
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Needs Work</span>
               </div>
-              <span className="text-sm md:text-base font-medium">Needs Work</span>
-            </div>
-            <div className="flex items-center gap-2 md:gap-3">
-              <span className="text-sm md:text-base font-medium">Mastered</span>
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-green-500/20 flex items-center justify-center">
-                <span className="text-lg md:text-2xl">→</span>
+            </button>
+
+            {/* Mastered Button */}
+            <button
+              onClick={() => {
+                setCardExiting('right')
+                setTimeout(() => {
+                  handleRating(5)
+                  setCardExiting(null)
+                  setCardEntering(true)
+                  setTimeout(() => setCardEntering(false), 300)
+                }, 300)
+              }}
+              disabled={cardExiting !== null}
+              className="flex-1 max-w-xs py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold text-sm md:text-base lg:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center justify-center gap-2 md:gap-3">
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Mastered</span>
               </div>
-            </div>
+            </button>
+          </div>
+
+          {/* Optional: Show swipe hint on mobile */}
+          <div className="mt-4 text-center md:hidden">
+            <p className="text-xs text-dark-text-muted">
+              Tip: You can also swipe left/right on mobile
+            </p>
           </div>
         </div>
       </div>

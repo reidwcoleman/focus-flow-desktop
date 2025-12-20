@@ -252,7 +252,7 @@ const StudyHub = () => {
         </div>
 
         {/* All Notes List */}
-        <div className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle">
+        <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle">
           {notesLoading ? (
             <div className="text-center py-12">
               <div className="inline-block w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
@@ -611,7 +611,7 @@ const StudyHub = () => {
         </div>
 
         {/* All Decks List */}
-        <div className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle">
+        <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle">
           {flashcardsLoading ? (
             <div className="text-center py-12">
               <div className="inline-block w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
@@ -708,12 +708,12 @@ const StudyHub = () => {
             <p className="text-dark-text-muted text-xs">Use the scanner to convert handwritten notes</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {notes.slice(0, 3).map((note) => (
               <div
                 key={note.id}
                 onClick={() => setSelectedNote(note)}
-                className="flex items-start gap-3 p-3 rounded-xl hover:bg-dark-bg-tertiary transition-all cursor-pointer active:scale-[0.98]"
+                className="flex items-start gap-3 p-3 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all cursor-pointer"
               >
                 <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent-purple/20 flex items-center justify-center border border-accent-purple/30">
                   <svg className="w-4 h-4 text-accent-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -767,7 +767,7 @@ const StudyHub = () => {
               <div
                 key={deck.id}
                 onClick={() => openDeckPreview(deck.id)}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-dark-bg-tertiary transition-all cursor-pointer active:scale-95"
+                className="flex items-center gap-3 p-3 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all cursor-pointer"
               >
                 <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-500/30">
                   <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

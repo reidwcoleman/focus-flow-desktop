@@ -110,7 +110,7 @@ const CanvasHub = () => {
           <p className="text-sm text-dark-text-secondary mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-xl hover: transition-all active:scale-95"
+            className="px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-xl hover: transition-all active:scale-98"
           >
             Retry
           </button>
@@ -129,7 +129,7 @@ const CanvasHub = () => {
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover: transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover: transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {syncing ? (
                 <>
@@ -202,7 +202,7 @@ const CanvasHub = () => {
             courses.map((course) => (
               <div
                 key={course.id}
-                className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle  transition-all"
+                className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle  transition-all"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -250,7 +250,7 @@ const CanvasHub = () => {
               return (
                 <div
                   key={assignment.id}
-                  className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle  transition-all"
+                  className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle  transition-all"
                 >
                   {/* Subject/Course Badge */}
                   <div className="flex items-center gap-2 mb-2">
@@ -345,7 +345,7 @@ const CanvasHub = () => {
               return (
                 <div
                   key={grade.courseId}
-                  className="bg-dark-bg-secondary rounded-2xl p-4 md:p-5 lg:p-6  border border-dark-border-subtle  transition-all"
+                  className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle  transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
