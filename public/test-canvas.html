@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas API Test - Focus Flow Desktop</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: #2d3748;
+      margin-bottom: 1rem;
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      color: #718096;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .results {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #f7fafc;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .success {
+      color: #38a169;
+      background: #f0fff4;
+      border-left-color: #38a169;
+    }
+
+    .error {
+      color: #e53e3e;
+      background: #fff5f5;
+      border-left-color: #e53e3e;
+    }
+
+    .log-entry {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      background: white;
+      border-radius: 4px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .assignment-card {
+      background: white;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .assignment-title {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 0.25rem;
+    }
+
+    .assignment-meta {
+      font-size: 0.875rem;
+      color: #718096;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Canvas API Integration Test</h1>
+    <p class="subtitle">Test your Canvas LMS integration to verify it's working correctly</p>
+
+    <div class="input-group">
+      <label for="canvasUrl">Canvas URL</label>
+      <input
+        type="text"
+        id="canvasUrl"
+        placeholder="https://your-school.instructure.com"
+        value="https://byui.instructure.com"
+      />
+    </div>
+
+    <div class="input-group">
+      <label for="canvasToken">Canvas API Token</label>
+      <input
+        type="password"
+        id="canvasToken"
+        placeholder="Paste your Canvas API token here"
+      />
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <button onclick="testConnection()" id="testBtn">🔍 Test Connection</button>
+      <button onclick="fetchCourses()" id="coursesBtn" disabled>📚 Fetch Courses</button>
+      <button onclick="fetchAssignments()" id="assignmentsBtn" disabled>📝 Fetch Assignments</button>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <script type="module">
+    const SUPABASE_URL = 'https://uhlgppoylqeiirpfhhqm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobGdwcG95bHFlaWlycGZoaHFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMDI4OTEsImV4cCI6MjA4MDg3ODg5MX0.DCW8hcNJ-6Aq_nxt05IU6ogOb69V-oqUNnNhnKiaSvw';
+
+    let coursesData = [];
+
+    window.testConnection = async function() {
+      const resultsDiv = document.getElementById('results');
+      const testBtn = document.getElementById('testBtn');
+      const canvasUrl = document.getElementById('canvasUrl').value.trim();
+      const canvasToken = document.getElementById('canvasToken').value.trim();
+
+      if (!canvasUrl || !canvasToken) {
+        resultsDiv.innerHTML = '<div class="results error">Please enter both Canvas URL and API Token</div>';
+        return;
+      }
+
+      testBtn.disabled = true;
+      testBtn.innerHTML = '<span class="spinner"></span>Testing...';
+      resultsDiv.innerHTML = '<div class="results">Testing Canvas connection...</div>';
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/canvas-proxy`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'apikey': SUPABASE_ANON_KEY,
+            'canvas-url': canvasUrl,
+            'canvas-token': canvasToken,
+            'canvas-endpoint': '/users/self',
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const userData = await response.json();
+
+        resultsDiv.innerHTML = `
+          <div class="results success">
+            <div class="log-entry">✅ Connection successful!</div>
+            <div class="log-entry">👤 Logged in as: <strong>${userData.name}</strong></div>
+            <div class="log-entry">📧 Email: ${userData.email || 'N/A'}</div>
+            <div class="log-entry">🆔 User ID: ${userData.id}</div>
+          </div>
+        `;
+
+        document.getElementById('coursesBtn').disabled = false;
+        document.getElementById('assignmentsBtn').disabled = false;
+
+      } catch (error) {
+        resultsDiv.innerHTML = `
+          <div class="results error">
+            <div class="log-entry">❌ Connection failed</div>
+            <div class="log-entry"><strong>Error:</strong> ${error.message}</div>
+          </div>
+        `;
+      } finally {
+        testBtn.disabled = false;
+        testBtn.innerHTML = '🔍 Test Connection';
+      }
+    };
+
+    window.fetchCourses = async function() {
+      const resultsDiv = document.getElementById('results');
+      const coursesBtn = document.getElementById('coursesBtn');
+      const canvasUrl = document.getElementById('canvasUrl').value.trim();
+      const canvasToken = document.getElementById('canvasToken').value.trim();
+
+      coursesBtn.disabled = true;
+      coursesBtn.innerHTML = '<span class="spinner"></span>Fetching...';
+      resultsDiv.innerHTML = '<div class="results">Fetching courses from Canvas...</div>';
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/canvas-proxy`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'apikey': SUPABASE_ANON_KEY,
+            'canvas-url': canvasUrl,
+            'canvas-token': canvasToken,
+            'canvas-endpoint': '/courses?enrollment_state=active&per_page=100',
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        coursesData = await response.json();
+
+        let html = `
+          <div class="results success">
+            <div class="log-entry">✅ Found ${coursesData.length} active courses</div>
+        `;
+
+        coursesData.forEach((course, index) => {
+          html += `
+            <div class="assignment-card">
+              <div class="assignment-title">${index + 1}. ${course.name}</div>
+              <div class="assignment-meta">
+                Course Code: ${course.course_code || 'N/A'} |
+                ID: ${course.id}
+                ${course.term ? ` | Term: ${course.term.name}` : ''}
+              </div>
+            </div>
+          `;
+        });
+
+        html += '</div>';
+        resultsDiv.innerHTML = html;
+
+      } catch (error) {
+        resultsDiv.innerHTML = `
+          <div class="results error">
+            <div class="log-entry">❌ Failed to fetch courses</div>
+            <div class="log-entry"><strong>Error:</strong> ${error.message}</div>
+          </div>
+        `;
+      } finally {
+        coursesBtn.disabled = false;
+        coursesBtn.innerHTML = '📚 Fetch Courses';
+      }
+    };
+
+    window.fetchAssignments = async function() {
+      const resultsDiv = document.getElementById('results');
+      const assignmentsBtn = document.getElementById('assignmentsBtn');
+      const canvasUrl = document.getElementById('canvasUrl').value.trim();
+      const canvasToken = document.getElementById('canvasToken').value.trim();
+
+      if (coursesData.length === 0) {
+        resultsDiv.innerHTML = '<div class="results error">Please fetch courses first!</div>';
+        return;
+      }
+
+      assignmentsBtn.disabled = true;
+      assignmentsBtn.innerHTML = '<span class="spinner"></span>Fetching...';
+      resultsDiv.innerHTML = '<div class="results">Fetching assignments from Canvas...</div>';
+
+      try {
+        let allAssignments = [];
+
+        for (const course of coursesData.slice(0, 5)) {
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/canvas-proxy`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'apikey': SUPABASE_ANON_KEY,
+              'canvas-url': canvasUrl,
+              'canvas-token': canvasToken,
+              'canvas-endpoint': `/courses/${course.id}/assignments?include[]=submission&per_page=100`,
+            }
+          });
+
+          if (response.ok) {
+            const assignments = await response.json();
+            allAssignments.push(...assignments.map(a => ({ ...a, courseName: course.name })));
+          }
+        }
+
+        let html = `
+          <div class="results success">
+            <div class="log-entry">✅ Found ${allAssignments.length} assignments across ${Math.min(5, coursesData.length)} courses</div>
+        `;
+
+        allAssignments.slice(0, 20).forEach((assignment, index) => {
+          const dueDate = assignment.due_at ? new Date(assignment.due_at).toLocaleDateString() : 'No due date';
+          const submitted = assignment.submission?.workflow_state === 'submitted' ? '✓ Submitted' : '○ Not submitted';
+
+          html += `
+            <div class="assignment-card">
+              <div class="assignment-title">${index + 1}. ${assignment.name}</div>
+              <div class="assignment-meta">
+                Course: ${assignment.courseName} |
+                Due: ${dueDate} |
+                Points: ${assignment.points_possible || 'N/A'} |
+                ${submitted}
+              </div>
+            </div>
+          `;
+        });
+
+        if (allAssignments.length > 20) {
+          html += `<div class="log-entry">...and ${allAssignments.length - 20} more assignments</div>`;
+        }
+
+        html += '</div>';
+        resultsDiv.innerHTML = html;
+
+      } catch (error) {
+        resultsDiv.innerHTML = `
+          <div class="results error">
+            <div class="log-entry">❌ Failed to fetch assignments</div>
+            <div class="log-entry"><strong>Error:</strong> ${error.message}</div>
+          </div>
+        `;
+      } finally {
+        assignmentsBtn.disabled = false;
+        assignmentsBtn.innerHTML = '📝 Fetch Assignments';
+      }
+    };
+  </script>
+</body>
+</html>

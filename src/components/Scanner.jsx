@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import visionService from '../services/visionService'
 import { useStudy } from '../contexts/StudyContext'
 import assignmentsService from '../services/assignmentsService'
+import { toast } from './Toast'
 
 const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
   const { addNote, addDeckWithCards } = useStudy()
@@ -41,7 +42,7 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
       }
     } catch (error) {
       console.error('Camera access error:', error)
-      alert('Unable to access camera. Please check permissions.')
+      toast.error('Unable to access camera. Please check permissions.')
     }
   }
 

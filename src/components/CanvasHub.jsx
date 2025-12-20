@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import canvasService from '../services/canvasService'
+import { toast } from './Toast'
 
 const CanvasHub = () => {
   const [courses, setCourses] = useState([])
@@ -52,14 +53,14 @@ const CanvasHub = () => {
     try {
       const result = await canvasService.syncToDatabase()
       if (result.success) {
-        alert(`✅ Sync Complete!\n\n📚 Courses: ${result.courses}\n📝 Assignments: ${result.assignments}\n📊 Grades: ${result.grades}`)
+        toast.success(`Sync Complete!\n\n📚 Courses: ${result.courses}\n📝 Assignments: ${result.assignments}\n📊 Grades: ${result.grades}`)
         await loadCanvasData() // Reload data after sync
       } else {
         throw new Error(result.message || 'Sync failed')
       }
     } catch (err) {
       console.error('Sync failed:', err)
-      alert(`❌ Sync failed: ${err.message}`)
+      toast.error(`Sync failed: ${err.message}`)
     } finally {
       setSyncing(false)
     }

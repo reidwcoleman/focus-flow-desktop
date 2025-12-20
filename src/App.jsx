@@ -10,6 +10,8 @@ import FocusMode from './components/FocusMode'
 import Account from './components/Account'
 import CanvasHub from './components/CanvasHub'
 import AuthScreen from './components/AuthScreen'
+import ToastContainer from './components/Toast'
+import ConfirmDialogContainer from './components/ConfirmDialog'
 import { StudyProvider } from './contexts/StudyContext'
 import authService from './services/authService'
 import streakService from './services/streakService'
@@ -486,6 +488,12 @@ function App() {
           </nav>
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      <ToastContainer />
+
+      {/* Confirmation Dialogs */}
+      <ConfirmDialogContainer />
     </StudyProvider>
   )
 }

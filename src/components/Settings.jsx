@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import canvasService from '../services/canvasService'
+import { toast } from './Toast'
 
 const Settings = () => {
   const [isConnected, setIsConnected] = useState(false)
@@ -227,9 +228,9 @@ const Settings = () => {
                 onClick={async () => {
                   try {
                     const assignments = await canvasService.getAllAssignments()
-                    alert(`Synced ${assignments.length} assignments from Canvas!`)
+                    toast.success(`Synced ${assignments.length} assignments from Canvas!`)
                   } catch (error) {
-                    alert('Sync failed. Please try again.')
+                    toast.error('Sync failed. Please try again.')
                   }
                 }}
                 className="py-2 px-4 bg-primary-500 text-white font-medium text-sm rounded-xl hover:bg-primary-600 transition-all active:scale-95"

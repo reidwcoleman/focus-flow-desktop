@@ -9,6 +9,8 @@ import subtasksService from '../services/subtasksService'
 import taskBreakdownService from '../services/taskBreakdownService'
 import StreakCalendar from './StreakCalendar'
 import XPToast from './XPToast'
+import { toast } from './Toast'
+import { confirmDialog } from './ConfirmDialog'
 
 const Dashboard = ({ onOpenScanner }) => {
   const [userName, setUserName] = useState('there')
@@ -125,7 +127,7 @@ const Dashboard = ({ onOpenScanner }) => {
 
   const handleCreateAssignment = async () => {
     if (!newAssignment.title.trim()) {
-      alert('Please enter a title')
+      toast.error('Please enter a title')
       return
     }
 
@@ -155,7 +157,7 @@ const Dashboard = ({ onOpenScanner }) => {
       setShowAddModal(false)
     } catch (error) {
       console.error('Failed to create assignment:', error)
-      alert('Failed to create assignment')
+      toast.error('Failed to create assignment')
     }
   }
 
@@ -212,11 +214,15 @@ const Dashboard = ({ onOpenScanner }) => {
   const handleDeleteAssignment = async (assignmentId, assignmentSource) => {
     // Only allow deleting manual and scanned assignments (not Canvas)
     if (assignmentSource === 'canvas') {
-      alert('Canvas assignments cannot be deleted. Please delete them in Canvas.')
+      toast.warning('Canvas assignments cannot be deleted. Please delete them in Canvas.')
       return
     }
 
-    if (!confirm('Are you sure you want to delete this assignment?')) {
+    const confirmed = await confirmDialog(
+      'Delete Assignment',
+      'Are you sure you want to delete this assignment? This action cannot be undone.'
+    )
+    if (!confirmed) {
       return
     }
 
@@ -229,7 +235,7 @@ const Dashboard = ({ onOpenScanner }) => {
       await loadAssignments()
     } catch (error) {
       console.error('Failed to delete assignment:', error)
-      alert('Failed to delete assignment')
+      toast.error('Failed to delete assignment')
     }
   }
 
@@ -300,7 +306,7 @@ const Dashboard = ({ onOpenScanner }) => {
       }
     } catch (error) {
       console.error('Failed to toggle completion:', error)
-      alert('Failed to update assignment')
+      toast.error('Failed to update assignment')
       // Reload on error
       await loadAssignments()
     }
@@ -313,7 +319,7 @@ const Dashboard = ({ onOpenScanner }) => {
       setBreakdownModal({ assignment, suggestions: aiSuggestions })
     } catch (error) {
       console.error('Failed to generate breakdown:', error)
-      alert(`Failed to generate AI breakdown: ${error.message}`)
+      toast.error(`Failed to generate AI breakdown: ${error.message}`)
     } finally {
       setGeneratingBreakdown(false)
     }
@@ -330,7 +336,7 @@ const Dashboard = ({ onOpenScanner }) => {
       setBreakdownModal(null)
     } catch (error) {
       console.error('Failed to add subtasks:', error)
-      alert('Failed to add subtasks')
+      toast.error('Failed to add subtasks')
     }
   }
 
@@ -376,16 +382,16 @@ const Dashboard = ({ onOpenScanner }) => {
 
         // Show success message
         if (result.synced > 0) {
-          alert(`✅ Successfully synced ${result.synced} assignments from Canvas!`)
+          toast.success(`Successfully synced ${result.synced} assignments from Canvas!`)
         } else {
-          alert('ℹ️ No new assignments found in Canvas')
+          toast.info('No new assignments found in Canvas')
         }
       } else {
         throw new Error(result.message || 'Sync failed')
       }
     } catch (error) {
       console.error('Failed to sync Canvas assignments:', error)
-      alert(`❌ Failed to sync from Canvas: ${error.message}`)
+      toast.error(`Failed to sync from Canvas: ${error.message}`)
     } finally {
       setIsLoadingCanvas(false)
     }

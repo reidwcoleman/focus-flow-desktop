@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import aiService from '../services/aiService'
 import authService from '../services/authService'
 import aiChatService from '../services/aiChatService'
+import { toast } from './Toast'
+import { confirmDialog } from './ConfirmDialog'
 
 const AITutor = () => {
   const [messages, setMessages] = useState([
@@ -113,7 +115,11 @@ const AITutor = () => {
 
   // Delete a chat
   const deleteChat = async (chatId) => {
-    if (confirm('Delete this chat?')) {
+    const confirmed = await confirmDialog(
+      'Delete Chat',
+      'Are you sure you want to delete this chat? This action cannot be undone.'
+    )
+    if (confirmed) {
       const success = await aiChatService.deleteChat(chatId)
       if (success) {
         await loadChatHistory()
@@ -973,7 +979,7 @@ const AITutor = () => {
               <button
                 onClick={() => {
                   // In a real app, this would navigate to payment flow
-                  alert('Payment integration coming soon! Pro features will be available shortly.')
+                  toast.info('Payment integration coming soon! Pro features will be available shortly.')
                 }}
                 className="w-full py-3.5 bg-gradient-to-r from-accent-purple to-accent-purple-dark hover:from-accent-purple-dark hover:to-accent-purple-dark text-white font-semibold rounded-xl shadow-glow-purple hover:shadow-glow-purple-lg transition-all duration-200 active:scale-98"
               >

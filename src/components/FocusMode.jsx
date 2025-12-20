@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import appBlockingService from '../services/appBlockingService'
 import { APP_LIBRARY, APPS_BY_CATEGORY, DEFAULT_BLOCKING_LISTS } from '../data/appLibrary'
+import { toast } from './Toast'
 
 const FocusMode = () => {
   // Navigation
@@ -101,7 +102,7 @@ const FocusMode = () => {
       await loadData()
     } catch (error) {
       console.error('Failed to start focus session:', error)
-      alert('Failed to start focus session')
+      toast.error('Failed to start focus session')
     } finally {
       setLoading(false)
     }
@@ -122,7 +123,7 @@ const FocusMode = () => {
 
   const handleStartWithCustomApps = async () => {
     if (selectedApps.length === 0) {
-      alert('Please select at least one app to block')
+      toast.warning('Please select at least one app to block')
       return
     }
 
@@ -139,7 +140,7 @@ const FocusMode = () => {
       await loadData()
     } catch (error) {
       console.error('Failed to start focus session:', error)
-      alert('Failed to start focus session')
+      toast.error('Failed to start focus session')
     } finally {
       setLoading(false)
     }

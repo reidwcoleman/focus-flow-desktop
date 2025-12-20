@@ -9,6 +9,7 @@ import activityParserService from '../services/activityParserService'
 import activityBreakdownService from '../services/activityBreakdownService'
 import activitySubtasksService from '../services/activitySubtasksService'
 import { CalendarSkeleton, ActivitySkeleton, StatCardSkeleton } from './LoadingSkeleton'
+import { confirmDialog } from './ConfirmDialog'
 
 const Planner = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -26,6 +27,7 @@ const Planner = () => {
   const [flyingAwayItems, setFlyingAwayItems] = useState(new Set())
   const [subtasksByActivity, setSubtasksByActivity] = useState({})
   const [generatingAI, setGeneratingAI] = useState({}) // Track which activities are generating AI content
+  const [collapsedSubtasks, setCollapsedSubtasks] = useState({}) // Track which activities have collapsed subtasks
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
@@ -245,7 +247,11 @@ const Planner = () => {
   }
 
   const handleDeleteActivity = async (id) => {
-    if (confirm('Delete this activity?')) {
+    const confirmed = await confirmDialog(
+      'Delete Activity',
+      'Are you sure you want to delete this activity?'
+    )
+    if (confirmed) {
       try {
         await calendarService.deleteActivity(id)
         await loadActivities()
@@ -556,6 +562,7 @@ const Planner = () => {
             {getDaysInMonth().map((day, index) => {
               const dayActivities = getFilteredActivities(getActivitiesForDay(day))
               const hasActivities = dayActivities.length > 0
+              const hasIncompleteActivities = dayActivities.some(a => !a.is_completed)
 
               return (
                 <button
@@ -569,8 +576,10 @@ const Planner = () => {
                       ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white'
                       : isToday(day)
                       ? 'bg-primary-500/20 border-2 border-primary-500 text-dark-text-primary font-bold'
-                      : hasActivities
+                      : hasActivities && hasIncompleteActivities
                       ? 'bg-amber-500/20 border-2 border-amber-500 text-dark-text-primary font-bold'
+                      : hasActivities
+                      ? 'bg-dark-bg-tertiary text-dark-text-muted border border-dark-border-subtle'
                       : 'bg-dark-bg-tertiary text-dark-text-muted border border-dark-border-subtle'
                   }`}
                 >
@@ -644,20 +653,20 @@ const Planner = () => {
                       </div>
                     )}
 
-                    <div className={`p-3 md:p-4 rounded-xl border transition-all ${
+                    <div className={`p-4 rounded-lg border transition-all ${
                       flyingAwayItems.has(activity.id)
                         ? 'animate-fly-away'
                         : activity.is_completed
-                        ? 'bg-dark-bg-tertiary border-dark-border-subtle opacity-60'
-                        : 'bg-dark-bg-tertiary border-dark-border-subtle'
+                        ? 'bg-dark-bg-surface/50 border-dark-border-subtle opacity-70'
+                        : 'bg-dark-bg-secondary border-dark-border-subtle hover:border-dark-border-subtle/80'
                     }`}>
-                      <div className="flex items-start gap-2.5 md:gap-3 lg:gap-4">
+                      <div className="flex items-start gap-3">
                         <button
                           onClick={() => handleToggleComplete(activity.id, activity.is_completed)}
-                          className={`mt-0.5 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+                          className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${
                             activity.is_completed
                               ? 'bg-green-500 border-green-500'
-                              : 'border-dark-border-subtle hover:border-primary-500'
+                              : 'border-dark-border-subtle hover:border-primary-500 hover:scale-110'
                           }`}
                         >
                           {activity.is_completed && (
@@ -668,8 +677,8 @@ const Planner = () => {
                         </button>
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 md:gap-3 mb-1 md:mb-1.5 lg:mb-2">
-                            <h4 className={`text-sm md:text-base lg:text-lg xl:text-xl font-semibold leading-tight ${
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <h4 className={`text-base font-semibold leading-tight ${
                               activity.is_completed
                                 ? 'text-dark-text-muted line-through'
                                 : 'text-dark-text-primary'
@@ -677,71 +686,85 @@ const Planner = () => {
                               {activity.title}
                             </h4>
                             {activity.ai_generated && (
-                              <div className="flex-shrink-0 flex items-center px-1.5 md:px-2 lg:px-2.5 py-0.5 md:py-1 rounded md:rounded-lg bg-primary-500/10 border border-primary-500/30">
-                                <svg className="w-2.5 h-2.5 md:w-3 md:h-3 lg:w-4 lg:h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <div className="flex-shrink-0 flex items-center px-2 py-0.5 rounded bg-primary-500/10 border border-primary-500/20">
+                                <svg className="w-3 h-3 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                               </div>
                             )}
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2 md:gap-2.5 lg:gap-3 text-[10px] md:text-xs lg:text-sm text-dark-text-muted">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-dark-text-muted mb-2">
                             {activity.start_time && (
-                              <span className="flex items-center gap-1 md:gap-1.5 font-medium">
-                                <svg className="w-3 h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <span className="flex items-center gap-1 font-medium">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 {activity.start_time.slice(0, 5)}
                               </span>
                             )}
                             {activity.duration_minutes && (
-                              <span>{activity.duration_minutes}min</span>
+                              <span className="font-medium">{activity.duration_minutes}min</span>
                             )}
                             {activity.subject && (
                               <span className="text-dark-text-secondary font-medium">{activity.subject}</span>
                             )}
-                            <span className={`px-1.5 md:px-2 lg:px-2.5 py-0.5 md:py-1 rounded md:rounded-lg ${getTypeColor(activity.activity_type)} text-white font-medium`}>
+                            <span className={`px-2 py-0.5 rounded-md ${getTypeColor(activity.activity_type)} text-white text-xs font-medium`}>
                               {activity.activity_type}
                             </span>
                           </div>
 
                           {(activity.ai_description || activity.description) && (
-                            <p className="text-sm text-dark-text-secondary mt-2 line-clamp-2">
+                            <p className="text-sm text-dark-text-secondary line-clamp-2">
                               {activity.ai_description || activity.description}
                             </p>
                           )}
 
-                          {/* Subtasks */}
+                          {/* Collapsible Subtasks */}
                           {subtasksByActivity[activity.id] && subtasksByActivity[activity.id].length > 0 && (
-                            <div className="mt-3 space-y-1.5">
-                              {subtasksByActivity[activity.id].map((subtask) => (
-                                <div key={subtask.id} className="flex items-start gap-2 bg-dark-bg-surface/50 rounded-lg p-2">
-                                  <button
-                                    onClick={() => handleToggleSubtask(subtask)}
-                                    className={`mt-0.5 w-4 h-4 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
-                                      subtask.completed
-                                        ? 'bg-green-500 border-green-500'
-                                        : 'border-dark-border-subtle hover:border-primary-500'
-                                    }`}
-                                  >
-                                    {subtask.completed && (
-                                      <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                      </svg>
-                                    )}
-                                  </button>
-                                  <div className="flex-1 min-w-0">
-                                    <div className={`text-xs font-medium ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
-                                      {subtask.title}
-                                    </div>
-                                    {subtask.description && (
-                                      <div className="text-xs text-dark-text-muted mt-0.5">
-                                        {subtask.description}
+                            <div className="mt-3 border-t border-dark-border-subtle pt-3">
+                              <button
+                                onClick={() => setCollapsedSubtasks(prev => ({ ...prev, [activity.id]: !prev[activity.id] }))}
+                                className="flex items-center gap-2 text-xs font-semibold text-dark-text-secondary hover:text-dark-text-primary transition-colors mb-2"
+                              >
+                                <svg className={`w-4 h-4 transition-transform ${collapsedSubtasks[activity.id] ? '' : 'rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                                <span>Subtasks ({subtasksByActivity[activity.id].filter(s => s.completed).length}/{subtasksByActivity[activity.id].length})</span>
+                              </button>
+
+                              {!collapsedSubtasks[activity.id] && (
+                                <div className="space-y-1.5">
+                                  {subtasksByActivity[activity.id].map((subtask) => (
+                                    <div key={subtask.id} className="flex items-start gap-2 bg-dark-bg-surface/30 rounded-md p-2 hover:bg-dark-bg-surface/50 transition-colors">
+                                      <button
+                                        onClick={() => handleToggleSubtask(subtask)}
+                                        className={`mt-0.5 w-4 h-4 flex-shrink-0 rounded border-2 flex items-center justify-center transition-all ${
+                                          subtask.completed
+                                            ? 'bg-green-500 border-green-500'
+                                            : 'border-dark-border-subtle hover:border-primary-500 hover:scale-110'
+                                        }`}
+                                      >
+                                        {subtask.completed && (
+                                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        )}
+                                      </button>
+                                      <div className="flex-1 min-w-0">
+                                        <div className={`text-xs font-medium ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
+                                          {subtask.title}
+                                        </div>
+                                        {subtask.description && (
+                                          <div className="text-xs text-dark-text-muted mt-0.5">
+                                            {subtask.description}
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
-                                  </div>
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
+                              )}
                             </div>
                           )}
 

@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { useStudy } from '../contexts/StudyContext'
 import StudySession from './StudySession'
 import DeckPreview from './DeckPreview'
+import { confirmDialog } from './ConfirmDialog'
 
 const StudyHub = () => {
   const {
@@ -167,7 +168,10 @@ const StudyHub = () => {
   const handleDeleteDeck = async () => {
     if (!deckPreview) return
 
-    const confirmed = window.confirm(`Are you sure you want to delete "${deckPreview.title}"? This will delete all ${deckPreview.cardIds.length} cards in this deck.`)
+    const confirmed = await confirmDialog(
+      'Delete Deck',
+      `Are you sure you want to delete "${deckPreview.title}"? This will delete all ${deckPreview.cardIds.length} cards in this deck.`
+    )
     if (confirmed) {
       const success = await deleteDeck(deckPreview.id)
       if (success) {
