@@ -129,32 +129,43 @@ async function handleLogin(body: any): Promise<Response> {
     const allCookies = ncedCookies.split(',').map(c => c.split(';')[0]).join('; ')
     console.log(`🍪 All NCEdCloud cookies: ${allCookies}`)
 
-    // Step 2: Follow redirect to Infinite Campus
+    // Step 2: Follow redirect chain through SAML
     const redirectLocation = ncedLoginResponse.headers.get('location')
     console.log(`🔄 NCEdCloud redirect location: ${redirectLocation}`)
 
     let icCookies = allCookies
+    let currentUrl = redirectLocation
 
-    if (redirectLocation) {
-      const redirectUrl = redirectLocation.startsWith('http') ? redirectLocation : `${infiniteCampusUrl}${redirectLocation}`
-      console.log(`🔄 Step 2: Following SSO redirect to IC: ${redirectUrl}`)
+    // Follow up to 5 redirects to complete the SAML authentication flow
+    for (let i = 0; i < 5 && currentUrl; i++) {
+      const fullUrl = currentUrl.startsWith('http') ? currentUrl : `${infiniteCampusUrl}${currentUrl}`
+      console.log(`🔄 Step ${i + 2}: Following redirect ${i + 1}/5: ${fullUrl.substring(0, 100)}...`)
 
-      const icResponse = await fetch(redirectUrl, {
+      const redirectResp = await fetch(fullUrl, {
         headers: {
-          'Cookie': allCookies,
+          'Cookie': icCookies,
           'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
         },
         redirect: 'manual'
       })
 
-      console.log(`🔄 IC SSO response status: ${icResponse.status}`)
+      console.log(`🔄 Redirect ${i + 1} response status: ${redirectResp.status}`)
 
-      // Get IC session cookies
-      const icSessionCookies = icResponse.headers.get('set-cookie')
-      if (icSessionCookies) {
-        const additionalCookies = icSessionCookies.split(',').map(c => c.split(';')[0]).join('; ')
-        icCookies = `${allCookies}; ${additionalCookies}`
-        console.log(`🍪 IC session cookies: ${additionalCookies}`)
+      // Capture any new cookies
+      const newCookies = redirectResp.headers.get('set-cookie')
+      if (newCookies) {
+        const additionalCookies = newCookies.split(',').map(c => c.split(';')[0]).join('; ')
+        icCookies = `${icCookies}; ${additionalCookies}`
+        console.log(`🍪 Got new cookies from redirect ${i + 1}`)
+      }
+
+      // Check for next redirect
+      currentUrl = redirectResp.headers.get('location')
+
+      // If status is 200, we've reached the final destination
+      if (redirectResp.status === 200) {
+        console.log(`✅ Reached final authenticated page after ${i + 1} redirects`)
+        break
       }
     }
 
