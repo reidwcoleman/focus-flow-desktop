@@ -82,14 +82,10 @@ async function handleLogin(body: any): Promise<Response> {
   const infiniteCampusUrl = 'https://920.ncsis.gov'
 
   try {
-    // Step 1: Authenticate with NCEdCloud
-    // NCEdCloud uses the IDP at idp.ncedcloud.org
-    console.log('🔑 Step 1: Authenticating with NCEdCloud IDP...')
+    // Step 1: Get the Infinite Campus login page which will redirect to NCEdCloud
+    console.log('🔑 Step 1: Accessing IC login page to get NCEdCloud redirect...')
 
-    const ncedIdpUrl = 'https://idp.ncedcloud.org'
-
-    // Try to initiate login - this may redirect us to the actual login form
-    const initLoginResponse = await fetch(`${ncedIdpUrl}/idp/profile/SAML2/Unsolicited/SSO?providerId=${infiniteCampusUrl}`, {
+    const icLoginPage = await fetch(`${infiniteCampusUrl}/campus/portal/students/psu920wakeco.jsp`, {
       method: 'GET',
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
@@ -97,17 +93,52 @@ async function handleLogin(body: any): Promise<Response> {
       redirect: 'manual'
     })
 
-    console.log(`🔑 Init login response status: ${initLoginResponse.status}`)
+    console.log(`🔑 IC login page status: ${icLoginPage.status}`)
 
-    // Now try to authenticate with the login form
-    // NCEdCloud accepts j_username and j_password (standard Java Spring Security form)
-    const ncedLoginData = new URLSearchParams({
-      j_username: lunchNumber,  // Pupil Number / Student ID
-      j_password: password,
-      _eventId_proceed: ''  // Common SAML form parameter
+    // Get redirect to NCEdCloud
+    let ncedAuthUrl = icLoginPage.headers.get('location')
+    if (!ncedAuthUrl) {
+      // Try to find SAML auth link in HTML
+      const html = await icLoginPage.text()
+      const samlMatch = html.match(/action="([^"]*idp\.ncedcloud\.org[^"]*)"/)
+      if (samlMatch) {
+        ncedAuthUrl = samlMatch[1]
+      }
+    }
+
+    console.log(`🔑 NCEdCloud auth URL: ${ncedAuthUrl?.substring(0, 100)}...`)
+
+    if (!ncedAuthUrl) {
+      throw new Error('Could not find NCEdCloud authentication URL')
+    }
+
+    // Step 2: Follow to NCEdCloud and get the actual login form
+    const ncedFormResponse = await fetch(ncedAuthUrl, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
+      }
     })
 
-    const ncedLoginResponse = await fetch(`${ncedIdpUrl}/idp/Authn/UserPassword`, {
+    const formHtml = await ncedFormResponse.text()
+    console.log(`🔑 NCEdCloud form HTML length: ${formHtml.length}`)
+
+    // Extract the login form action URL
+    const formActionMatch = formHtml.match(/action="([^"]+)"/)
+    const formAction = formActionMatch ? formActionMatch[1] : '/idp/profile/SAML2/Redirect/SSO'
+
+    console.log(`🔑 Login form action: ${formAction}`)
+
+    // Step 3: Submit credentials to NCEdCloud
+    const ncedLoginData = new URLSearchParams({
+      j_username: lunchNumber,
+      j_password: password,
+      _eventId_proceed: '1'
+    })
+
+    const loginUrl = formAction.startsWith('http') ? formAction : `https://idp.ncedcloud.org${formAction}`
+
+    const ncedLoginResponse = await fetch(loginUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
