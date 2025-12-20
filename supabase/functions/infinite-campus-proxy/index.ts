@@ -97,19 +97,36 @@ async function handleLogin(body: any): Promise<Response> {
 
     // Get redirect to NCEdCloud
     let ncedAuthUrl = icLoginPage.headers.get('location')
+    const html = await icLoginPage.text()
+
     if (!ncedAuthUrl) {
-      // Try to find SAML auth link in HTML
-      const html = await icLoginPage.text()
-      const samlMatch = html.match(/action="([^"]*idp\.ncedcloud\.org[^"]*)"/)
-      if (samlMatch) {
-        ncedAuthUrl = samlMatch[1]
+      // Try multiple patterns to find SAML/NCEdCloud auth link in HTML
+      const patterns = [
+        /action="([^"]*idp\.ncedcloud\.org[^"]*)"/i,
+        /href="([^"]*idp\.ncedcloud\.org[^"]*)"/i,
+        /action="([^"]*ncedcloud[^"]*)"/i,
+        /href="([^"]*ncedcloud[^"]*)"/i,
+        /action="([^"]*saml[^"]*)"/i,
+        /<form[^>]*action="([^"]+)"[^>]*>/i
+      ]
+
+      for (const pattern of patterns) {
+        const match = html.match(pattern)
+        if (match) {
+          ncedAuthUrl = match[1]
+          console.log(`🔍 Found auth URL with pattern: ${pattern}`)
+          break
+        }
       }
     }
 
     console.log(`🔑 NCEdCloud auth URL: ${ncedAuthUrl?.substring(0, 100)}...`)
 
     if (!ncedAuthUrl) {
-      throw new Error('Could not find NCEdCloud authentication URL')
+      // Debug: save HTML to see what we're getting
+      console.log(`📄 HTML preview (first 500 chars): ${html.substring(0, 500)}`)
+      console.log(`📄 Looking for: idp.ncedcloud.org, ncedcloud, saml, or form action`)
+      throw new Error('Could not find NCEdCloud authentication URL. The page structure may have changed.')
     }
 
     // Step 2: Follow to NCEdCloud and get the actual login form
