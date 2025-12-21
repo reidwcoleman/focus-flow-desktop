@@ -36,6 +36,11 @@ export default function Account() {
   const [testingIC, setTestingIC] = useState(false)
   const [syncingIC, setSyncingIC] = useState(false)
 
+  // Groq API state
+  const [groqApiKey, setGroqApiKey] = useState('')
+  const [showGroqApiKey, setShowGroqApiKey] = useState(false)
+  const [isEditingGroq, setIsEditingGroq] = useState(false)
+
   useEffect(() => {
     loadUserData()
     loadBadges()
@@ -56,6 +61,7 @@ export default function Account() {
     setIcLunchNumber(profile?.ic_lunch_number || '')
     setIcUsername(profile?.ic_username || '')
     setIcPassword(profile?.ic_password || '')
+    setGroqApiKey(profile?.groq_api_key || '')
   }
 
   const loadBadges = async () => {
@@ -278,6 +284,43 @@ export default function Account() {
       setError(`Sync failed: ${err.message}`)
     } finally {
       setSyncingIC(false)
+    }
+  }
+
+  // Groq API handlers
+  const handleSaveGroq = async () => {
+    if (!groqApiKey.trim()) {
+      setError('Groq API key is required')
+      return
+    }
+
+    // Validate API key format (should start with gsk_)
+    if (!groqApiKey.trim().startsWith('gsk_')) {
+      setError('Invalid Groq API key format. Should start with "gsk_"')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const result = await authService.updateUserProfile({
+        groq_api_key: groqApiKey.trim()
+      })
+
+      if (result.error) {
+        setError(`Failed to save Groq API key: ${result.error.message || 'Unknown error'}`)
+      } else {
+        setSuccess('Groq API key saved! Scan features will now work.')
+        setIsEditingGroq(false)
+        await loadUserData()
+        setTimeout(() => setSuccess(''), 5000)
+      }
+    } catch (err) {
+      setError(`Failed to save Groq API key: ${err.message || 'Unknown error'}`)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -722,6 +765,124 @@ export default function Account() {
                       </button>
                     </div>
                   </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Groq AI Vision Section */}
+      <div className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-5 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
+        <div className="flex justify-between items-start mb-4 lg:mb-6">
+          <div className="flex-1">
+            <h2 className="text-lg lg:text-2xl font-semibold text-dark-text-primary mb-2 flex items-center gap-2 lg:gap-3">
+              <svg className="w-5 h-5 lg:w-7 lg:h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              AI Vision Scanner
+            </h2>
+            <p className="text-xs lg:text-sm text-dark-text-muted">
+              Required for scanning homework, notes, and creating flashcards. Get your free API key from <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline">console.groq.com</a>
+            </p>
+          </div>
+          {!isEditingGroq && (
+            <button
+              onClick={() => setIsEditingGroq(true)}
+              className="ml-3 text-primary-500 hover:text-primary-400 transition-colors"
+            >
+              <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        <div className="mt-4 lg:mt-6">
+          <div className="bg-dark-bg-primary rounded-xl lg:rounded-2xl p-4 lg:p-6 border border-dark-border-subtle">
+            {isEditingGroq ? (
+              <div className="space-y-4 lg:space-y-6">
+                {/* API Key Input */}
+                <div>
+                  <label className="block text-sm lg:text-base font-medium text-dark-text-secondary mb-2 lg:mb-3">
+                    Groq API Key
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showGroqApiKey ? 'text' : 'password'}
+                      value={groqApiKey}
+                      onChange={(e) => setGroqApiKey(e.target.value)}
+                      className="w-full bg-dark-bg-primary border border-dark-border-subtle rounded-xl lg:rounded-2xl px-4 lg:px-6 py-3 lg:py-4 pr-12 lg:pr-14 text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all text-sm lg:text-base font-mono"
+                      placeholder="gsk_..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowGroqApiKey(!showGroqApiKey)}
+                      className="absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 text-dark-text-muted hover:text-dark-text-primary transition-colors"
+                    >
+                      {showGroqApiKey ? (
+                        <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs lg:text-sm text-dark-text-muted mt-1.5 lg:mt-2">
+                    Get a free API key at <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline">console.groq.com/keys</a>
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-2 lg:gap-3">
+                  <button
+                    onClick={handleSaveGroq}
+                    disabled={saving}
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditingGroq(false)
+                      setGroqApiKey(profile?.groq_api_key || '')
+                    }}
+                    disabled={saving}
+                    className="flex-1 bg-dark-bg-primary border border-dark-border-subtle text-dark-text-secondary font-semibold py-2.5 lg:py-3.5 text-sm lg:text-base rounded-xl lg:rounded-2xl hover:bg-dark-bg-surface transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 lg:space-y-5">
+                {/* Status */}
+                <div>
+                  <p className="text-sm lg:text-base text-dark-text-secondary mb-1 lg:mb-2">API Key Status:</p>
+                  <p className="text-dark-text-primary text-base lg:text-xl">
+                    {profile?.groq_api_key ? (
+                      <span className="flex items-center gap-2 text-green-400">
+                        <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Configured - Scan features enabled
+                      </span>
+                    ) : (
+                      <span className="text-orange-400">Not configured - Scan features disabled</span>
+                    )}
+                  </p>
+                </div>
+
+                {profile?.groq_api_key && (
+                  <div className="text-xs lg:text-sm text-dark-text-muted">
+                    <p>✅ Homework scanning enabled</p>
+                    <p>✅ Note digitization enabled</p>
+                    <p>✅ Flashcard generation enabled</p>
+                  </div>
                 )}
               </div>
             )}

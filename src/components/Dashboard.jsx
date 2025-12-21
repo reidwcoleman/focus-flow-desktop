@@ -460,17 +460,91 @@ const Dashboard = ({ onOpenScanner }) => {
 
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-5 pb-6 md:pb-8 lg:pb-8">
-      {/* Header */}
-      <div className="py-2 md:py-3">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent mb-2">
-          {getTimeOfDayGreeting()}, {userName}
-        </h1>
-        <p className="text-dark-text-secondary text-base md:text-lg font-medium">
-          {assignments.length === 0
-            ? 'No assignments - add one to get started!'
-            : `You have ${assignments.length} assignment${assignments.length === 1 ? '' : 's'}`
-          }
-        </p>
+      {/* Welcome Card */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-900/40 via-dark-bg-secondary to-accent-cyan/20 p-5 md:p-6 lg:p-7 shadow-dark-soft border border-primary-500/30">
+        {/* Decorative background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-cyan rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10">
+          {/* Greeting Header */}
+          <div className="flex items-center gap-3 md:gap-4 mb-3">
+            <div className="text-4xl md:text-5xl">
+              {(() => {
+                const hour = new Date().getHours()
+                if (hour < 12) return '☀️'
+                if (hour < 17) return '🌤️'
+                if (hour < 20) return '🌅'
+                return '🌙'
+              })()}
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-primary-400 via-accent-cyan to-primary-400 bg-clip-text text-transparent">
+                {getTimeOfDayGreeting()}, {userName}
+              </h1>
+              <p className="text-dark-text-secondary text-sm md:text-base font-medium mt-1">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-4">
+            {/* Assignments */}
+            <div className="bg-dark-bg-tertiary/50 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-dark-border-subtle">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <span className="text-xs md:text-sm text-dark-text-muted font-semibold">Tasks</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-primary-400">
+                {assignments.length}
+              </div>
+            </div>
+
+            {/* Completed */}
+            <div className="bg-dark-bg-tertiary/50 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-dark-border-subtle">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs md:text-sm text-dark-text-muted font-semibold">Done</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-green-400">
+                {assignments.filter(a => a.completed).length}
+              </div>
+            </div>
+
+            {/* Due Today */}
+            <div className="bg-dark-bg-tertiary/50 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-dark-border-subtle">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs md:text-sm text-dark-text-muted font-semibold">Today</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-orange-400">
+                {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date).toDateString() === new Date().toDateString()).length}
+              </div>
+            </div>
+
+            {/* Overdue */}
+            <div className="bg-dark-bg-tertiary/50 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-dark-border-subtle">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span className="text-xs md:text-sm text-dark-text-muted font-semibold">Overdue</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-red-400">
+                {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date() && new Date(a.due_date).toDateString() !== new Date().toDateString()).length}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Streak Display - Clickable */}

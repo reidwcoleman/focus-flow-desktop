@@ -126,12 +126,30 @@ export const canvasService = {
     return await this.makeRequest('/users/self')
   },
 
-  // Get all active courses
+  // Get all active courses with pagination
   async getCourses() {
-    return await this.makeRequest('/courses?enrollment_state=active&per_page=100')
+    const courses = []
+    let page = 1
+    let hasMore = true
+
+    while (hasMore && page <= 10) { // Max 10 pages (1000 courses)
+      const response = await this.makeRequest(
+        `/courses?enrollment_state=active&per_page=100&page=${page}&include[]=term&include[]=total_students`
+      )
+
+      if (response && response.length > 0) {
+        courses.push(...response)
+        hasMore = response.length === 100 // If we got 100, there might be more
+        page++
+      } else {
+        hasMore = false
+      }
+    }
+
+    return courses
   },
 
-  // Get assignments for all courses with submission/grade data
+  // Get assignments for all courses with submission/grade data (with pagination)
   async getAllAssignments() {
     try {
       const courses = await this.getCourses()
@@ -139,41 +157,58 @@ export const canvasService = {
 
       for (const course of courses) {
         try {
-          // Fetch assignments with submission data included
-          const assignments = await this.makeRequest(
-            `/courses/${course.id}/assignments?include[]=submission&per_page=100`
-          )
+          // Fetch assignments with submission data included - with pagination
+          let page = 1
+          let hasMore = true
 
-          // Transform Canvas assignments to our format
-          const transformedAssignments = assignments.map(assignment => {
-            const submission = assignment.submission || {}
+          while (hasMore && page <= 5) { // Max 5 pages per course (500 assignments)
+            const assignments = await this.makeRequest(
+              `/courses/${course.id}/assignments?include[]=submission&include[]=score_statistics&per_page=100&page=${page}`
+            )
 
-            return {
-              id: `canvas-${assignment.id}`,
-              title: assignment.name,
-              subject: course.name,
-              dueDate: assignment.due_at,
-              description: assignment.description,
-              points: assignment.points_possible,
-              submissionTypes: assignment.submission_types,
-              htmlUrl: assignment.html_url,
-              courseId: course.id,
-              // Enhanced submission/grade data
-              submitted: submission.workflow_state === 'submitted' || submission.workflow_state === 'graded',
-              graded: !!submission.grade,
-              grade: submission.grade,
-              score: submission.score,
-              submissionId: submission.id,
-              submittedAt: submission.submitted_at,
-              gradedAt: submission.graded_at,
-              late: submission.late,
-              missing: submission.missing,
-              excused: submission.excused,
-              source: 'canvas',
+            if (!assignments || assignments.length === 0) {
+              hasMore = false
+              break
             }
-          })
 
-          allAssignments.push(...transformedAssignments)
+            // Transform Canvas assignments to our format
+            const transformedAssignments = assignments.map(assignment => {
+              const submission = assignment.submission || {}
+
+              return {
+                id: `canvas-${assignment.id}`,
+                title: assignment.name,
+                subject: course.name,
+                dueDate: assignment.due_at,
+                description: assignment.description,
+                points: assignment.points_possible,
+                submissionTypes: assignment.submission_types,
+                htmlUrl: assignment.html_url,
+                courseId: course.id,
+                // Enhanced submission/grade data
+                submitted: submission.workflow_state === 'submitted' || submission.workflow_state === 'graded',
+                graded: !!submission.grade,
+                grade: submission.grade,
+                score: submission.score,
+                submissionId: submission.id,
+                submittedAt: submission.submitted_at,
+                gradedAt: submission.graded_at,
+                late: submission.late,
+                missing: submission.missing,
+                excused: submission.excused,
+                // Additional fields
+                locked: assignment.locked_for_user,
+                unlockAt: assignment.unlock_at,
+                lockAt: assignment.lock_at,
+                source: 'canvas',
+              }
+            })
+
+            allAssignments.push(...transformedAssignments)
+
+            hasMore = assignments.length === 100 // If we got 100, there might be more
+            page++
+          }
         } catch (error) {
           // Silently skip CORS errors
           if (!error.message.includes('CORS')) {
@@ -192,7 +227,7 @@ export const canvasService = {
     }
   },
 
-  // Get grades for all courses
+  // Get grades for all courses with enhanced data
   async getAllGrades() {
     try {
       const courses = await this.getCourses()
@@ -200,8 +235,9 @@ export const canvasService = {
 
       for (const course of courses) {
         try {
+          // Get user enrollments with grades
           const enrollments = await this.makeRequest(
-            `/courses/${course.id}/enrollments?user_id=self`
+            `/courses/${course.id}/enrollments?user_id=self&type[]=StudentEnrollment`
           )
 
           for (const enrollment of enrollments) {
@@ -209,10 +245,16 @@ export const canvasService = {
               grades.push({
                 courseId: course.id,
                 courseName: course.name,
+                courseCode: course.course_code,
                 currentGrade: enrollment.grades.current_grade,
                 currentScore: enrollment.grades.current_score,
                 finalGrade: enrollment.grades.final_grade,
                 finalScore: enrollment.grades.final_score,
+                // Additional grade info
+                unpostedCurrentGrade: enrollment.grades.unposted_current_grade,
+                unpostedCurrentScore: enrollment.grades.unposted_current_score,
+                unpostedFinalGrade: enrollment.grades.unposted_final_grade,
+                unpostedFinalScore: enrollment.grades.unposted_final_score,
               })
             }
           }
@@ -343,17 +385,20 @@ export const canvasService = {
     }
   },
 
-  // Sync course grades to course_grades table
+  // Sync course grades to course_grades table with enhanced data
   async syncGrades(userId) {
     try {
       const grades = await this.getAllGrades()
       let syncedCount = 0
+
+      console.log(`📊 Syncing ${grades.length} course grades...`)
 
       for (const grade of grades) {
         const gradeData = {
           user_id: userId,
           canvas_course_id: grade.courseId,
           course_name: grade.courseName,
+          course_code: grade.courseCode || null,
           current_grade: grade.currentGrade || null,
           current_score: grade.currentScore || null,
           final_grade: grade.finalGrade || null,
@@ -369,9 +414,14 @@ export const canvasService = {
             ignoreDuplicates: false
           })
 
-        if (!error) syncedCount++
+        if (error) {
+          console.error(`Failed to sync grade for ${grade.courseName}:`, error)
+        } else {
+          syncedCount++
+        }
       }
 
+      console.log(`✅ Successfully synced ${syncedCount} grades`)
       return { synced: syncedCount, total: grades.length }
     } catch (error) {
       console.error('Failed to sync grades:', error)
@@ -465,10 +515,13 @@ export const canvasService = {
       return []
     }
 
+    console.log(`📊 Loaded ${data?.length || 0} grades from database`)
+
     // Transform to match UI format (snake_case to camelCase)
     return (data || []).map(grade => ({
       courseId: grade.canvas_course_id,
       courseName: grade.course_name,
+      courseCode: grade.course_code,
       currentGrade: grade.current_grade,
       currentScore: grade.current_score,
       finalGrade: grade.final_grade,
