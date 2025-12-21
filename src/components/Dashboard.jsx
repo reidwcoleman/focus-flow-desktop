@@ -42,12 +42,22 @@ const Dashboard = ({ onOpenScanner }) => {
   const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
   const [lastLoginHour, setLastLoginHour] = useState(null)
   const [emojiTransitioning, setEmojiTransitioning] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
 
   useEffect(() => {
     loadUserName()
     loadAssignments()
     checkStreak()
     loadXPData()
+  }, [])
+
+  // Update time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 60000) // Update every minute
+
+    return () => clearInterval(timer)
   }, [])
 
   const loadXPData = async () => {
@@ -533,7 +543,13 @@ const Dashboard = ({ onOpenScanner }) => {
                   <svg className="w-3 h-3 md:w-4 md:h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </p>
+                <p className="text-dark-text-secondary text-xs md:text-sm font-medium flex items-center gap-1.5">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                 </p>
                 {xpData && (
                   <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
