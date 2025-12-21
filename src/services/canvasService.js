@@ -375,7 +375,12 @@ export const canvasService = {
             ignoreDuplicates: false
           })
 
-        if (!error) syncedCount++
+        if (error) {
+          console.error(`Failed to sync assignment "${assignment.title}":`, error)
+          console.error('Assignment data:', assignmentData)
+        } else {
+          syncedCount++
+        }
       }
 
       return { synced: syncedCount, total: canvasAssignments.length }
