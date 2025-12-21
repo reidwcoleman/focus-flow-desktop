@@ -59,6 +59,7 @@ class StreakService {
       // Calculate if streak continues or breaks
       let newStreak = 1
       let isNewStreak = false
+      let streakBroken = false
 
       if (profile.last_login_date) {
         const lastLoginDate = new Date(profile.last_login_date + 'T00:00:00')
@@ -70,9 +71,13 @@ class StreakService {
           // Consecutive day - increment streak
           newStreak = (profile.current_streak || 0) + 1
           isNewStreak = true
-        } else {
-          // Streak broken - reset to 1
+          console.log('🔥 Streak continued! Day', newStreak)
+        } else if (diffDays > 1) {
+          // Streak broken - missed a day or more
+          const oldStreak = profile.current_streak || 0
           newStreak = 1
+          streakBroken = oldStreak > 0 // Only mark as broken if there was a streak
+          console.log(`💔 Streak broken! Missed ${diffDays - 1} day(s). Old streak: ${oldStreak}, starting fresh.`)
         }
       }
 
@@ -113,12 +118,14 @@ class StreakService {
         current: newStreak,
         longest: newLongestStreak,
         isNew: isNewStreak,
+        broken: streakBroken,
       })
 
       return {
         currentStreak: newStreak,
         longestStreak: newLongestStreak,
         isNewStreak,
+        streakBroken,
       }
     } catch (error) {
       console.error('❌ Failed to update streak:', error)

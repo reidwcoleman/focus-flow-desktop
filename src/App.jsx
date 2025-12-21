@@ -10,7 +10,7 @@ import FocusMode from './components/FocusMode'
 import Account from './components/Account'
 import CanvasHub from './components/CanvasHub'
 import AuthScreen from './components/AuthScreen'
-import ToastContainer from './components/Toast'
+import ToastContainer, { toast } from './components/Toast'
 import ConfirmDialogContainer from './components/ConfirmDialog'
 import { StudyProvider } from './contexts/StudyContext'
 import authService from './services/authService'
@@ -43,7 +43,14 @@ function App() {
         setProfile(userProfile)
 
         // Check and update streak on login
-        await streakService.checkAndUpdateStreak(user.id)
+        const streakResult = await streakService.checkAndUpdateStreak(user.id)
+
+        // Show notification if streak was broken
+        if (streakResult.streakBroken) {
+          toast.warning('Your streak was broken! Starting fresh today.')
+        } else if (streakResult.isNewStreak && streakResult.currentStreak > 1) {
+          toast.success(`🔥 Streak: ${streakResult.currentStreak} days!`)
+        }
       }
     }
 
