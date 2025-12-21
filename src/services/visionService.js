@@ -1,94 +1,68 @@
 /**
  * Vision AI Service for Focus Flow
- * Handles OCR and image analysis using Groq Vision API (Direct)
+ * Handles OCR and image analysis using Groq Vision API via Edge Function proxy
  */
 
-import authService from './authService'
-
-const VISION_CONFIG = {
-  groqEndpoint: 'https://api.groq.com/openai/v1/chat/completions',
-  visionModel: 'llama-3.2-90b-vision-preview', // Llama 3.2 Vision - Stable model
-  maxTokens: 2000,
-  temperature: 0.2, // Lower for more consistent extraction
-}
+import supabase from '../lib/supabase'
 
 class VisionService {
   constructor() {
-    console.log('🔍 Vision Service: Initialized (will use API key from user profile)')
+    console.log('🔍 Vision Service: Initialized (using Edge Function proxy)')
   }
 
   /**
-   * Get Groq API key from user profile
-   * @private
-   */
-  _getApiKey() {
-    const profile = authService.getUserProfile()
-    return profile?.groq_api_key || ''
-  }
-
-  /**
-   * Check if API key is configured
+   * Check if service is ready (always true now since we use shared API key)
    */
   get isConfigured() {
-    return !!this._getApiKey()
+    return true
   }
 
   /**
-   * Call Groq Vision API directly
+   * Call Groq Vision API via Edge Function proxy
    * @private
    */
   async _callGroqVision(prompt, base64Image) {
-    const apiKey = this._getApiKey()
-
-    if (!apiKey) {
-      throw new Error('Groq API key not configured. Please add your API key in Account settings.')
-    }
-
     const cleanBase64 = this._cleanBase64(base64Image)
 
     try {
-      console.log('📤 Calling Groq Vision API...')
+      console.log('📤 Calling Groq Vision API via Edge Function...')
 
-      const response = await fetch(VISION_CONFIG.groqEndpoint, {
+      // Get Supabase auth token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Not authenticated')
+      }
+
+      // Call Edge Function proxy
+      const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/groq-vision-proxy`
+
+      const response = await fetch(edgeFunctionUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: VISION_CONFIG.visionModel,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: prompt
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:image/jpeg;base64,${cleanBase64}`
-                  }
-                }
-              ]
-            }
-          ],
-          max_tokens: VISION_CONFIG.maxTokens,
-          temperature: VISION_CONFIG.temperature
+          prompt: prompt,
+          base64Image: cleanBase64
         })
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        console.error('❌ Groq API error:', errorData)
-        throw new Error(errorData.error?.message || `Groq API error: ${response.status}`)
+        console.error('❌ Groq Vision proxy error:', errorData)
+        throw new Error(errorData.error || `Vision API error: ${response.status}`)
       }
 
       const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Vision API failed')
+      }
+
       console.log('✅ Groq Vision API success')
 
-      return data.choices[0].message.content
+      return data.content
     } catch (error) {
       console.error('❌ Groq Vision API failed:', error)
       throw error
