@@ -268,42 +268,6 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
             </h2>
             <div className="w-10 md:w-12 lg:w-14"></div>
           </div>
-
-        {/* Mode Selector */}
-        {mode === 'camera' && (
-          <div className="flex gap-2 md:gap-3 px-1">
-            <button
-              onClick={() => setScanMode('homework')}
-              className={`flex-1 py-2 md:py-3 lg:py-3.5 px-3 md:px-4 lg:px-6 rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-all ${
-                scanMode === 'homework'
-                  ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
-                  : 'bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
-              }`}
-            >
-              Homework
-            </button>
-            <button
-              onClick={() => setScanMode('notes')}
-              className={`flex-1 py-2 md:py-3 lg:py-3.5 px-3 md:px-4 lg:px-6 rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-all ${
-                scanMode === 'notes'
-                  ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
-                  : 'bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
-              }`}
-            >
-              Notes
-            </button>
-            <button
-              onClick={() => setScanMode('flashcards')}
-              className={`flex-1 py-2 md:py-3 lg:py-3.5 px-3 md:px-4 lg:px-6 rounded-lg text-sm md:text-base lg:text-lg font-semibold transition-all ${
-                scanMode === 'flashcards'
-                  ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
-                  : 'bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
-              }`}
-            >
-              Flashcards
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Camera View */}
@@ -315,6 +279,42 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
             playsInline
             className="w-full h-full object-cover"
           />
+
+          {/* Mode Selector - Inside Camera View */}
+          <div className="absolute top-20 md:top-24 lg:top-28 left-1/2 -translate-x-1/2 z-20 w-[90%] md:w-auto">
+            <div className="flex gap-2 md:gap-3 bg-dark-bg-primary/80 backdrop-blur-md p-2 rounded-lg border border-dark-border-subtle">
+              <button
+                onClick={() => setScanMode('homework')}
+                className={`flex-1 md:flex-none py-2 md:py-2.5 lg:py-3 px-4 md:px-6 lg:px-8 rounded-lg text-xs md:text-sm lg:text-base font-semibold transition-all ${
+                  scanMode === 'homework'
+                    ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+                    : 'bg-dark-bg-secondary/50 border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
+                }`}
+              >
+                Homework
+              </button>
+              <button
+                onClick={() => setScanMode('notes')}
+                className={`flex-1 md:flex-none py-2 md:py-2.5 lg:py-3 px-4 md:px-6 lg:px-8 rounded-lg text-xs md:text-sm lg:text-base font-semibold transition-all ${
+                  scanMode === 'notes'
+                    ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+                    : 'bg-dark-bg-secondary/50 border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
+                }`}
+              >
+                Notes
+              </button>
+              <button
+                onClick={() => setScanMode('flashcards')}
+                className={`flex-1 md:flex-none py-2 md:py-2.5 lg:py-3 px-4 md:px-6 lg:px-8 rounded-lg text-xs md:text-sm lg:text-base font-semibold transition-all ${
+                  scanMode === 'flashcards'
+                    ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+                    : 'bg-dark-bg-secondary/50 border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
+                }`}
+              >
+                Flashcards
+              </button>
+            </div>
+          </div>
 
           {/* Camera Frame Overlay */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
