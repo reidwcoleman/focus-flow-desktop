@@ -299,3 +299,39 @@
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+/* =============================================
+   TIME-OF-DAY EMOJI TRANSITION ANIMATIONS
+   ============================================= */
+
+/* Old emoji rises/falls and fades out based on time change */
+@keyframes emoji-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(0.7);
+  }
+}
+
+/* New emoji enters from below/above and fades in */
+@keyframes emoji-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-emoji-exit {
+  animation: emoji-exit 2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.animate-emoji-enter {
+  animation: emoji-enter 2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}

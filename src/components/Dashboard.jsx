@@ -40,6 +40,8 @@ const Dashboard = ({ onOpenScanner }) => {
   const [expandedAssignments, setExpandedAssignments] = useState(new Set())
   const [breakdownModal, setBreakdownModal] = useState(null)
   const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
+  const [lastLoginHour, setLastLoginHour] = useState(null)
+  const [emojiTransitioning, setEmojiTransitioning] = useState(false)
 
   useEffect(() => {
     loadUserName()
@@ -80,6 +82,24 @@ const Dashboard = ({ onOpenScanner }) => {
         longestStreak: streakData.longestStreak,
         isNewStreak: false
       })
+
+      // Get last login time for emoji transition
+      if (streakData.lastLoginDate) {
+        // Extract hour from last login (assuming it was same time yesterday or before)
+        // We'll use localStorage to persist the last session's hour
+        const lastSessionHour = localStorage.getItem('lastSessionHour')
+        if (lastSessionHour) {
+          setLastLoginHour(parseInt(lastSessionHour))
+          setEmojiTransitioning(true)
+          // Transition for 2 seconds then show current time
+          setTimeout(() => {
+            setEmojiTransitioning(false)
+          }, 2000)
+        }
+      }
+
+      // Store current hour for next session
+      localStorage.setItem('lastSessionHour', new Date().getHours().toString())
     } catch (error) {
       console.error('Failed to load streak:', error)
     }
@@ -458,6 +478,20 @@ const Dashboard = ({ onOpenScanner }) => {
     return `${diffDays} days`
   }
 
+  // Get emoji for specific hour
+  const getEmojiForHour = (hour) => {
+    if (hour < 12) return '☀️'
+    if (hour < 17) return '🌤️'
+    if (hour < 20) return '🌅'
+    return '🌙'
+  }
+
+  // Get current time emoji
+  const getCurrentEmoji = () => {
+    const currentHour = new Date().getHours()
+    return getEmojiForHour(currentHour)
+  }
+
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-5 pb-6 md:pb-8 lg:pb-8">
       {/* Welcome Card - Compact with entrance animation */}
@@ -478,14 +512,17 @@ const Dashboard = ({ onOpenScanner }) => {
         <div className="relative z-10">
           {/* Greeting Header - Compact */}
           <div className="flex items-center gap-3 mb-3">
-            <div className="text-3xl md:text-4xl animate-bounce-slow">
-              {(() => {
-                const hour = new Date().getHours()
-                if (hour < 12) return '☀️'
-                if (hour < 17) return '🌤️'
-                if (hour < 20) return '🌅'
-                return '🌙'
-              })()}
+            <div className="relative text-3xl md:text-4xl">
+              {/* Old emoji fading out and moving */}
+              {emojiTransitioning && lastLoginHour !== null && (
+                <div className="absolute inset-0 animate-emoji-exit">
+                  {getEmojiForHour(lastLoginHour)}
+                </div>
+              )}
+              {/* New emoji fading in and moving */}
+              <div className={emojiTransitioning ? 'animate-emoji-enter' : 'animate-bounce-slow'}>
+                {getCurrentEmoji()}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="text-xl md:text-2xl lg:text-3xl font-black bg-gradient-to-r from-primary-300 via-accent-cyan to-primary-300 bg-clip-text text-transparent bg-[length:200%_auto] animate-opal-gradient truncate">
