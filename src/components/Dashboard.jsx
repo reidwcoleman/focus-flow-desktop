@@ -460,69 +460,64 @@ const Dashboard = ({ onOpenScanner }) => {
 
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-5 pb-6 md:pb-8 lg:pb-8">
-      {/* Welcome Card */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-900/40 via-dark-bg-secondary to-accent-cyan/20 p-6 md:p-7 lg:p-8 shadow-dark-soft-xl border border-primary-500/40 hover:border-primary-500/60 transition-all">
+      {/* Welcome Card - Compact with entrance animation */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-900/40 via-dark-bg-secondary to-accent-cyan/20 p-4 md:p-5 shadow-dark-soft-xl border border-primary-500/40 hover:border-primary-500/60 transition-all animate-opal-card-enter">
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-transparent to-accent-cyan/10 opacity-50"></div>
 
         {/* Decorative background pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500 rounded-full blur-3xl animate-pulse-soft"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent-cyan rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-cyan rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
         </div>
 
         {/* Sparkle effects */}
-        <div className="absolute top-4 right-4 w-2 h-2 bg-accent-cyan rounded-full animate-ping"></div>
-        <div className="absolute top-8 right-12 w-1.5 h-1.5 bg-primary-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
-        <div className="absolute bottom-8 left-8 w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-accent-cyan rounded-full animate-ping"></div>
+        <div className="absolute top-6 right-10 w-1 h-1 bg-primary-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
 
         <div className="relative z-10">
-          {/* Greeting Header */}
-          <div className="flex items-start justify-between mb-5">
-            <div className="flex items-center gap-4 md:gap-5">
-              <div className="text-5xl md:text-6xl lg:text-7xl animate-bounce-slow">
-                {(() => {
-                  const hour = new Date().getHours()
-                  if (hour < 12) return '☀️'
-                  if (hour < 17) return '🌤️'
-                  if (hour < 20) return '🌅'
-                  return '🌙'
-                })()}
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black bg-gradient-to-r from-primary-300 via-accent-cyan to-primary-300 bg-clip-text text-transparent mb-1 bg-[length:200%_auto] animate-opal-gradient">
-                  {getTimeOfDayGreeting()}, {userName}
-                </h1>
-                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 mt-2">
-                  <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg font-medium flex items-center gap-2">
-                    <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                  </p>
-                  {xpData && (
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
-                      <span className="text-lg">⭐</span>
-                      <span className="text-sm md:text-base font-bold text-yellow-300">Level {xpData.level}</span>
-                      <span className="text-xs text-yellow-400/70">•</span>
-                      <span className="text-xs md:text-sm font-semibold text-yellow-400">{xpData.levelTitle}</span>
-                    </div>
-                  )}
-                </div>
+          {/* Greeting Header - Compact */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="text-3xl md:text-4xl animate-bounce-slow">
+              {(() => {
+                const hour = new Date().getHours()
+                if (hour < 12) return '☀️'
+                if (hour < 17) return '🌤️'
+                if (hour < 20) return '🌅'
+                return '🌙'
+              })()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-black bg-gradient-to-r from-primary-300 via-accent-cyan to-primary-300 bg-clip-text text-transparent bg-[length:200%_auto] animate-opal-gradient truncate">
+                {getTimeOfDayGreeting()}, {userName}
+              </h1>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <p className="text-dark-text-secondary text-xs md:text-sm font-medium flex items-center gap-1.5">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </p>
+                {xpData && (
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+                    <span className="text-sm">⭐</span>
+                    <span className="text-xs md:text-sm font-bold text-yellow-300">Lv {xpData.level}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Progress Summary Bar */}
+          {/* Progress Summary Bar - Compact */}
           {assignments.length > 0 && (
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm md:text-base font-semibold text-dark-text-secondary">Overall Progress</span>
-                <span className="text-sm md:text-base font-bold text-green-400">
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs md:text-sm font-semibold text-dark-text-secondary">Progress</span>
+                <span className="text-xs md:text-sm font-bold text-green-400">
                   {Math.round((assignments.filter(a => a.completed).length / assignments.length) * 100)}%
                 </span>
               </div>
-              <div className="h-3 md:h-4 bg-dark-bg-tertiary/70 rounded-full overflow-hidden backdrop-blur-sm border border-dark-border-subtle">
+              <div className="h-2 md:h-2.5 bg-dark-bg-tertiary/70 rounded-full overflow-hidden backdrop-blur-sm border border-dark-border-subtle">
                 <div
                   className="h-full bg-gradient-to-r from-green-500 via-green-400 to-green-500 transition-all duration-1000 ease-out relative overflow-hidden"
                   style={{ width: `${(assignments.filter(a => a.completed).length / assignments.length) * 100}%` }}
@@ -533,94 +528,84 @@ const Dashboard = ({ onOpenScanner }) => {
             </div>
           )}
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {/* Stats Grid - Compact */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {/* Assignments */}
-            <div className="group bg-gradient-to-br from-primary-500/10 to-primary-500/5 backdrop-blur-sm rounded-xl p-4 md:p-5 border border-primary-500/30 hover:border-primary-500/50 transition-all hover:scale-105 hover:shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 rounded-lg bg-primary-500/20 group-hover:bg-primary-500/30 transition-colors">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-gradient-to-br from-primary-500/10 to-primary-500/5 backdrop-blur-sm rounded-lg p-3 border border-primary-500/30 hover:border-primary-500/50 transition-all hover:scale-105">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="p-1 rounded bg-primary-500/20 group-hover:bg-primary-500/30 transition-colors">
+                  <svg className="w-3 h-3 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <span className="text-xs md:text-sm text-dark-text-muted font-bold uppercase tracking-wide">Tasks</span>
+                <span className="text-xs text-dark-text-muted font-bold uppercase tracking-wide">Tasks</span>
               </div>
-              <div className="text-3xl md:text-4xl font-black text-primary-400 group-hover:text-primary-300 transition-colors">
+              <div className="text-2xl md:text-3xl font-black text-primary-400 group-hover:text-primary-300 transition-colors">
                 {assignments.length}
               </div>
-              <div className="text-xs text-dark-text-muted mt-1">Total assignments</div>
             </div>
 
             {/* Completed */}
-            <div className="group bg-gradient-to-br from-green-500/10 to-green-500/5 backdrop-blur-sm rounded-xl p-4 md:p-5 border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105 hover:shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 rounded-lg bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-gradient-to-br from-green-500/10 to-green-500/5 backdrop-blur-sm rounded-lg p-3 border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="p-1 rounded bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
+                  <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <span className="text-xs md:text-sm text-dark-text-muted font-bold uppercase tracking-wide">Done</span>
+                <span className="text-xs text-dark-text-muted font-bold uppercase tracking-wide">Done</span>
               </div>
-              <div className="text-3xl md:text-4xl font-black text-green-400 group-hover:text-green-300 transition-colors">
+              <div className="text-2xl md:text-3xl font-black text-green-400 group-hover:text-green-300 transition-colors">
                 {assignments.filter(a => a.completed).length}
               </div>
-              <div className="text-xs text-dark-text-muted mt-1">Completed tasks</div>
             </div>
 
             {/* Due Today */}
-            <div className="group bg-gradient-to-br from-orange-500/10 to-orange-500/5 backdrop-blur-sm rounded-xl p-4 md:p-5 border border-orange-500/30 hover:border-orange-500/50 transition-all hover:scale-105 hover:shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 rounded-lg bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-gradient-to-br from-orange-500/10 to-orange-500/5 backdrop-blur-sm rounded-lg p-3 border border-orange-500/30 hover:border-orange-500/50 transition-all hover:scale-105">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="p-1 rounded bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
+                  <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <span className="text-xs md:text-sm text-dark-text-muted font-bold uppercase tracking-wide">Today</span>
+                <span className="text-xs text-dark-text-muted font-bold uppercase tracking-wide">Today</span>
               </div>
-              <div className="text-3xl md:text-4xl font-black text-orange-400 group-hover:text-orange-300 transition-colors">
+              <div className="text-2xl md:text-3xl font-black text-orange-400 group-hover:text-orange-300 transition-colors">
                 {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date).toDateString() === new Date().toDateString()).length}
               </div>
-              <div className="text-xs text-dark-text-muted mt-1">Due today</div>
             </div>
 
             {/* Overdue */}
-            <div className="group bg-gradient-to-br from-red-500/10 to-red-500/5 backdrop-blur-sm rounded-xl p-4 md:p-5 border border-red-500/30 hover:border-red-500/50 transition-all hover:scale-105 hover:shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 rounded-lg bg-red-500/20 group-hover:bg-red-500/30 transition-colors">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="group bg-gradient-to-br from-red-500/10 to-red-500/5 backdrop-blur-sm rounded-lg p-3 border border-red-500/30 hover:border-red-500/50 transition-all hover:scale-105">
+              <div className="flex items-center gap-1.5 mb-1">
+                <div className="p-1 rounded bg-red-500/20 group-hover:bg-red-500/30 transition-colors">
+                  <svg className="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
-                <span className="text-xs md:text-sm text-dark-text-muted font-bold uppercase tracking-wide">Overdue</span>
+                <span className="text-xs text-dark-text-muted font-bold uppercase tracking-wide">Late</span>
               </div>
-              <div className="text-3xl md:text-4xl font-black text-red-400 group-hover:text-red-300 transition-colors">
+              <div className="text-2xl md:text-3xl font-black text-red-400 group-hover:text-red-300 transition-colors">
                 {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date() && new Date(a.due_date).toDateString() !== new Date().toDateString()).length}
               </div>
-              <div className="text-xs text-dark-text-muted mt-1">Past deadline</div>
             </div>
           </div>
 
-          {/* Motivational Message */}
+          {/* Motivational Message - Compact */}
           {assignments.length > 0 && assignments.filter(a => a.completed).length === assignments.length && (
-            <div className="mt-5 p-4 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/40 animate-fadeIn">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">🎉</span>
-                <div>
-                  <p className="text-green-300 font-bold text-lg">All caught up!</p>
-                  <p className="text-green-400/70 text-sm">You've completed all your assignments. Great work!</p>
-                </div>
+            <div className="mt-3 p-2.5 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/40 animate-fadeIn">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🎉</span>
+                <p className="text-green-300 font-bold text-sm">All caught up! Great work!</p>
               </div>
             </div>
           )}
 
           {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date()).length > 0 && (
-            <div className="mt-5 p-4 rounded-xl bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/40 animate-fadeIn">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">⚠️</span>
-                <div>
-                  <p className="text-red-300 font-bold text-lg">Action needed!</p>
-                  <p className="text-red-400/70 text-sm">You have {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date()).length} overdue assignment{assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date()).length > 1 ? 's' : ''}. Time to catch up!</p>
-                </div>
+            <div className="mt-3 p-2.5 rounded-lg bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/40 animate-fadeIn">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">⚠️</span>
+                <p className="text-red-300 font-bold text-sm">{assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date()).length} overdue - time to catch up!</p>
               </div>
             </div>
           )}

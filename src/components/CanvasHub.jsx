@@ -228,10 +228,10 @@ const CanvasHub = () => {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h4 className="text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary mb-1 tracking-tight leading-snug">
-                      {course.name}
+                      {course.course_code || course.name}
                     </h4>
-                    {course.course_code && (
-                      <p className="text-xs text-dark-text-muted">{course.course_code}</p>
+                    {course.course_code && course.course_code !== course.name && (
+                      <p className="text-xs text-dark-text-muted">{course.name}</p>
                     )}
                   </div>
                   {course.enrollments && course.enrollments[0]?.type && (
@@ -371,13 +371,16 @@ const CanvasHub = () => {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <h4 className="text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary mb-1 tracking-tight leading-snug">
-                        {grade.courseName}
+                        {grade.courseCode || grade.courseName}
                       </h4>
+                      {grade.courseCode && grade.courseCode !== grade.courseName && (
+                        <p className="text-xs text-dark-text-muted">{grade.courseName}</p>
+                      )}
                     </div>
                     <div className="text-right">
                       <div className={`text-2xl font-bold ${gradeColor}`}>
-                        {grade.currentGrade || grade.currentScore ?
-                          (grade.currentGrade || `${grade.currentScore.toFixed(1)}%`)
+                        {grade.currentGrade || (grade.currentScore !== null && grade.currentScore !== undefined) ?
+                          (grade.currentGrade || `${(grade.currentScore || 0).toFixed(1)}%`)
                           : 'N/A'
                         }
                       </div>
@@ -386,12 +389,12 @@ const CanvasHub = () => {
                   </div>
 
                   {/* Score breakdown */}
-                  {grade.currentScore !== undefined && (
+                  {grade.currentScore !== undefined && grade.currentScore !== null && (
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-xs font-semibold text-dark-text-secondary">Progress</span>
                         <span className={`text-xs font-bold ${gradeColor}`}>
-                          {grade.currentScore.toFixed(1)}%
+                          {(grade.currentScore || 0).toFixed(1)}%
                         </span>
                       </div>
                       <div className="w-full h-2 bg-dark-bg-primary rounded-full overflow-hidden">
