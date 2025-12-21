@@ -449,6 +449,42 @@ export const canvasService = {
     }
   },
 
+  // Delete old past-due assignments (over 2 weeks old)
+  async deleteOldPastDueAssignments(userId) {
+    try {
+      const twoWeeksAgo = new Date()
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+      const twoWeeksAgoStr = twoWeeksAgo.toISOString().split('T')[0]
+
+      console.log(`🗑️  Cleaning up assignments past due before ${twoWeeksAgoStr}...`)
+
+      const { data, error } = await supabase
+        .from('assignments')
+        .delete()
+        .eq('user_id', userId)
+        .eq('source', 'canvas')
+        .lt('due_date', twoWeeksAgoStr)
+        .eq('submitted', false) // Only delete unsubmitted ones
+
+      if (error) {
+        console.error('Failed to delete old assignments:', error)
+        return { deleted: 0, error: error.message }
+      }
+
+      const deletedCount = data?.length || 0
+      if (deletedCount > 0) {
+        console.log(`✅ Deleted ${deletedCount} old past-due assignments`)
+      } else {
+        console.log(`✅ No old past-due assignments to delete`)
+      }
+
+      return { deleted: deletedCount }
+    } catch (error) {
+      console.error('Failed to delete old assignments:', error)
+      return { deleted: 0, error: error.message }
+    }
+  },
+
   // Sync Canvas data to database with upsert (no duplicates)
   async syncToDatabase() {
     try {
@@ -461,6 +497,9 @@ export const canvasService = {
       if (!user) {
         return { success: false, error: 'No user logged in' }
       }
+
+      // Delete old past-due assignments FIRST (before syncing new data)
+      const cleanupResult = await this.deleteOldPastDueAssignments(user.id)
 
       // Sync courses first
       const courseResult = await this.syncCourses(user.id)
@@ -479,7 +518,8 @@ export const canvasService = {
         courses: courseResult.synced,
         assignments: assignmentResult.synced,
         grades: gradeResult.synced,
-        message: `Synced ${courseResult.synced} courses, ${assignmentResult.synced} assignments, ${gradeResult.synced} grades`
+        deleted: cleanupResult.deleted,
+        message: `Synced ${courseResult.synced} courses, ${assignmentResult.synced} assignments, ${gradeResult.synced} grades${cleanupResult.deleted > 0 ? ` (cleaned up ${cleanupResult.deleted} old assignments)` : ''}`
       }
     } catch (error) {
       console.error('❌ Canvas sync failed:', error)

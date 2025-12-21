@@ -60,7 +60,8 @@ const CanvasHub = () => {
     try {
       const result = await canvasService.syncToDatabase()
       if (result.success) {
-        toast.success(`Sync Complete!\n\n📚 Courses: ${result.courses}\n📝 Assignments: ${result.assignments}\n📊 Grades: ${result.grades}`)
+        const cleanupMessage = result.deleted > 0 ? `\n🗑️  Cleaned up ${result.deleted} old past-due assignments` : ''
+        toast.success(`Sync Complete!\n\n📚 Courses: ${result.courses}\n📝 Assignments: ${result.assignments}\n📊 Grades: ${result.grades}${cleanupMessage}`)
         setLastSyncTime(new Date())
         await loadCanvasData() // Reload data after sync
       } else {
