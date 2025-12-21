@@ -308,6 +308,8 @@ export const canvasService = {
       const courses = await this.getCourses()
       let syncedCount = 0
 
+      console.log(`📚 Syncing ${courses.length} courses...`)
+
       for (const course of courses) {
         const courseData = {
           user_id: userId,
@@ -328,9 +330,14 @@ export const canvasService = {
             ignoreDuplicates: false
           })
 
-        if (!error) syncedCount++
+        if (error) {
+          console.error(`Failed to sync course "${course.name}":`, error)
+        } else {
+          syncedCount++
+        }
       }
 
+      console.log(`✅ Successfully synced ${syncedCount}/${courses.length} courses`)
       return { synced: syncedCount, total: courses.length }
     } catch (error) {
       console.error('Failed to sync courses:', error)
@@ -343,6 +350,8 @@ export const canvasService = {
     try {
       const canvasAssignments = await this.getAllAssignments()
       let syncedCount = 0
+
+      console.log(`📝 Syncing ${canvasAssignments.length} assignments...`)
 
       for (const assignment of canvasAssignments) {
         // Extract numeric Canvas assignment ID
@@ -383,6 +392,7 @@ export const canvasService = {
         }
       }
 
+      console.log(`✅ Successfully synced ${syncedCount}/${canvasAssignments.length} assignments`)
       return { synced: syncedCount, total: canvasAssignments.length }
     } catch (error) {
       console.error('Failed to sync assignments:', error)

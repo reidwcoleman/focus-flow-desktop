@@ -10,6 +10,7 @@ const CanvasHub = () => {
   const [error, setError] = useState(null)
   const [syncing, setSyncing] = useState(false)
   const [activeView, setActiveView] = useState('courses') // courses, assignments, grades
+  const [lastSyncTime, setLastSyncTime] = useState(null)
 
   useEffect(() => {
     loadCanvasData()
@@ -40,6 +41,12 @@ const CanvasHub = () => {
       setCourses(coursesData || [])
       setAssignments(assignmentsData || [])
       setGrades(gradesData || [])
+
+      // Set last sync time from the most recent item
+      const latestSync = coursesData?.[0]?.syncedAt || gradesData?.[0]?.syncedAt
+      if (latestSync) {
+        setLastSyncTime(new Date(latestSync))
+      }
     } catch (err) {
       console.error('Failed to load Canvas data:', err)
       setError(err.message || 'Failed to load Canvas data')
@@ -54,6 +61,7 @@ const CanvasHub = () => {
       const result = await canvasService.syncToDatabase()
       if (result.success) {
         toast.success(`Sync Complete!\n\n📚 Courses: ${result.courses}\n📝 Assignments: ${result.assignments}\n📊 Grades: ${result.grades}`)
+        setLastSyncTime(new Date())
         await loadCanvasData() // Reload data after sync
       } else {
         throw new Error(result.message || 'Sync failed')
@@ -146,9 +154,21 @@ const CanvasHub = () => {
               )}
             </button>
           </div>
-          <p className="text-dark-text-secondary text-sm">
-            {courses.length} courses • {assignments.length} assignments
-          </p>
+          <div className="space-y-1">
+            <p className="text-dark-text-secondary text-sm">
+              {courses.length} courses • {assignments.length} assignments • {grades.length} grades
+            </p>
+            {lastSyncTime && (
+              <p className="text-dark-text-muted text-xs">
+                Last synced: {lastSyncTime.toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit'
+                })}
+              </p>
+            )}
+          </div>
         </div>
         <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
       </div>
