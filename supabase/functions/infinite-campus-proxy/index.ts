@@ -82,65 +82,48 @@ async function handleLogin(body: any): Promise<Response> {
   const infiniteCampusUrl = 'https://920.ncsis.gov'
 
   try {
-    // Step 1: Directly authenticate with NCEdCloud
-    // Wake County uses NCEdCloud SSO - we can go directly to the login page
-    console.log('🔑 Step 1: Accessing NCEdCloud login page directly...')
+    // For Wake County, we need to use the standard username/password login
+    // NCEdCloud SSO requires too many browser-specific steps
+    console.log('🔑 Step 1: Logging in with username/password...')
 
-    const ncedLoginUrl = 'https://idp.ncedcloud.org/idp/profile/SAML2/Redirect/SSO?execution=e1s1'
-
-    // Step 2: Submit credentials to NCEdCloud
-    const ncedLoginData = new URLSearchParams({
-      j_username: lunchNumber,
-      j_password: password,
-      _eventId_proceed: '1'
+    // Try direct login using standard IC credentials
+    const loginUrl = `${infiniteCampusUrl}/campus/verify.jsp`
+    const loginData = new URLSearchParams({
+      username: username,
+      password: password,
+      appName: 'psu920wakeco'
     })
 
-    console.log(`🔑 Submitting credentials to NCEdCloud...`)
-
-    const ncedLoginResponse = await fetch(ncedLoginUrl, {
+    const loginResponse = await fetch(loginUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Referer': `${infiniteCampusUrl}/campus/portal/students/psu920wakeco.jsp`
       },
-      body: ncedLoginData.toString(),
+      body: loginData.toString(),
       redirect: 'manual'
     })
 
-    console.log(`🔑 NCEdCloud response status: ${ncedLoginResponse.status}`)
+    console.log(`🔑 Login response status: ${loginResponse.status}`)
 
-    // Check for session cookies from NCEdCloud
-    const ncedCookies = ncedLoginResponse.headers.get('set-cookie')
-    console.log(`🍪 NCEdCloud cookies received: ${ncedCookies ? 'Yes' : 'No'}`)
+    const cookies = loginResponse.headers.get('set-cookie')
+    console.log(`🍪 Cookies received: ${cookies ? 'Yes' : 'No'}`)
 
-    // Check if NCEdCloud login failed
-    if (ncedLoginResponse.status !== 302 && ncedLoginResponse.status !== 200) {
-      const responseText = await ncedLoginResponse.text()
-      console.error(`❌ NCEdCloud login failed - Status: ${ncedLoginResponse.status}`)
+    if (!cookies || loginResponse.status !== 302) {
+      const responseText = await loginResponse.text()
+      console.error(`❌ Login failed - Status: ${loginResponse.status}`)
       console.error(`Response preview: ${responseText.substring(0, 500)}`)
-
-      if (responseText.includes('invalid') || responseText.includes('incorrect') || responseText.includes('failed')) {
-        throw new Error('❌ Invalid lunch number or password. Please check your credentials and try again.')
-      }
-
-      throw new Error(`❌ Login failed (Status ${ncedLoginResponse.status}). Please verify your lunch number and password are correct.`)
+      throw new Error('❌ Invalid username or password. Please check your credentials.')
     }
 
-    if (!ncedCookies) {
-      console.error(`❌ NCEdCloud login failed - No session cookies`)
-      throw new Error('❌ Invalid credentials. No session was created. Please check your lunch number and password.')
-    }
+    // Extract session cookies
+    let icCookies = cookies.split(',').map(c => c.split(';')[0]).join('; ')
+    console.log(`🍪 Session cookies: ${icCookies.substring(0, 100)}...`)
 
-    // Extract all NCEdCloud cookies
-    const allCookies = ncedCookies.split(',').map(c => c.split(';')[0]).join('; ')
-    console.log(`🍪 All NCEdCloud cookies: ${allCookies}`)
-
-    // Step 2: Follow redirect chain through SAML
-    const redirectLocation = ncedLoginResponse.headers.get('location')
-    console.log(`🔄 NCEdCloud redirect location: ${redirectLocation}`)
-
-    let icCookies = allCookies
-    let currentUrl = redirectLocation
+    // Follow redirect to complete login
+    let currentUrl = loginResponse.headers.get('location')
+    console.log(`🔄 Following redirect: ${currentUrl}...`)
 
     // Follow up to 5 redirects to complete the SAML authentication flow
     for (let i = 0; i < 5 && currentUrl; i++) {
