@@ -149,15 +149,15 @@ export const canvasService = {
     return courses
   },
 
-  // Get assignments for all courses with submission/grade data (with pagination)
+  // Get assignments for all courses with submission/grade data (with pagination) - PARALLEL
   async getAllAssignments() {
     try {
       const courses = await this.getCourses()
-      const allAssignments = []
 
-      for (const course of courses) {
+      // Fetch assignments for ALL courses in parallel
+      const assignmentPromises = courses.map(async (course) => {
         try {
-          // Fetch assignments with submission data included - with pagination
+          const courseAssignments = []
           let page = 1
           let hasMore = true
 
@@ -204,18 +204,25 @@ export const canvasService = {
               }
             })
 
-            allAssignments.push(...transformedAssignments)
+            courseAssignments.push(...transformedAssignments)
 
             hasMore = assignments.length === 100 // If we got 100, there might be more
             page++
           }
+
+          return courseAssignments
         } catch (error) {
           // Silently skip CORS errors
           if (!error.message.includes('CORS')) {
             console.error(`Failed to fetch assignments for course ${course.id}:`, error)
           }
+          return []
         }
-      }
+      })
+
+      // Wait for all course assignment requests to complete in parallel
+      const assignmentArrays = await Promise.all(assignmentPromises)
+      const allAssignments = assignmentArrays.flat()
 
       return allAssignments
     } catch (error) {
@@ -227,22 +234,23 @@ export const canvasService = {
     }
   },
 
-  // Get grades for all courses with enhanced data
+  // Get grades for all courses with enhanced data - PARALLEL
   async getAllGrades() {
     try {
       const courses = await this.getCourses()
-      const grades = []
 
-      for (const course of courses) {
+      // Fetch grades for ALL courses in parallel
+      const gradePromises = courses.map(async (course) => {
         try {
           // Get user enrollments with grades
           const enrollments = await this.makeRequest(
             `/courses/${course.id}/enrollments?user_id=self&type[]=StudentEnrollment`
           )
 
+          const courseGrades = []
           for (const enrollment of enrollments) {
             if (enrollment.grades) {
-              grades.push({
+              courseGrades.push({
                 courseId: course.id,
                 courseName: course.name,
                 courseCode: course.course_code,
@@ -258,13 +266,19 @@ export const canvasService = {
               })
             }
           }
+          return courseGrades
         } catch (error) {
           // Silently skip CORS errors
           if (!error.message.includes('CORS')) {
             console.error(`Failed to fetch grades for course ${course.id}:`, error)
           }
+          return []
         }
-      }
+      })
+
+      // Wait for all grade requests to complete in parallel
+      const gradeArrays = await Promise.all(gradePromises)
+      const grades = gradeArrays.flat()
 
       return grades
     } catch (error) {
@@ -302,62 +316,58 @@ export const canvasService = {
     )
   },
 
-  // Sync courses to canvas_courses table
+  // Sync courses to canvas_courses table - BATCH UPSERT
   async syncCourses(userId) {
     try {
       const courses = await this.getCourses()
-      let syncedCount = 0
 
       console.log(`📚 Syncing ${courses.length} courses...`)
 
-      for (const course of courses) {
-        const courseData = {
-          user_id: userId,
-          canvas_course_id: course.id,
-          name: course.name,
-          course_code: course.course_code || null,
-          term_name: course.term?.name || null,
-          enrollment_type: course.enrollments?.[0]?.type || null,
-          is_active: true,
-          synced_at: new Date().toISOString()
-        }
+      // Prepare all course data
+      const courseDataArray = courses.map(course => ({
+        user_id: userId,
+        canvas_course_id: course.id,
+        name: course.name,
+        course_code: course.course_code || null,
+        term_name: course.term?.name || null,
+        enrollment_type: course.enrollments?.[0]?.type || null,
+        is_active: true,
+        synced_at: new Date().toISOString()
+      }))
 
-        // Upsert: insert or update on conflict
-        const { error } = await supabase
-          .from('canvas_courses')
-          .upsert(courseData, {
-            onConflict: 'user_id,canvas_course_id',
-            ignoreDuplicates: false
-          })
+      // Batch upsert all courses at once (much faster!)
+      const { data, error } = await supabase
+        .from('canvas_courses')
+        .upsert(courseDataArray, {
+          onConflict: 'user_id,canvas_course_id',
+          ignoreDuplicates: false
+        })
 
-        if (error) {
-          console.error(`Failed to sync course "${course.name}":`, error)
-        } else {
-          syncedCount++
-        }
+      if (error) {
+        console.error('Failed to sync courses:', error)
+        return { synced: 0, total: courses.length, error: error.message }
       }
 
-      console.log(`✅ Successfully synced ${syncedCount}/${courses.length} courses`)
-      return { synced: syncedCount, total: courses.length }
+      console.log(`✅ Successfully synced ${courses.length} courses`)
+      return { synced: courses.length, total: courses.length }
     } catch (error) {
       console.error('Failed to sync courses:', error)
       return { synced: 0, error: error.message }
     }
   },
 
-  // Sync assignments with Canvas ID for deduplication
+  // Sync assignments with Canvas ID for deduplication - BATCH UPSERT
   async syncAssignments(userId) {
     try {
       const canvasAssignments = await this.getAllAssignments()
-      let syncedCount = 0
 
       console.log(`📝 Syncing ${canvasAssignments.length} assignments...`)
 
-      for (const assignment of canvasAssignments) {
-        // Extract numeric Canvas assignment ID
+      // Prepare all assignment data
+      const assignmentDataArray = canvasAssignments.map(assignment => {
         const canvasId = parseInt(assignment.id.replace('canvas-', ''))
 
-        const assignmentData = {
+        return {
           user_id: userId,
           canvas_assignment_id: canvasId,
           canvas_course_id: assignment.courseId,
@@ -375,69 +385,64 @@ export const canvasService = {
           canvas_url: assignment.htmlUrl || null,
           time_estimate: this.estimateTime(assignment.points)
         }
+      })
 
-        // Upsert: insert or update on conflict of (user_id, canvas_assignment_id)
-        const { error } = await supabase
-          .from('assignments')
-          .upsert(assignmentData, {
-            onConflict: 'user_id,canvas_assignment_id',
-            ignoreDuplicates: false
-          })
+      // Batch upsert all assignments at once (much faster!)
+      const { data, error } = await supabase
+        .from('assignments')
+        .upsert(assignmentDataArray, {
+          onConflict: 'user_id,canvas_assignment_id',
+          ignoreDuplicates: false
+        })
 
-        if (error) {
-          console.error(`Failed to sync assignment "${assignment.title}":`, error)
-          console.error('Assignment data:', assignmentData)
-        } else {
-          syncedCount++
-        }
+      if (error) {
+        console.error('Failed to sync assignments:', error)
+        return { synced: 0, total: canvasAssignments.length, error: error.message }
       }
 
-      console.log(`✅ Successfully synced ${syncedCount}/${canvasAssignments.length} assignments`)
-      return { synced: syncedCount, total: canvasAssignments.length }
+      console.log(`✅ Successfully synced ${canvasAssignments.length} assignments`)
+      return { synced: canvasAssignments.length, total: canvasAssignments.length }
     } catch (error) {
       console.error('Failed to sync assignments:', error)
       return { synced: 0, error: error.message }
     }
   },
 
-  // Sync course grades to course_grades table with enhanced data
+  // Sync course grades to course_grades table with enhanced data - BATCH UPSERT
   async syncGrades(userId) {
     try {
       const grades = await this.getAllGrades()
-      let syncedCount = 0
 
       console.log(`📊 Syncing ${grades.length} course grades...`)
 
-      for (const grade of grades) {
-        const gradeData = {
-          user_id: userId,
-          canvas_course_id: grade.courseId,
-          course_name: grade.courseName,
-          course_code: grade.courseCode || null,
-          current_grade: grade.currentGrade || null,
-          current_score: grade.currentScore || null,
-          final_grade: grade.finalGrade || null,
-          final_score: grade.finalScore || null,
-          synced_at: new Date().toISOString()
-        }
+      // Prepare all grade data
+      const gradeDataArray = grades.map(grade => ({
+        user_id: userId,
+        canvas_course_id: grade.courseId,
+        course_name: grade.courseName,
+        course_code: grade.courseCode || null,
+        current_grade: grade.currentGrade || null,
+        current_score: grade.currentScore || null,
+        final_grade: grade.finalGrade || null,
+        final_score: grade.finalScore || null,
+        synced_at: new Date().toISOString()
+      }))
 
-        // Upsert: insert or update on conflict
-        const { error } = await supabase
-          .from('course_grades')
-          .upsert(gradeData, {
-            onConflict: 'user_id,canvas_course_id',
-            ignoreDuplicates: false
-          })
+      // Batch upsert all grades at once (much faster!)
+      const { data, error } = await supabase
+        .from('course_grades')
+        .upsert(gradeDataArray, {
+          onConflict: 'user_id,canvas_course_id',
+          ignoreDuplicates: false
+        })
 
-        if (error) {
-          console.error(`Failed to sync grade for ${grade.courseName}:`, error)
-        } else {
-          syncedCount++
-        }
+      if (error) {
+        console.error('Failed to sync grades:', error)
+        return { synced: 0, total: grades.length, error: error.message }
       }
 
-      console.log(`✅ Successfully synced ${syncedCount} grades`)
-      return { synced: syncedCount, total: grades.length }
+      console.log(`✅ Successfully synced ${grades.length} grades`)
+      return { synced: grades.length, total: grades.length }
     } catch (error) {
       console.error('Failed to sync grades:', error)
       return { synced: 0, error: error.message }
