@@ -8,6 +8,7 @@ import xpService from '../services/xpService'
 import subtasksService from '../services/subtasksService'
 import taskBreakdownService from '../services/taskBreakdownService'
 import infiniteCampusService from '../services/infiniteCampusService'
+import courseStatsService from '../services/courseStatsService'
 import StreakCalendar from './StreakCalendar'
 import XPToast from './XPToast'
 import GradeChart from './GradeChart'
@@ -337,6 +338,11 @@ const Dashboard = ({ onOpenScanner }) => {
               })
               // Reload XP data to update widget
               await loadXPData()
+            }
+
+            // Track course stats
+            if (assignment.subject) {
+              await courseStatsService.recordAssignmentCompleted(assignment.subject)
             }
           }
 

@@ -1,14 +1,26 @@
 import { useState, useEffect } from 'react'
 import analyticsService from '../services/analyticsService'
+import courseStatsService from '../services/courseStatsService'
 import { StatCardSkeleton } from './LoadingSkeleton'
 
 const Analytics = () => {
   const [analytics, setAnalytics] = useState(null)
+  const [courseStats, setCourseStats] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadAnalytics()
+    loadCourseStats()
   }, [])
+
+  const loadCourseStats = async () => {
+    try {
+      const stats = await courseStatsService.getCourseStats()
+      setCourseStats(stats)
+    } catch (error) {
+      console.error('Failed to load course stats:', error)
+    }
+  }
 
   const loadAnalytics = async () => {
     setLoading(true)
@@ -275,8 +287,58 @@ const Analytics = () => {
         </div>
       </div>
 
+      {/* Course Breakdown */}
+      {courseStats.length > 0 && (
+        <div className="relative overflow-hidden rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary p-6 lg:p-8 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all">
+          <div className="relative z-10">
+            <h3 className="text-xl lg:text-2xl font-bold text-dark-text-primary mb-4 lg:mb-6">By Course</h3>
+            <div className="space-y-3 lg:space-y-4">
+              {courseStats.map((course, index) => {
+                const totalHours = (course.total_focus_minutes / 60).toFixed(1)
+                const maxMinutes = Math.max(...courseStats.map(c => c.total_focus_minutes), 1)
+                const percentage = (course.total_focus_minutes / maxMinutes) * 100
+
+                return (
+                  <div key={course.id} className="group">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="text-sm lg:text-base font-semibold text-dark-text-primary">
+                          {course.course_code || course.course_name}
+                        </h4>
+                        {course.course_code && course.course_code !== course.course_name && (
+                          <p className="text-xs text-dark-text-muted">{course.course_name}</p>
+                        )}
+                      </div>
+                      <div className="text-right ml-4">
+                        <p className="text-base lg:text-lg font-bold text-primary-400">
+                          {totalHours}h
+                        </p>
+                        <p className="text-xs text-dark-text-muted">
+                          {course.assignments_completed} completed
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-full h-2 bg-dark-bg-primary rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary-500 to-accent-cyan rounded-full transition-all duration-500 group-hover:from-primary-400 group-hover:to-accent-cyan-400"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-dark-text-muted">
+                      <span>{course.focus_sessions} sessions</span>
+                      <span>•</span>
+                      <span>Avg {(course.total_focus_minutes / Math.max(course.focus_sessions, 1)).toFixed(0)} min/session</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Empty State - Desktop Optimized */}
-      {assignmentStats.total === 0 && studyStats.totalHours === 0 && (
+      {assignmentStats.total === 0 && studyStats.totalHours === 0 && courseStats.length === 0 && (
         <div className="text-center py-12 lg:py-24 bg-dark-bg-secondary rounded-2xl lg:rounded-3xl border border-dark-border-glow">
           <div className="w-20 h-20 lg:w-32 lg:h-32 mx-auto mb-4 lg:mb-8 rounded-2xl lg:rounded-3xl bg-dark-bg-tertiary flex items-center justify-center border border-dark-border-glow">
             <svg className="w-10 h-10 lg:w-16 lg:h-16 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
