@@ -817,6 +817,7 @@ const Planner = () => {
               </button>
               <button
                 onClick={previousMonth}
+                aria-label="Previous month"
                 className="w-8 h-8 rounded-lg bg-dark-bg-tertiary/50 backdrop-blur-sm border border-dark-border-glow text-dark-text-primary hover:border-primary-500 hover:scale-110 hover:-translate-x-1 transition-all"
               >
                 <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -825,6 +826,7 @@ const Planner = () => {
               </button>
               <button
                 onClick={nextMonth}
+                aria-label="Next month"
                 className="w-8 h-8 rounded-lg bg-dark-bg-tertiary/50 backdrop-blur-sm border border-dark-border-glow text-dark-text-primary hover:border-primary-500 hover:scale-110 hover:translate-x-1 transition-all"
               >
                 <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
