@@ -44,7 +44,17 @@ class AuthService {
         .eq('id', this.currentUser.id)
         .single()
 
-      if (error) throw error
+      // PGRST116 = no rows returned (profile doesn't exist yet)
+      if (error && error.code !== 'PGRST116') {
+        throw error
+      }
+
+      if (error && error.code === 'PGRST116') {
+        console.log('ℹ️  User profile not found, will be created on first update')
+        this.userProfile = null
+        return
+      }
+
       this.userProfile = data
     } catch (error) {
       console.error('Failed to load user profile:', error)
@@ -73,35 +83,68 @@ class AuthService {
       this.currentUser = data.user
       this.session = data.session
 
-      // Create user profile with provided data
+      // Create or update user profile with provided data
       if (data.user && profileData) {
         try {
-          console.log('📝 Creating user profile with data:', profileData)
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert({
-              id: data.user.id,
-              email: data.user.email,
-              full_name: profileData.full_name || null,
-              canvas_url: profileData.canvas_url || null,
-              canvas_token: profileData.canvas_token || null,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
+          console.log('📝 Setting up user profile with data:', profileData)
 
-          if (profileError) {
-            console.error('❌ Failed to create user profile:', profileError)
-            // Don't fail the signup if profile creation fails
-            // The trigger should handle it, but this is a fallback
-          } else {
-            console.log('✅ User profile created successfully')
-            // Load the newly created profile
-            await this._loadUserProfile()
-            console.log('👤 Loaded profile after creation:', this.userProfile)
+          // Wait a bit for database trigger to potentially create profile
+          await new Promise(resolve => setTimeout(resolve, 500))
+
+          // Check if profile already exists (from trigger)
+          const { data: existingProfile, error: checkError } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('id', data.user.id)
+            .single()
+
+          if (existingProfile) {
+            // Profile exists (created by trigger), update it with provided data
+            console.log('✅ Profile exists from trigger, updating with user data')
+            const { error: updateError } = await supabase
+              .from('user_profiles')
+              .update({
+                full_name: profileData.full_name || null,
+                canvas_url: profileData.canvas_url || null,
+                canvas_token: profileData.canvas_token || null,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', data.user.id)
+
+            if (updateError) {
+              console.error('⚠️  Failed to update user profile:', updateError)
+            } else {
+              console.log('✅ User profile updated successfully')
+            }
+          } else if (checkError && checkError.code === 'PGRST116') {
+            // Profile doesn't exist yet, create it
+            console.log('📝 No existing profile, creating new one')
+            const { error: insertError } = await supabase
+              .from('user_profiles')
+              .insert({
+                id: data.user.id,
+                email: data.user.email,
+                full_name: profileData.full_name || null,
+                canvas_url: profileData.canvas_url || null,
+                canvas_token: profileData.canvas_token || null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+
+            if (insertError && insertError.code !== '23505') {
+              // Ignore duplicate key errors (23505), log others
+              console.error('⚠️  Failed to create user profile:', insertError)
+            } else if (!insertError) {
+              console.log('✅ User profile created successfully')
+            }
           }
+
+          // Load the profile regardless
+          await this._loadUserProfile()
+          console.log('👤 Loaded profile after setup:', this.userProfile)
         } catch (profileErr) {
-          console.error('❌ Profile creation error:', profileErr)
-          // Continue anyway - profile can be created later
+          console.error('⚠️  Profile setup error:', profileErr)
+          // Continue anyway - profile can be created/updated later
         }
       }
 

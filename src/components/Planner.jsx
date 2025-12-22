@@ -14,8 +14,14 @@ import BulkUpload from './BulkUpload'
 import AIPlanningSuggestions from './AIPlanningSuggestions'
 import ActivityTimeline from './ActivityTimeline'
 import CelebrationOverlay from './CelebrationOverlay'
+import ProductivityHeatmap from './ProductivityHeatmap'
+import TimeDistributionChart from './TimeDistributionChart'
+import WeeklyComparisonChart from './WeeklyComparisonChart'
+import DailyProgressRing from './DailyProgressRing'
+import ConflictModal from './ConflictModal'
 import assignmentsService from '../services/assignmentsService'
 import infiniteCampusService from '../services/infiniteCampusService'
+import schedulingService from '../services/schedulingService'
 
 const Planner = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -40,6 +46,8 @@ const Planner = () => {
   const [grades, setGrades] = useState([])
   const [showCelebration, setShowCelebration] = useState(false)
   const [hoveredDay, setHoveredDay] = useState(null)
+  const [conflictData, setConflictData] = useState(null) // { activity, conflicts, suggestions }
+  const [showConflictModal, setShowConflictModal] = useState(false)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
@@ -141,6 +149,45 @@ const Planner = () => {
       // Parse activity with AI
       const activityData = await activityParserService.parseActivity(aiInput)
 
+      // Check for conflicts if activity has time
+      if (activityData.start_time && activityData.duration_minutes) {
+        const dateStr = activityData.activity_date || selectedDate.toISOString().split('T')[0]
+        const dayActivities = activities.filter(a => a.activity_date === dateStr && !a.is_completed)
+
+        const { hasConflict, conflicts, suggestions } = schedulingService.checkConflicts(
+          activityData,
+          dayActivities
+        )
+
+        if (hasConflict) {
+          // Show conflict modal
+          setConflictData({
+            activity: activityData,
+            conflicts,
+            suggestions
+          })
+          setShowConflictModal(true)
+          setAiProcessing(false)
+          return // Don't create yet, wait for user decision
+        }
+      }
+
+      // No conflicts, create activity
+      await createActivity(activityData)
+
+    } catch (err) {
+      console.error('Failed to create activity:', err)
+      setError('Failed to create activity. Try being more specific.')
+      setTimeout(() => setError(''), 5000)
+      setAiProcessing(false)
+    }
+  }
+
+  // Helper to actually create the activity
+  const createActivity = async (activityData) => {
+    try {
+      setAiProcessing(true)
+
       // Create activity in database
       const createdActivity = await calendarService.createActivity({
         ...activityData,
@@ -161,11 +208,34 @@ const Planner = () => {
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
       console.error('Failed to create activity:', err)
-      setError('Failed to create activity. Try being more specific.')
+      setError('Failed to create activity.')
       setTimeout(() => setError(''), 5000)
     } finally {
       setAiProcessing(false)
     }
+  }
+
+  // Handle conflict modal actions
+  const handleConflictSelectTime = async (newStartTime) => {
+    const updatedActivity = {
+      ...conflictData.activity,
+      start_time: newStartTime
+    }
+    setShowConflictModal(false)
+    setConflictData(null)
+    await createActivity(updatedActivity)
+  }
+
+  const handleConflictCreateAnyway = async () => {
+    setShowConflictModal(false)
+    await createActivity(conflictData.activity)
+    setConflictData(null)
+  }
+
+  const handleConflictCancel = () => {
+    setShowConflictModal(false)
+    setConflictData(null)
+    setAiProcessing(false)
   }
 
   const generateAIContent = async (activity) => {
@@ -602,7 +672,36 @@ const Planner = () => {
       </div>
 
       {/* AI Smart Planning Suggestions */}
-      <AIPlanningSuggestions assignments={assignments} grades={grades} />
+      <AIPlanningSuggestions assignments={assignments} grades={grades} activities={activities} />
+
+      {/* Analytics Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="p-2 rounded-lg bg-gradient-to-r from-primary-500/20 to-accent-cyan/20">
+            <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-dark-text-primary">Analytics</h2>
+            <p className="text-xs text-dark-text-muted">Your productivity insights</p>
+          </div>
+        </div>
+
+        {/* Top row - Daily Progress and Productivity Heatmap */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <DailyProgressRing activities={dayActivities} />
+          <div className="lg:col-span-2">
+            <ProductivityHeatmap activities={activities} />
+          </div>
+        </div>
+
+        {/* Bottom row - Time Distribution and Weekly Comparison */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <TimeDistributionChart activities={activities} />
+          <WeeklyComparisonChart activities={activities} />
+        </div>
+      </div>
 
       {/* Simplified View & Filter */}
       <div className="flex items-center justify-between gap-3">
@@ -1213,6 +1312,18 @@ const Planner = () => {
         show={showCelebration}
         onComplete={() => setShowCelebration(false)}
       />
+
+      {/* Conflict Modal */}
+      {showConflictModal && conflictData && (
+        <ConflictModal
+          newActivity={conflictData.activity}
+          conflicts={conflictData.conflicts}
+          suggestions={conflictData.suggestions}
+          onSelectTime={handleConflictSelectTime}
+          onCreateAnyway={handleConflictCreateAnyway}
+          onCancel={handleConflictCancel}
+        />
+      )}
     </div>
   )
 }

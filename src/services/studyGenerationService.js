@@ -169,125 +169,71 @@ class StudyGenerationService {
   _buildQuizPrompt(text, options) {
     const truncatedText = text.substring(0, this.maxContentLength)
 
-    return `You are an expert educator creating a comprehensive study quiz.
-
-CONTENT TO ANALYZE:
-"""
-${truncatedText}
-"""
-
-Generate a quiz with EXACTLY:
-- ${options.multipleChoice} multiple choice questions (4 options each, one correct)
-- ${options.trueFalse} true/false questions
-- ${options.shortAnswer} short answer questions
-
-Return ONLY valid JSON with NO markdown formatting, using this exact structure:
-{
-  "title": "Quiz title based on content",
-  "subject": "Subject area (e.g., Biology, History)",
-  "description": "Brief description of topics covered",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "Question text",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correctAnswer": "0",
-      "explanation": "Why this answer is correct",
-      "difficulty": "medium"
-    },
-    {
-      "type": "true_false",
-      "question": "Statement to evaluate",
-      "correctAnswer": "true",
-      "explanation": "Explanation",
-      "difficulty": "easy"
-    },
-    {
-      "type": "short_answer",
-      "question": "Open-ended question",
-      "correctAnswer": "Expected answer",
-      "explanation": "What makes a good answer",
-      "difficulty": "hard"
-    }
-  ]
-}
-
-Requirements:
-- Test understanding, not just memorization
-- Clear, specific questions
-- Detailed explanations that teach
-- Mix of difficulty levels
-- correctAnswer for multiple_choice must be index "0", "1", "2", or "3"
-- correctAnswer for true_false must be "true" or "false"
-- Return ONLY the JSON object, no extra text`
-  }
-
-  _buildFlashcardsPrompt(text, options) {
-    const truncatedText = text.substring(0, this.maxContentLength)
-
-    return `You are an expert educator creating flashcards for optimal learning.
+    return `You must respond with ONLY a valid JSON object. No explanations, no markdown, no code blocks.
 
 CONTENT:
 """
 ${truncatedText}
 """
 
-Generate ${options.cardCount} high-quality flashcards covering all key concepts.
+Generate EXACTLY ${options.multipleChoice} multiple choice, ${options.trueFalse} true/false, and ${options.shortAnswer} short answer questions.
 
-Return ONLY valid JSON with NO markdown formatting:
-{
-  "title": "Deck title",
-  "subject": "Subject area",
-  "description": "What these cards cover",
-  "flashcards": [
-    {
-      "front": "Question or term",
-      "back": "Answer or definition",
-      "hint": "Optional memory aid",
-      "difficulty": "easy"
-    }
-  ]
-}
+Return this JSON structure (your response must START with { and END with }):
+{"title":"Quiz title","subject":"Subject","description":"Brief description","questions":[{"type":"multiple_choice","question":"Question text","options":["A","B","C","D"],"correctAnswer":"0","explanation":"Why correct","difficulty":"medium"},{"type":"true_false","question":"Statement","correctAnswer":"true","explanation":"Explanation","difficulty":"easy"},{"type":"short_answer","question":"Question","correctAnswer":"Expected answer","explanation":"Good answer criteria","difficulty":"hard"}]}
+
+Rules:
+- correctAnswer for multiple_choice: "0", "1", "2", or "3" (index)
+- correctAnswer for true_false: "true" or "false"
+- difficulty: "easy", "medium", or "hard"
+
+IMPORTANT: Response must be valid JSON starting with { and ending with }. No other text.`
+  }
+
+  _buildFlashcardsPrompt(text, options) {
+    const truncatedText = text.substring(0, this.maxContentLength)
+
+    return `You must respond with ONLY a valid JSON object. No explanations, no markdown, no code blocks.
+
+CONTENT:
+"""
+${truncatedText}
+"""
+
+Generate ${options.cardCount} flashcards.
+
+Return this JSON structure (your response must START with { and END with }):
+{"title":"Deck title","subject":"Subject","description":"Brief description","flashcards":[{"front":"Question or term","back":"Answer or definition","hint":"Memory aid","difficulty":"easy"},{"front":"Question 2","back":"Answer 2","hint":"Hint 2","difficulty":"medium"}]}
 
 Guidelines:
-- Front: Clear, specific question or term
-- Back: Concise but complete answer (2-4 sentences)
-- Include hints for harder concepts
-- Cover all key terms, concepts, formulas
-- Mix difficulty levels (30% easy, 50% medium, 20% hard)
-- Return ONLY the JSON object, no extra text`
+- Front: Clear question or term
+- Back: Complete answer (2-4 sentences)
+- Hints for harder concepts
+- difficulty: "easy", "medium", or "hard"
+- Mix: 30% easy, 50% medium, 20% hard
+
+IMPORTANT: Response must be valid JSON starting with { and ending with }. No other text.`
   }
 
   _buildNotesPrompt(text) {
     const truncatedText = text.substring(0, this.maxContentLength)
 
-    return `You are an expert at creating well-organized study notes.
+    return `You must respond with ONLY a valid JSON object. No explanations, no markdown, no code blocks.
 
 SOURCE CONTENT:
 """
 ${truncatedText}
 """
 
-Create comprehensive formatted study notes (20-40 paragraphs).
+Return this exact JSON structure:
+{"title":"Notes title","subject":"Subject area","summary":"Brief overview","content":"Full notes text here with sections separated by double newlines","keyTerms":[{"term":"Term1","definition":"Definition1"}],"keyPoints":["Point 1","Point 2"]}
 
-Return ONLY valid JSON with NO markdown formatting:
-{
-  "title": "Notes title",
-  "subject": "Subject area",
-  "summary": "2-3 sentence overview",
-  "content": "Full formatted notes (plain text, use blank lines for sections)",
-  "keyTerms": [{"term": "Term", "definition": "Definition"}],
-  "keyPoints": ["Main point 1", "Main point 2"]
-}
+Instructions for content field:
+- Write 20-40 comprehensive paragraphs
+- Use double newlines between sections
+- Use ALL CAPS for section headers
+- Clear educational writing
 
-Format for 'content' field:
-- Use blank lines between sections
-- ALL CAPS for main section headers
-- Bullet points with "• " prefix
-- Clear, educational writing
-- 20-40 comprehensive paragraphs
-
-Return ONLY the JSON object, no extra text`
+IMPORTANT: Your response must START with { and END with }. Nothing else.`
   }
 
   // ==================== RESPONSE PARSERS ====================
@@ -355,30 +301,53 @@ Return ONLY the JSON object, no extra text`
   }
 
   _extractJSON(text) {
-    // Try to extract JSON from various formats
+    if (!text || typeof text !== 'string') {
+      throw new Error('Invalid response: not a string')
+    }
+
+    // Remove any markdown code blocks
+    let cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '')
+
+    // Try to find JSON object by looking for first { and last }
+    const firstBrace = cleaned.indexOf('{')
+    const lastBrace = cleaned.lastIndexOf('}')
+
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1)
+    }
+
+    // Try parsing the cleaned text
+    try {
+      const parsed = JSON.parse(cleaned)
+      if (typeof parsed === 'object' && parsed !== null) {
+        return parsed
+      }
+    } catch (e) {
+      console.error('JSON parse error:', e)
+      console.error('Attempted to parse:', cleaned.substring(0, 200))
+    }
+
+    // Try various regex patterns as fallback
     const patterns = [
-      /```json\s*([\s\S]*?)\s*```/,
-      /```\s*([\s\S]*?)\s*```/,
-      /\{[\s\S]*\}/
+      /\{[\s\S]*\}/,
+      /(\{[^}]+\})/
     ]
 
     for (const pattern of patterns) {
       const match = text.match(pattern)
       if (match) {
         try {
-          return JSON.parse(match[1] || match[0])
+          const parsed = JSON.parse(match[0])
+          if (typeof parsed === 'object' && parsed !== null) {
+            return parsed
+          }
         } catch (e) {
           continue
         }
       }
     }
 
-    // Try parsing the whole text
-    try {
-      return JSON.parse(text)
-    } catch (e) {
-      throw new Error('No valid JSON found in response')
-    }
+    throw new Error('No valid JSON found in response')
   }
 
   _normalizeQuestionType(type) {

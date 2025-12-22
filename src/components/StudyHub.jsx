@@ -7,6 +7,9 @@ import { useState, useEffect } from 'react'
 import { useStudy } from '../contexts/StudyContext'
 import StudySession from './StudySession'
 import DeckPreview from './DeckPreview'
+import FileUploadSection from './FileUploadSection'
+import QuizSession from './QuizSession'
+import UnifiedSearch from './UnifiedSearch'
 import { confirmDialog } from './ConfirmDialog'
 
 const StudyHub = () => {
@@ -15,6 +18,8 @@ const StudyHub = () => {
     notesLoading,
     decks,
     flashcardsLoading,
+    quizzes,
+    quizzesLoading,
     getDueCards,
     getCardsByDeck,
     getNotesStats,
@@ -24,13 +29,18 @@ const StudyHub = () => {
     deleteNote: deleteNoteContext,
     updateDeck,
     deleteDeck,
-    loadFlashcards
+    loadFlashcards,
+    getQuizById,
+    loadNotes,
+    loadQuizzes
   } = useStudy()
 
-  const [activeSection, setActiveSection] = useState('overview') // overview, allNotes, allFlashcards
+  const [activeSection, setActiveSection] = useState('overview') // overview, allNotes, allFlashcards, allQuizzes, upload, search
   const [studySession, setStudySession] = useState(null)
   const [deckPreview, setDeckPreview] = useState(null)
   const [selectedNote, setSelectedNote] = useState(null)
+  const [selectedQuiz, setSelectedQuiz] = useState(null)
+  const [activeQuizSession, setActiveQuizSession] = useState(null)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -228,6 +238,146 @@ const StudyHub = () => {
         onComplete={handleSessionComplete}
         onExit={handleSessionComplete}
       />
+    )
+  }
+
+  // Render quiz session if active
+  if (activeQuizSession) {
+    return (
+      <QuizSession
+        quiz={activeQuizSession}
+        onComplete={() => {
+          setActiveQuizSession(null)
+          setActiveSection('allQuizzes')
+          loadQuizzes()
+        }}
+        onExit={() => {
+          setActiveQuizSession(null)
+          setActiveSection('allQuizzes')
+        }}
+      />
+    )
+  }
+
+  // Render file upload section
+  if (activeSection === 'upload') {
+    return (
+      <FileUploadSection
+        onComplete={() => setActiveSection('overview')}
+        onBack={() => setActiveSection('overview')}
+      />
+    )
+  }
+
+  // Render unified search
+  if (activeSection === 'search') {
+    return (
+      <UnifiedSearch
+        onSelect={(item, type) => {
+          if (type === 'note') {
+            setSelectedNote(item)
+            setActiveSection('allNotes')
+          } else if (type === 'quiz') {
+            setSelectedQuiz(item)
+            setActiveSection('allQuizzes')
+          } else if (type === 'deck') {
+            openDeckPreview(item.id)
+          }
+        }}
+        onBack={() => setActiveSection('overview')}
+      />
+    )
+  }
+
+  // Render "View All Quizzes" section
+  if (activeSection === 'allQuizzes') {
+    return (
+      <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActiveSection('overview')}
+            className="w-10 h-10 md:w-11 md:h-11 rounded-lg bg-dark-bg-secondary border border-dark-border-subtle flex items-center justify-center hover:bg-dark-bg-tertiary transition-colors"
+          >
+            <svg className="w-5 h-5 md:w-6 md:h-6 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-dark-text-primary">All Quizzes</h2>
+            <p className="text-sm md:text-base text-dark-text-secondary">{quizzes.length} {quizzes.length === 1 ? 'quiz' : 'quizzes'}</p>
+          </div>
+        </div>
+
+        {/* Quizzes List */}
+        {quizzesLoading ? (
+          <div className="text-center py-8 md:py-10">
+            <div className="w-12 h-12 md:w-14 md:h-14 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin mx-auto"></div>
+          </div>
+        ) : quizzes.length === 0 ? (
+          <div className="text-center py-16 md:py-20">
+            <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
+              <svg className="w-8 h-8 md:w-10 md:h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <h3 className="text-xl md:text-2xl font-bold text-dark-text-primary mb-2">No quizzes yet</h3>
+            <p className="text-dark-text-secondary mb-6">Upload a file to generate your first quiz</p>
+            <button
+              onClick={() => setActiveSection('upload')}
+              className="px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover:scale-[1.02] transition-all"
+            >
+              Upload File
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {quizzes.map(quiz => (
+              <div
+                key={quiz.id}
+                className="group p-4 md:p-5 bg-dark-bg-secondary rounded-xl border border-dark-border-subtle hover:border-green-500/50 transition-all cursor-pointer"
+                onClick={async () => {
+                  const fullQuiz = await getQuizById(quiz.id)
+                  setActiveQuizSession(fullQuiz)
+                }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 md:w-7 md:h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg md:text-xl text-dark-text-primary mb-1 truncate">{quiz.title}</h3>
+                    {quiz.description && (
+                      <p className="text-sm text-dark-text-secondary mb-2 line-clamp-1">{quiz.description}</p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">
+                        {quiz.subject}
+                      </span>
+                      <span className="text-xs text-dark-text-muted">
+                        {quiz.questionCount} questions
+                      </span>
+                      {quiz.bestScore && (
+                        <span className="text-xs text-dark-text-muted">
+                          Best: {Math.round(quiz.bestScore)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button className="w-10 h-10 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     )
   }
 
@@ -679,6 +829,69 @@ const StudyHub = () => {
             Review ({dueCards.length})
           </button>
         )}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <button
+          onClick={() => setActiveSection('upload')}
+          className="group p-4 bg-gradient-to-br from-primary-500/10 to-accent-cyan/10 hover:from-primary-500/20 hover:to-accent-cyan/20 rounded-xl border border-primary-500/30 hover:border-primary-500/50 transition-all"
+        >
+          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="font-semibold text-dark-text-primary text-sm">Upload File</p>
+            <p className="text-xs text-dark-text-muted mt-1">PDF, DOCX, TXT, Images</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setActiveSection('search')}
+          className="group p-4 bg-gradient-to-br from-accent-purple/10 to-accent-pink/10 hover:from-accent-purple/20 hover:to-accent-pink/20 rounded-xl border border-accent-purple/30 hover:border-accent-purple/50 transition-all"
+        >
+          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-accent-purple to-accent-pink flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="font-semibold text-dark-text-primary text-sm">Search All</p>
+            <p className="text-xs text-dark-text-muted mt-1">Notes, Cards, Quizzes</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setActiveSection('allQuizzes')}
+          className="group p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 hover:from-green-500/20 hover:to-emerald-500/20 rounded-xl border border-green-500/30 hover:border-green-500/50 transition-all"
+        >
+          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="font-semibold text-dark-text-primary text-sm">Take Quiz</p>
+            <p className="text-xs text-dark-text-muted mt-1">{quizzes.length} available</p>
+          </div>
+        </button>
+
+        <button
+          onClick={startDailyReview}
+          className="group p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 rounded-xl border border-amber-500/30 hover:border-amber-500/50 transition-all"
+        >
+          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="font-semibold text-dark-text-primary text-sm">Study Cards</p>
+            <p className="text-xs text-dark-text-muted mt-1">{dueCards.length} due today</p>
+          </div>
+        </button>
       </div>
 
       {/* Recent Notes Section */}

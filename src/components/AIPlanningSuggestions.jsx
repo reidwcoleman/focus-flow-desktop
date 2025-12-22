@@ -4,14 +4,15 @@
  */
 
 import { useState, useEffect } from 'react'
+import schedulingService from '../services/schedulingService'
 
-export default function AIPlanningSuggestions({ assignments, grades }) {
+export default function AIPlanningSuggestions({ assignments, grades, activities = [] }) {
   const [suggestions, setSuggestions] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     generateSuggestions()
-  }, [assignments, grades])
+  }, [assignments, grades, activities])
 
   const generateSuggestions = () => {
     setLoading(true)
@@ -142,6 +143,97 @@ export default function AIPlanningSuggestions({ assignments, grades }) {
         borderColor: 'border-indigo-500/30',
         priority: 'medium'
       })
+    }
+
+    // NEW SCHEDULING SUGGESTIONS
+
+    // Suggestion 7: Schedule gap analysis
+    if (activities.length > 0) {
+      const today = new Date()
+      const todayStr = today.toISOString().split('T')[0]
+      const todayActivities = activities.filter(a => a.activity_date === todayStr && !a.is_completed)
+
+      const freeSlots = schedulingService.findFreeSlots(todayActivities, 60)
+
+      if (freeSlots.length > 0) {
+        const largestSlot = freeSlots.reduce((max, slot) =>
+          slot.durationMinutes > max.durationMinutes ? slot : max
+        , freeSlots[0])
+
+        if (largestSlot.durationMinutes >= 120) { // 2+ hours free
+          smartSuggestions.push({
+            id: 7,
+            type: 'gap',
+            icon: '⏰',
+            title: 'Large Free Block Available',
+            description: `You have ${Math.floor(largestSlot.durationMinutes / 60)}h ${largestSlot.durationMinutes % 60}m free starting at ${largestSlot.start}. Perfect for deep work!`,
+            color: 'from-teal-500 to-cyan-500',
+            borderColor: 'border-teal-500/30',
+            priority: 'medium'
+          })
+        }
+      }
+    }
+
+    // Suggestion 8: Workload balance warning
+    if (activities.length > 0) {
+      const today = new Date()
+      const weekDays = {}
+
+      // Count activities per day for next 7 days
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today)
+        date.setDate(date.getDate() + i)
+        const dateStr = date.toISOString().split('T')[0]
+        const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()]
+
+        weekDays[dayName] = {
+          dateStr,
+          count: activities.filter(a => a.activity_date === dateStr && !a.is_completed).length
+        }
+      }
+
+      // Find heaviest and lightest days
+      const days = Object.entries(weekDays)
+      const heaviest = days.reduce((max, [name, data]) => data.count > max.count ? { name, ...data } : max, { count: 0 })
+      const lightest = days.reduce((min, [name, data]) => data.count > 0 && data.count < min.count ? { name, ...data } : min, { count: Infinity })
+
+      if (heaviest.count >= 5 && lightest.count < heaviest.count / 2) {
+        smartSuggestions.push({
+          id: 8,
+          type: 'balance',
+          icon: '⚖️',
+          title: 'Unbalanced Workload Detected',
+          description: `${heaviest.name} has ${heaviest.count} activities. Consider moving some to ${lightest.name} (${lightest.count} activities).`,
+          color: 'from-orange-500 to-red-500',
+          borderColor: 'border-orange-500/30',
+          priority: 'high'
+        })
+      }
+    }
+
+    // Suggestion 9: Optimal focus time (now)
+    if (activities.length > 0 && currentHour >= 9 && currentHour <= 11) {
+      const today = new Date()
+      const todayStr = today.toISOString().split('T')[0]
+      const studyActivities = activities.filter(a =>
+        a.activity_date === todayStr &&
+        !a.is_completed &&
+        (a.activity_type === 'study' || a.activity_type === 'assignment')
+      )
+
+      if (studyActivities.length > 0) {
+        smartSuggestions.push({
+          id: 9,
+          type: 'focus',
+          icon: '🎯',
+          title: 'Perfect Time for Studying',
+          description: `Morning hours (9-11 AM) are optimal for focus. You have ${studyActivities.length} study ${studyActivities.length === 1 ? 'task' : 'tasks'} waiting.`,
+          color: 'from-blue-500 to-indigo-500',
+          borderColor: 'border-blue-500/30',
+          priority: 'high'
+        })
+      }
     }
 
     // Sort by priority
