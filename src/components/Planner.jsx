@@ -146,8 +146,32 @@ const Planner = () => {
     setSuccess('')
 
     try {
-      // Parse activity with AI
-      const activityData = await activityParserService.parseActivity(aiInput)
+      // Parse activity with AI (may return single activity or recurring activities)
+      const parseResult = await activityParserService.parseActivity(aiInput)
+
+      // Handle recurring activities
+      if (parseResult.isRecurring) {
+        console.log('🔄 Creating recurring activities:', parseResult.activities.length)
+
+        let createdCount = 0
+        for (const activityData of parseResult.activities) {
+          try {
+            await createActivity(activityData, true) // Skip success message for bulk
+            createdCount++
+          } catch (err) {
+            console.error('Failed to create recurring activity:', err)
+          }
+        }
+
+        setSuccess(`Created ${createdCount} recurring activities!`)
+        setAiInput('')
+        setTimeout(() => setSuccess(''), 3000)
+        setAiProcessing(false)
+        return
+      }
+
+      // Handle single activity
+      const activityData = parseResult
 
       // Check for conflicts if activity has time
       if (activityData.start_time && activityData.duration_minutes) {
@@ -184,9 +208,11 @@ const Planner = () => {
   }
 
   // Helper to actually create the activity
-  const createActivity = async (activityData) => {
+  const createActivity = async (activityData, skipSuccessMessage = false) => {
     try {
-      setAiProcessing(true)
+      if (!skipSuccessMessage) {
+        setAiProcessing(true)
+      }
 
       // Create activity in database
       const createdActivity = await calendarService.createActivity({
@@ -194,24 +220,31 @@ const Planner = () => {
         ai_generated: true
       })
 
-      // Generate AI description and subtasks in parallel
-      if (createdActivity?.id) {
+      // Generate AI description and subtasks in parallel (only for non-bulk creates)
+      if (createdActivity?.id && !skipSuccessMessage) {
         generateAIContent(createdActivity)
       }
 
       // Reload activities
       await loadActivities()
 
-      // Show success
-      setSuccess(`Created: ${activityData.title}`)
-      setAiInput('')
-      setTimeout(() => setSuccess(''), 3000)
+      // Show success (unless bulk create)
+      if (!skipSuccessMessage) {
+        setSuccess(`Created: ${activityData.title}`)
+        setAiInput('')
+        setTimeout(() => setSuccess(''), 3000)
+      }
     } catch (err) {
       console.error('Failed to create activity:', err)
-      setError('Failed to create activity.')
-      setTimeout(() => setError(''), 5000)
+      if (!skipSuccessMessage) {
+        setError('Failed to create activity.')
+        setTimeout(() => setError(''), 5000)
+      }
+      throw err // Re-throw for bulk create error handling
     } finally {
-      setAiProcessing(false)
+      if (!skipSuccessMessage) {
+        setAiProcessing(false)
+      }
     }
   }
 
@@ -660,6 +693,24 @@ const Planner = () => {
               className="text-xs px-3 py-2 rounded-lg bg-dark-bg-tertiary text-dark-text-muted hover:text-primary-500 transition-colors text-left"
             >
               Quiz on Friday
+            </button>
+            <button
+              onClick={() => { setAiInput("Soccer practice every week on Wednesdays and Tuesdays at 4pm"); setShowExamples(false); }}
+              className="text-xs px-3 py-2 rounded-lg bg-dark-bg-tertiary text-dark-text-muted hover:text-primary-500 transition-colors text-left col-span-2"
+            >
+              🔄 Recurring: Soccer practice every week on Wednesdays and Tuesdays at 4pm
+            </button>
+            <button
+              onClick={() => { setAiInput("Piano lessons every Monday at 5pm"); setShowExamples(false); }}
+              className="text-xs px-3 py-2 rounded-lg bg-dark-bg-tertiary text-dark-text-muted hover:text-primary-500 transition-colors text-left"
+            >
+              🔄 Every Monday 5pm
+            </button>
+            <button
+              onClick={() => { setAiInput("Team meeting every Friday morning"); setShowExamples(false); }}
+              className="text-xs px-3 py-2 rounded-lg bg-dark-bg-tertiary text-dark-text-muted hover:text-primary-500 transition-colors text-left"
+            >
+              🔄 Every Friday AM
             </button>
           </div>
         )}

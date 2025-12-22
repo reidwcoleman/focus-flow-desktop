@@ -198,9 +198,153 @@ const ACTIVITY_PARSER_PROMPT = getActivityParserPrompt()
 
 class ActivityParserService {
   /**
+   * Detect recurring pattern in user input
+   * @param {string} userInput - User's input text
+   * @returns {Object|null} Recurrence pattern or null
+   */
+  detectRecurrence(userInput) {
+    const lower = userInput.toLowerCase()
+
+    // Weekly patterns
+    const weeklyMatch = lower.match(/every\s+(week|weekly|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i)
+    if (weeklyMatch) {
+      // Extract all days mentioned
+      const days = []
+      const dayPatterns = {
+        'monday': 1, 'mon': 1,
+        'tuesday': 2, 'tue': 2, 'tues': 2,
+        'wednesday': 3, 'wed': 3,
+        'thursday': 4, 'thu': 4, 'thur': 4, 'thurs': 4,
+        'friday': 5, 'fri': 5,
+        'saturday': 6, 'sat': 6,
+        'sunday': 0, 'sun': 0
+      }
+
+      Object.keys(dayPatterns).forEach(dayName => {
+        if (lower.includes(dayName)) {
+          const dayNum = dayPatterns[dayName]
+          if (!days.includes(dayNum)) {
+            days.push(dayNum)
+          }
+        }
+      })
+
+      if (days.length > 0) {
+        days.sort()
+        return {
+          type: 'weekly',
+          daysOfWeek: days,
+          count: 8 // Create 8 weeks worth
+        }
+      }
+    }
+
+    // Daily patterns
+    if (lower.match(/every\s+day|daily|each\s+day/i)) {
+      return {
+        type: 'daily',
+        count: 14 // Create 14 days worth
+      }
+    }
+
+    // Biweekly patterns
+    if (lower.match(/every\s+other\s+(week|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|biweekly/i)) {
+      const days = []
+      const dayPatterns = {
+        'monday': 1, 'tuesday': 2, 'wednesday': 3,
+        'thursday': 4, 'friday': 5, 'saturday': 6, 'sunday': 0
+      }
+
+      Object.keys(dayPatterns).forEach(dayName => {
+        if (lower.includes(dayName)) {
+          const dayNum = dayPatterns[dayName]
+          if (!days.includes(dayNum)) {
+            days.push(dayNum)
+          }
+        }
+      })
+
+      if (days.length > 0) {
+        return {
+          type: 'biweekly',
+          daysOfWeek: days,
+          count: 8 // Create 8 occurrences (16 weeks)
+        }
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Generate recurring activities based on pattern
+   * @param {Object} baseActivity - Base activity data
+   * @param {Object} recurrence - Recurrence pattern
+   * @returns {Array} Array of activity objects
+   */
+  generateRecurringActivities(baseActivity, recurrence) {
+    const activities = []
+    const today = new Date()
+
+    if (recurrence.type === 'weekly') {
+      // Generate activities for next N weeks
+      for (let week = 0; week < recurrence.count; week++) {
+        recurrence.daysOfWeek.forEach(dayOfWeek => {
+          const activityDate = new Date(today)
+          const currentDay = activityDate.getDay()
+
+          // Calculate days until target day of week
+          let daysUntil = dayOfWeek - currentDay
+          if (daysUntil <= 0) daysUntil += 7 // Next occurrence
+          daysUntil += (week * 7) // Add weeks offset
+
+          activityDate.setDate(today.getDate() + daysUntil)
+
+          activities.push({
+            ...baseActivity,
+            activity_date: `${activityDate.getFullYear()}-${String(activityDate.getMonth() + 1).padStart(2, '0')}-${String(activityDate.getDate()).padStart(2, '0')}`
+          })
+        })
+      }
+    } else if (recurrence.type === 'daily') {
+      // Generate daily activities
+      for (let day = 1; day <= recurrence.count; day++) {
+        const activityDate = new Date(today)
+        activityDate.setDate(today.getDate() + day)
+
+        activities.push({
+          ...baseActivity,
+          activity_date: `${activityDate.getFullYear()}-${String(activityDate.getMonth() + 1).padStart(2, '0')}-${String(activityDate.getDate()).padStart(2, '0')}`
+        })
+      }
+    } else if (recurrence.type === 'biweekly') {
+      // Generate biweekly activities
+      for (let occurrence = 0; occurrence < recurrence.count; occurrence++) {
+        recurrence.daysOfWeek.forEach(dayOfWeek => {
+          const activityDate = new Date(today)
+          const currentDay = activityDate.getDay()
+
+          let daysUntil = dayOfWeek - currentDay
+          if (daysUntil <= 0) daysUntil += 7
+          daysUntil += (occurrence * 14) // Every other week
+
+          activityDate.setDate(today.getDate() + daysUntil)
+
+          activities.push({
+            ...baseActivity,
+            activity_date: `${activityDate.getFullYear()}-${String(activityDate.getMonth() + 1).padStart(2, '0')}-${String(activityDate.getDate()).padStart(2, '0')}`
+          })
+        })
+      }
+    }
+
+    return activities
+  }
+
+  /**
    * Parse natural language activity description using AI
    * @param {string} userInput - Natural language description
-   * @returns {Promise<Object>} Parsed activity data
+   * @returns {Promise<Object|Array>} Parsed activity data (single object or array for recurring)
    */
   async parseActivity(userInput) {
     try {
@@ -339,6 +483,20 @@ class ActivityParserService {
       }
 
       console.log('✨ Final activity data:', activityData)
+
+      // Check for recurring pattern
+      const recurrence = this.detectRecurrence(userInput)
+      if (recurrence) {
+        console.log('🔄 Detected recurring pattern:', recurrence)
+        const recurringActivities = this.generateRecurringActivities(activityData, recurrence)
+        console.log(`✨ Generated ${recurringActivities.length} recurring activities`)
+        return {
+          isRecurring: true,
+          activities: recurringActivities,
+          recurrence
+        }
+      }
+
       return activityData
     } catch (error) {
       console.error('❌ Failed to parse activity:', error)
