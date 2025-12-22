@@ -101,10 +101,10 @@ const Dashboard = ({ onOpenScanner }) => {
         if (lastSessionHour) {
           setLastLoginHour(parseInt(lastSessionHour))
           setEmojiTransitioning(true)
-          // Transition for 2 seconds then show current time
+          // Transition for 3.5 seconds (matching animation duration)
           setTimeout(() => {
             setEmojiTransitioning(false)
-          }, 2000)
+          }, 3500)
         }
       }
 
