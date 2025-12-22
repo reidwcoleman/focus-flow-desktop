@@ -198,6 +198,52 @@ const ACTIVITY_PARSER_PROMPT = getActivityParserPrompt()
 
 class ActivityParserService {
   /**
+   * Detect multiple days (non-recurring) in user input
+   * @param {string} userInput - User's input text
+   * @returns {Array|null} Array of day numbers or null
+   */
+  detectMultipleDays(userInput) {
+    const lower = userInput.toLowerCase()
+
+    // Check if it's NOT a recurring pattern
+    if (lower.match(/every\s+(week|weekly|day|daily|other)/i)) {
+      return null // This is recurring, not multiple days
+    }
+
+    // Check for "and" between day names
+    const hasAndBetweenDays = lower.match(/(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+and\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i)
+
+    if (hasAndBetweenDays) {
+      const days = []
+      const dayPatterns = {
+        'monday': 1, 'mon': 1,
+        'tuesday': 2, 'tue': 2, 'tues': 2,
+        'wednesday': 3, 'wed': 3,
+        'thursday': 4, 'thu': 4, 'thur': 4, 'thurs': 4,
+        'friday': 5, 'fri': 5,
+        'saturday': 6, 'sat': 6,
+        'sunday': 0, 'sun': 0
+      }
+
+      Object.keys(dayPatterns).forEach(dayName => {
+        if (lower.includes(dayName)) {
+          const dayNum = dayPatterns[dayName]
+          if (!days.includes(dayNum)) {
+            days.push(dayNum)
+          }
+        }
+      })
+
+      if (days.length >= 2) {
+        days.sort()
+        return days
+      }
+    }
+
+    return null
+  }
+
+  /**
    * Detect recurring pattern in user input
    * @param {string} userInput - User's input text
    * @returns {Object|null} Recurrence pattern or null
@@ -205,7 +251,7 @@ class ActivityParserService {
   detectRecurrence(userInput) {
     const lower = userInput.toLowerCase()
 
-    // Weekly patterns
+    // Weekly patterns (must have "every")
     const weeklyMatch = lower.match(/every\s+(week|weekly|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i)
     if (weeklyMatch) {
       // Extract all days mentioned
@@ -274,6 +320,35 @@ class ActivityParserService {
     }
 
     return null
+  }
+
+  /**
+   * Generate activities for multiple specific days
+   * @param {Object} baseActivity - Base activity data
+   * @param {Array} daysOfWeek - Array of day numbers (0-6)
+   * @returns {Array} Array of activity objects
+   */
+  generateMultipleDayActivities(baseActivity, daysOfWeek) {
+    const activities = []
+    const today = new Date()
+    const currentDay = today.getDay()
+
+    daysOfWeek.forEach(dayOfWeek => {
+      const activityDate = new Date(today)
+
+      // Calculate days until target day of week
+      let daysUntil = dayOfWeek - currentDay
+      if (daysUntil <= 0) daysUntil += 7 // Next occurrence
+
+      activityDate.setDate(today.getDate() + daysUntil)
+
+      activities.push({
+        ...baseActivity,
+        activity_date: `${activityDate.getFullYear()}-${String(activityDate.getMonth() + 1).padStart(2, '0')}-${String(activityDate.getDate()).padStart(2, '0')}`
+      })
+    })
+
+    return activities
   }
 
   /**
@@ -483,6 +558,19 @@ class ActivityParserService {
       }
 
       console.log('✨ Final activity data:', activityData)
+
+      // Check for multiple days (non-recurring) first
+      const multipleDays = this.detectMultipleDays(userInput)
+      if (multipleDays) {
+        console.log('📅 Detected multiple days:', multipleDays)
+        const multipleDayActivities = this.generateMultipleDayActivities(activityData, multipleDays)
+        console.log(`✨ Generated ${multipleDayActivities.length} activities for multiple days`)
+        return {
+          isRecurring: true, // Use same flag for bulk create
+          activities: multipleDayActivities,
+          multipleDays
+        }
+      }
 
       // Check for recurring pattern
       const recurrence = this.detectRecurrence(userInput)

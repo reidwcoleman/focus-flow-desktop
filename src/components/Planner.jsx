@@ -709,6 +709,12 @@ const Planner = () => {
             >
               🔄 Every Friday AM
             </button>
+            <button
+              onClick={() => { setAiInput("Math test on Monday and Wednesday at 10am"); setShowExamples(false); }}
+              className="text-xs px-3 py-2 rounded-lg bg-dark-bg-tertiary text-dark-text-muted hover:text-primary-500 transition-colors text-left col-span-2"
+            >
+              📅 Multiple days: Math test on Monday and Wednesday
+            </button>
           </div>
         )}
         <button
