@@ -340,9 +340,18 @@ const Dashboard = ({ onOpenScanner }) => {
               await loadXPData()
             }
 
-            // Track course stats
+            // Track course stats with time estimate
             if (assignment.subject) {
-              await courseStatsService.recordAssignmentCompleted(assignment.subject)
+              // Parse time estimate (e.g., "2h", "30m", "1h 30m")
+              let timeMinutes = 0
+              if (assignment.timeEstimate) {
+                const timeStr = assignment.timeEstimate.toLowerCase()
+                const hours = timeStr.match(/(\d+)\s*h/)
+                const mins = timeStr.match(/(\d+)\s*m/)
+                if (hours) timeMinutes += parseInt(hours[1]) * 60
+                if (mins) timeMinutes += parseInt(mins[1])
+              }
+              await courseStatsService.recordAssignmentCompleted(assignment.subject, null, timeMinutes)
             }
           }
 

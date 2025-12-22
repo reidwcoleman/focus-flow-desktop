@@ -6,6 +6,8 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import supabaseNotesService from '../services/supabaseNotesService'
 import supabaseFlashcardService from '../services/supabaseFlashcardService'
+import supabaseQuizService from '../services/supabaseQuizService'
+import unifiedSearchService from '../services/unifiedSearchService'
 import authService from '../services/authService'
 
 const StudyContext = createContext(null)
@@ -20,10 +22,15 @@ export function StudyProvider({ children }) {
   const [flashcards, setFlashcards] = useState([])
   const [flashcardsLoading, setFlashcardsLoading] = useState(true)
 
+  // Quizzes state
+  const [quizzes, setQuizzes] = useState([])
+  const [quizzesLoading, setQuizzesLoading] = useState(true)
+
   // Load data on mount and auth state changes
   useEffect(() => {
     loadNotes()
     loadFlashcards()
+    loadQuizzes()
 
     // Subscribe to auth state changes
     const subscription = authService.onAuthStateChange((event, session) => {
@@ -31,11 +38,13 @@ export function StudyProvider({ children }) {
         // Reload data when user signs in
         loadNotes()
         loadFlashcards()
+        loadQuizzes()
       } else if (event === 'SIGNED_OUT') {
         // Clear data when user signs out
         setNotes([])
         setDecks([])
         setFlashcards([])
+        setQuizzes([])
       }
     })
 
@@ -287,6 +296,102 @@ export function StudyProvider({ children }) {
     return await supabaseFlashcardService.getOverallStats()
   }
 
+  // ===== QUIZ ACTIONS =====
+
+  const loadQuizzes = async () => {
+    setQuizzesLoading(true)
+    try {
+      const loadedQuizzes = await supabaseQuizService.getAllQuizzes()
+      setQuizzes(loadedQuizzes)
+    } catch (error) {
+      console.error('Failed to load quizzes:', error)
+    } finally {
+      setQuizzesLoading(false)
+    }
+  }
+
+  const addQuiz = async (quizData) => {
+    try {
+      const newQuiz = await supabaseQuizService.createQuiz(quizData)
+      if (newQuiz) {
+        setQuizzes(prev => [newQuiz, ...prev])
+      }
+      return newQuiz
+    } catch (error) {
+      console.error('Failed to add quiz:', error)
+      return null
+    }
+  }
+
+  const updateQuiz = async (id, updates) => {
+    try {
+      const updatedQuiz = await supabaseQuizService.updateQuiz(id, updates)
+      if (updatedQuiz) {
+        setQuizzes(prev => prev.map(quiz =>
+          quiz.id === id ? updatedQuiz : quiz
+        ))
+      }
+      return updatedQuiz
+    } catch (error) {
+      console.error('Failed to update quiz:', error)
+      return null
+    }
+  }
+
+  const deleteQuiz = async (id) => {
+    try {
+      const success = await supabaseQuizService.deleteQuiz(id)
+      if (success) {
+        setQuizzes(prev => prev.filter(quiz => quiz.id !== id))
+      }
+      return success
+    } catch (error) {
+      console.error('Failed to delete quiz:', error)
+      return false
+    }
+  }
+
+  const recordQuizAttempt = async (quizId, attemptData) => {
+    try {
+      const attempt = await supabaseQuizService.recordAttempt(quizId, attemptData)
+      // Reload quizzes to update best score
+      await loadQuizzes()
+      return attempt
+    } catch (error) {
+      console.error('Failed to record quiz attempt:', error)
+      return null
+    }
+  }
+
+  const getQuizById = async (id) => {
+    return await supabaseQuizService.getQuizById(id)
+  }
+
+  const toggleQuizFavorite = async (id) => {
+    try {
+      const updatedQuiz = await supabaseQuizService.toggleQuizFavorite(id)
+      if (updatedQuiz) {
+        setQuizzes(prev => prev.map(quiz =>
+          quiz.id === id ? updatedQuiz : quiz
+        ))
+      }
+      return updatedQuiz
+    } catch (error) {
+      console.error('Failed to toggle quiz favorite:', error)
+      return null
+    }
+  }
+
+  const getQuizStatistics = async (quizId) => {
+    return await supabaseQuizService.getQuizStatistics(quizId)
+  }
+
+  // ===== UNIFIED SEARCH =====
+
+  const searchAll = async (query, options = {}) => {
+    return await unifiedSearchService.search(query, options)
+  }
+
   // Context value
   const value = {
     // Notes
@@ -318,6 +423,21 @@ export function StudyProvider({ children }) {
     getDeckStats,
     getFlashcardsStats,
     loadFlashcards,
+
+    // Quizzes
+    quizzes,
+    quizzesLoading,
+    addQuiz,
+    updateQuiz,
+    deleteQuiz,
+    recordQuizAttempt,
+    getQuizById,
+    toggleQuizFavorite,
+    getQuizStatistics,
+    loadQuizzes,
+
+    // Unified Search
+    searchAll,
   }
 
   return (

@@ -91,7 +91,8 @@ async function handleLogin(body: any): Promise<Response> {
     const loginData = new URLSearchParams({
       username: username,
       password: password,
-      appName: 'psu920wakeco'
+      appName: 'psu920wakeco',
+      nonBrowser: 'true'  // CRITICAL: Enables API access mode for JSON endpoints
     })
 
     const loginResponse = await fetch(loginUrl, {
@@ -193,13 +194,52 @@ async function handleGetGrades(body: any): Promise<Response> {
   const { sessionId, baseUrl } = loginData
 
   try {
-    // Fetch grades page - use correct path for Wake County
-    const isWakeCounty = baseUrl.includes('ncsis.gov')
+    console.log('📊 Step 1: Attempting to fetch grades from JSON API...')
 
-    // Try multiple possible grades paths for Wake County
+    // Primary approach: Try JSON API endpoint first
+    const jsonGradesUrl = `${baseUrl}/campus/resources/portal/grades`
+
+    const jsonResponse = await fetch(jsonGradesUrl, {
+      headers: {
+        'Cookie': sessionId,  // sessionId now contains all cookies
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
+      }
+    })
+
+    console.log(`📊 JSON API response status: ${jsonResponse.status}`)
+    const contentType = jsonResponse.headers.get('content-type')
+    console.log(`📊 Content-Type: ${contentType}`)
+
+    if (jsonResponse.ok && contentType?.includes('application/json')) {
+      // Successfully got JSON response
+      const gradesData = await jsonResponse.json()
+      console.log(`📊 JSON data received (${JSON.stringify(gradesData).length} chars)`)
+      console.log(`📊 JSON preview: ${JSON.stringify(gradesData).substring(0, 500)}`)
+
+      const grades = parseGradesFromJson(gradesData)
+
+      if (grades.length > 0) {
+        console.log(`✅ Successfully parsed ${grades.length} grades from JSON API`)
+        console.log(`📊 Sample grade: ${JSON.stringify(grades[0])}`)
+
+        return new Response(
+          JSON.stringify({ success: true, grades }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } else {
+        console.log('⚠️ JSON API returned 0 grades, falling back to HTML parsing...')
+      }
+    } else {
+      console.log(`⚠️ JSON API not available (status: ${jsonResponse.status}, content-type: ${contentType})`)
+      console.log('📄 Falling back to HTML parsing...')
+    }
+
+    // Fallback: Try HTML scraping from various paths
+    const isWakeCounty = baseUrl.includes('ncsis.gov')
     const gradePaths = isWakeCounty ? [
       `${baseUrl}/campus/portal/students/psu920wakeco.jsp`,  // Main authenticated student portal
-      `${baseUrl}/campus/resources/portal/grades`,
+      `${baseUrl}/campus/resources/portal/grades`,  // Same as JSON endpoint but may return HTML
       `${baseUrl}/campus/nav-wrapper/grades/report/card`,
       `${baseUrl}/campus/portal/portal.xsl?x=resource.PortletResourceManager.Grades`,
     ] : [`${baseUrl}/campus/portal/${districtCode}/grades.jsp`]
@@ -208,21 +248,21 @@ async function handleGetGrades(body: any): Promise<Response> {
     let gradesUrl = ''
 
     for (const testPath of gradePaths) {
-      console.log(`📊 Trying grades path: ${testPath}`)
+      console.log(`📊 Trying HTML path: ${testPath}`)
 
       const gradesResponse = await fetch(testPath, {
         headers: {
-          'Cookie': sessionId,  // sessionId now contains all cookies
+          'Cookie': sessionId,
           'User-Agent': 'Mozilla/5.0 (compatible; FocusFlow/1.0)',
         }
       })
 
-      console.log(`📊 Grades response status for ${testPath}: ${gradesResponse.status}`)
+      console.log(`📊 HTML response status for ${testPath}: ${gradesResponse.status}`)
 
       if (gradesResponse.ok) {
         gradesHtml = await gradesResponse.text()
         gradesUrl = testPath
-        console.log(`✅ Found working grades URL: ${gradesUrl}`)
+        console.log(`✅ Found working HTML URL: ${gradesUrl}`)
         break
       } else {
         console.log(`❌ Failed - Status: ${gradesResponse.status}`)
@@ -240,11 +280,11 @@ async function handleGetGrades(body: any): Promise<Response> {
 
     const grades = parseGradesFromHtml(gradesHtml)
 
-    console.log(`📊 Found ${grades.length} course grades`)
+    console.log(`📊 Found ${grades.length} course grades from HTML`)
     if (grades.length > 0) {
       console.log(`📊 Sample grade: ${JSON.stringify(grades[0])}`)
     } else {
-      console.error('⚠️ WARNING: 0 grades found! HTML parsing failed.')
+      console.error('⚠️ WARNING: 0 grades found! Both JSON and HTML parsing failed.')
       console.error(`⚠️ HTML length: ${gradesHtml.length}`)
       console.error(`⚠️ HTML contains "grade": ${gradesHtml.toLowerCase().includes('grade')}`)
       console.error(`⚠️ HTML contains "class": ${gradesHtml.toLowerCase().includes('class')}`)
@@ -267,6 +307,77 @@ async function handleGetGrades(body: any): Promise<Response> {
   }
 }
 
+/**
+ * Parse grades from JSON response (preferred method)
+ */
+function parseGradesFromJson(data: any): Array<{
+  courseName: string
+  courseCode: string
+  teacher: string
+  period: string
+  currentScore: number | null
+  letterGrade: string | null
+}> {
+  const grades: Array<any> = []
+
+  try {
+    console.log('📊 Parsing grades from JSON data...')
+
+    // Handle nested structure: data -> schools -> terms -> courses
+    const items = Array.isArray(data) ? data : (data.grades || data.terms || [data])
+
+    for (const item of items) {
+      const schools = item.schools || [item]
+      for (const school of schools) {
+        const terms = school.terms || [school]
+        for (const term of terms) {
+          const courses = term.courses || term.sections || [term]
+          for (const course of courses) {
+            const courseName = course.courseName || course.name || course.sectionName || ''
+
+            if (courseName) {
+              grades.push({
+                courseName,
+                courseCode: course.courseNumber || course.courseId || '',
+                teacher: course.teacherDisplay || course.teacher || '',
+                period: course.sectionNumber || course.period || '',
+                currentScore: extractScore(course),
+                letterGrade: extractLetterGrade(course)
+              })
+            }
+          }
+        }
+      }
+    }
+
+    console.log(`✅ Parsed ${grades.length} courses from JSON`)
+  } catch (error) {
+    console.error('❌ Error parsing grades JSON:', error)
+  }
+
+  return grades
+}
+
+/**
+ * Extract score percentage from various possible locations in course object
+ */
+function extractScore(course: any): number | null {
+  return course.score?.percent ?? course.percent ??
+         course.grade?.percent ?? course.progressGrade?.percent ??
+         course.finalGrade?.percent ?? null
+}
+
+/**
+ * Extract letter grade from various possible locations in course object
+ */
+function extractLetterGrade(course: any): string | null {
+  return course.score?.letterGrade ?? course.letterGrade ??
+         course.grade?.letter ?? course.finalGrade?.letter ?? null
+}
+
+/**
+ * Parse grades from HTML response (fallback method)
+ */
 function parseGradesFromHtml(html: string): Array<{
   courseName: string
   courseCode: string
@@ -278,6 +389,8 @@ function parseGradesFromHtml(html: string): Array<{
   const grades: Array<any> = []
 
   try {
+    console.log('📊 Parsing grades from HTML (fallback)...')
+
     // Parse HTML to extract grade data
     // This is a simplified parser - real implementation would be more robust
 
@@ -351,6 +464,8 @@ function parseGradesFromHtml(html: string): Array<{
         if (grades.length > 0) break
       }
     }
+
+    console.log(`${grades.length > 0 ? '✅' : '❌'} Parsed ${grades.length} courses from HTML`)
   } catch (error) {
     console.error('Error parsing grades HTML:', error)
   }

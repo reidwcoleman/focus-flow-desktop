@@ -13,6 +13,7 @@ import { confirmDialog } from './ConfirmDialog'
 import BulkUpload from './BulkUpload'
 import AIPlanningSuggestions from './AIPlanningSuggestions'
 import ActivityTimeline from './ActivityTimeline'
+import CelebrationOverlay from './CelebrationOverlay'
 import assignmentsService from '../services/assignmentsService'
 import infiniteCampusService from '../services/infiniteCampusService'
 
@@ -37,6 +38,7 @@ const Planner = () => {
   const [showBulkUpload, setShowBulkUpload] = useState(false)
   const [assignments, setAssignments] = useState([])
   const [grades, setGrades] = useState([])
+  const [showCelebration, setShowCelebration] = useState(false)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 

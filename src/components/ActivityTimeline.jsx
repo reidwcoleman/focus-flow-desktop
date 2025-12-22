@@ -3,7 +3,10 @@
  * Displays activities for a selected date in a vertical timeline format
  */
 
+import { useState } from 'react'
+
 export default function ActivityTimeline({ activities, selectedDate, onToggleComplete, onDelete }) {
+  const [hoveredActivity, setHoveredActivity] = useState(null)
   const sortedActivities = activities
     .filter(a => !a.is_completed)
     .sort((a, b) => {
@@ -93,6 +96,50 @@ export default function ActivityTimeline({ activities, selectedDate, onToggleCom
 
   const activitiesWithLanes = calculateLanes()
 
+  // Calculate duration-based height for activity cards
+  const getDurationHeight = (activity) => {
+    if (!activity.startPos || !activity.endPos) return 'auto'
+    const duration = activity.duration_minutes || 60
+    const heightPercentage = Math.max(5, activity.endPos - activity.startPos)
+    return `${heightPercentage}%`
+  }
+
+  // Get urgency styling based on deadline proximity
+  const getUrgencyStyle = (activity) => {
+    if (!activity.due_date) return {}
+
+    const now = new Date()
+    const dueDate = new Date(activity.due_date)
+    const hoursUntilDue = (dueDate - now) / (1000 * 60 * 60)
+
+    // Overdue
+    if (hoursUntilDue < 0) {
+      return {
+        borderColor: 'border-red-500',
+        shadowClass: 'shadow-[0_0_20px_rgba(239,68,68,0.4)] animate-pulse',
+        badgeClass: 'bg-red-500/20 border-red-500/50 text-red-400'
+      }
+    }
+    // Less than 2 hours
+    if (hoursUntilDue < 2) {
+      return {
+        borderColor: 'border-red-400',
+        shadowClass: 'shadow-[0_0_16px_rgba(248,113,113,0.3)]',
+        badgeClass: 'bg-red-400/20 border-red-400/50 text-red-300'
+      }
+    }
+    // Less than 24 hours
+    if (hoursUntilDue < 24) {
+      return {
+        borderColor: 'border-amber-400',
+        shadowClass: 'shadow-[0_0_12px_rgba(251,191,36,0.2)]',
+        badgeClass: 'bg-amber-400/20 border-amber-400/50 text-amber-300'
+      }
+    }
+
+    return {}
+  }
+
   const getTypeColor = (type) => {
     const colors = {
       task: 'from-blue-500 to-blue-600',
@@ -136,15 +183,20 @@ export default function ActivityTimeline({ activities, selectedDate, onToggleCom
     )
   }
 
-  const timeMarkers = [
-    { time: '06:00', label: '6 AM' },
-    { time: '09:00', label: '9 AM' },
-    { time: '12:00', label: '12 PM' },
-    { time: '15:00', label: '3 PM' },
-    { time: '18:00', label: '6 PM' },
-    { time: '21:00', label: '9 PM' },
-    { time: '00:00', label: '12 AM' },
-  ]
+  // Hourly time markers with visual hierarchy
+  const timeMarkers = []
+  for (let hour = 6; hour <= 24; hour++) {
+    const displayHour = hour === 24 ? 0 : hour
+    const isPM = hour >= 12
+    const hour12 = displayHour === 0 ? 12 : displayHour > 12 ? displayHour - 12 : displayHour
+    const isMajor = hour % 3 === 0 // Major markers every 3 hours
+
+    timeMarkers.push({
+      time: `${String(displayHour).padStart(2, '0')}:00`,
+      label: `${hour12} ${isPM ? 'PM' : 'AM'}`,
+      isMajor
+    })
+  }
 
   if (activitiesWithLanes.length === 0) {
     return (
@@ -179,17 +231,23 @@ export default function ActivityTimeline({ activities, selectedDate, onToggleCom
           </div>
         )}
 
-        {/* Time markers */}
+        {/* Time markers with visual hierarchy */}
         {timeMarkers.map((marker) => (
           <div
             key={marker.time}
-            className="absolute left-0 right-0 flex items-center opacity-30"
+            className={`absolute left-0 right-0 flex items-center transition-opacity ${
+              marker.isMajor ? 'opacity-40' : 'opacity-15'
+            }`}
             style={{ top: `${getTimelinePosition(marker.time)}%` }}
           >
-            <div className="text-xs text-dark-text-muted font-medium w-12 text-right pr-2">
-              {marker.label}
-            </div>
-            <div className="flex-1 h-px bg-dark-border-subtle"></div>
+            {marker.isMajor && (
+              <div className="text-xs text-dark-text-muted font-medium w-12 text-right pr-2">
+                {marker.label}
+              </div>
+            )}
+            <div className={`flex-1 ${marker.isMajor ? 'h-px' : 'h-px'} bg-dark-border-subtle ${
+              marker.isMajor ? '' : 'ml-14'
+            }`}></div>
           </div>
         ))}
 
@@ -203,6 +261,8 @@ export default function ActivityTimeline({ activities, selectedDate, onToggleCom
             const laneWidth = 100 / activity.totalLanes
             const leftPosition = 64 + (activity.lane * (laneWidth * 0.85)) // 64px base offset for timeline
             const cardWidth = laneWidth * 0.85 // 85% to leave some gap
+
+            const urgencyStyle = getUrgencyStyle(activity)
 
             return (
               <div
@@ -223,9 +283,51 @@ export default function ActivityTimeline({ activities, selectedDate, onToggleCom
                 </div>
 
                 {/* Activity card */}
-                <div className="group relative overflow-hidden bg-dark-bg-secondary/50 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-primary-500/30 hover:scale-105 transition-all duration-300 shadow-[0_4px_16px_0_rgba(0,0,0,0.2)] h-full">
-                  {/* Gradient overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${getTypeColor(activity.activity_type)} opacity-5`}></div>
+                <div
+                  className={`group relative overflow-hidden bg-dark-bg-secondary/50 backdrop-blur-sm rounded-xl p-4 border ${urgencyStyle.borderColor || 'border-white/10'} hover:border-primary-500/30 hover:scale-105 transition-all duration-300 shadow-[0_4px_16px_0_rgba(0,0,0,0.2)] ${urgencyStyle.shadowClass || ''} h-full`}
+                  onMouseEnter={() => setHoveredActivity(activity.id)}
+                  onMouseLeave={() => setHoveredActivity(null)}
+                >
+                  {/* Hover tooltip */}
+                  {hoveredActivity === activity.id && (
+                    <div className="absolute left-full ml-4 top-0 w-72 bg-dark-bg-tertiary/95 backdrop-blur-xl rounded-xl p-4 border border-primary-500/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] z-50 animate-fadeIn">
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-bold text-dark-text-primary">{activity.title}</h4>
+                        {(activity.ai_description || activity.description) && (
+                          <p className="text-xs text-dark-text-secondary">{activity.ai_description || activity.description}</p>
+                        )}
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          {activity.start_time && (
+                            <div className="flex items-center gap-1 text-primary-400">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {activity.start_time.slice(0, 5)} - {getActivityEndTime(activity)?.slice(0, 5)}
+                            </div>
+                          )}
+                          {activity.duration_minutes && (
+                            <div className="px-2 py-0.5 rounded bg-accent-cyan/20 text-accent-cyan">
+                              {activity.duration_minutes} minutes
+                            </div>
+                          )}
+                        </div>
+                        {activity.subject && (
+                          <div className="text-xs text-dark-text-muted">
+                            Subject: <span className="text-dark-text-secondary font-medium">{activity.subject}</span>
+                          </div>
+                        )}
+                        {activity.due_date && (
+                          <div className="text-xs text-dark-text-muted">
+                            Due: <span className="text-dark-text-secondary font-medium">{new Date(activity.due_date).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Gradient overlay with darkening toward bottom */}
+                  <div className={`absolute inset-0 bg-gradient-to-b ${getTypeColor(activity.activity_type)} opacity-5`}></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20"></div>
 
                   <div className="relative z-10">
                     <div className="flex items-start justify-between gap-2 mb-2">
@@ -250,6 +352,19 @@ export default function ActivityTimeline({ activities, selectedDate, onToggleCom
                           {activity.subject && (
                             <span className="px-2 py-0.5 rounded bg-dark-bg-tertiary text-dark-text-secondary font-medium">
                               {activity.subject}
+                            </span>
+                          )}
+                          {activity.due_date && urgencyStyle.badgeClass && (
+                            <span className={`px-2 py-0.5 rounded border font-bold ${urgencyStyle.badgeClass}`}>
+                              {(() => {
+                                const now = new Date()
+                                const dueDate = new Date(activity.due_date)
+                                const hoursUntilDue = (dueDate - now) / (1000 * 60 * 60)
+                                if (hoursUntilDue < 0) return 'OVERDUE'
+                                if (hoursUntilDue < 2) return `${Math.round(hoursUntilDue)}h left`
+                                if (hoursUntilDue < 24) return `${Math.round(hoursUntilDue)}h left`
+                                return null
+                              })()}
                             </span>
                           )}
                         </div>

@@ -4,45 +4,51 @@ import authService from './authService'
 
 const courseStatsService = {
   // Record a completed assignment for a course
-  async recordAssignmentCompleted(courseName, courseCode = null) {
+  async recordAssignmentCompleted(courseName, courseCode = null, timeSpentMinutes = 0) {
     try {
       const { user } = await authService.getCurrentUser()
       if (!user) throw new Error('Not authenticated')
 
-      // Upsert course stats
-      const { data, error } = await supabase
+      // Check if record exists
+      const { data: existing } = await supabase
         .from('course_stats')
-        .upsert({
-          user_id: user.id,
-          course_name: courseName,
-          course_code: courseCode,
-          assignments_completed: 1,
-          last_activity_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,course_name',
-          ignoreDuplicates: false
-        })
-        .select()
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('course_name', courseName)
         .single()
 
-      // If record exists, increment the count
-      if (data) {
-        const { error: updateError } = await supabase.rpc('increment_course_assignment', {
-          p_user_id: user.id,
-          p_course_name: courseName
-        })
+      if (existing) {
+        // Update existing record
+        const { error } = await supabase
+          .from('course_stats')
+          .update({
+            assignments_completed: existing.assignments_completed + 1,
+            total_focus_minutes: existing.total_focus_minutes + timeSpentMinutes,
+            last_activity_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+          .eq('course_name', courseName)
 
-        if (updateError) {
-          console.error('Failed to increment assignment count:', updateError)
-        }
+        if (error) throw error
+      } else {
+        // Create new record
+        const { error } = await supabase
+          .from('course_stats')
+          .insert({
+            user_id: user.id,
+            course_name: courseName,
+            course_code: courseCode,
+            assignments_completed: 1,
+            total_focus_minutes: timeSpentMinutes,
+            focus_sessions: 0,
+            last_activity_at: new Date().toISOString()
+          })
+
+        if (error) throw error
       }
 
-      if (error && error.code !== '23505') {
-        throw error
-      }
-
-      console.log(`✅ Recorded assignment completion for ${courseName}`)
+      console.log(`✅ Recorded assignment completion for ${courseName} (${timeSpentMinutes} min)`)
     } catch (error) {
       console.error('Failed to record assignment completion:', error)
     }
