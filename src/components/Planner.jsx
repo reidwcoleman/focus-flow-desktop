@@ -407,12 +407,12 @@ const Planner = () => {
           )}
           <button
             onClick={() => setShowBulkUpload(true)}
-            className="px-4 py-2 bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-primary font-semibold text-sm rounded-lg hover:bg-dark-bg-tertiary hover:border-primary-500/50 transition-all flex items-center gap-2"
+            className="px-5 py-2.5 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-bold text-sm md:text-base rounded-lg hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-primary-500/20"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
-            <span className="hidden md:inline">Bulk Upload</span>
+            <span>Bulk Upload</span>
           </button>
         </div>
       </div>

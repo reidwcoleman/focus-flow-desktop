@@ -100,42 +100,46 @@ const StreakCalendar = ({ onClose, currentStreak, longestStreak }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-md bg-dark-bg-primary rounded-3xl shadow-dark-heavy border border-dark-border-glow overflow-hidden animate-scaleIn">
-        {/* Header */}
-        <div className="relative bg-gradient-to-br from-orange-500/20 via-red-500/20 to-yellow-500/20 p-6 border-b border-orange-500/30">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
+      <div className="w-full max-w-md bg-dark-bg-primary/90 backdrop-blur-2xl rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden animate-scaleIn">
+        {/* Header - Glass Morphism */}
+        <div className="relative bg-gradient-to-br from-orange-500/20 via-red-500/20 to-yellow-500/20 backdrop-blur-xl p-6 border-b border-orange-500/30">
+          {/* Floating glow orbs */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-red-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }}></div>
+
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary transition-all active:scale-95"
+            className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary transition-all active:scale-95 hover:scale-110 hover:rotate-90 duration-300 z-10"
           >
             <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="text-4xl filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">🔥</div>
+          <div className="flex items-center gap-3 mb-4 relative z-10">
+            <div className="text-4xl animate-bounce-soft filter drop-shadow-[0_0_12px_rgba(251,146,60,0.8)]">🔥</div>
             <div>
               <h2 className="text-xl font-black text-dark-text-primary">Streak History</h2>
               <p className="text-sm text-dark-text-secondary">Your daily login calendar</p>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-dark-bg-secondary/50 rounded-xl p-3 border border-dark-border-glow backdrop-blur-sm">
+          {/* Stats - Enhanced Glass */}
+          <div className="grid grid-cols-3 gap-3 relative z-10">
+            <div className="bg-dark-bg-secondary/30 backdrop-blur-xl rounded-xl p-3 border border-white/10 hover:border-orange-400/30 transition-all duration-300 hover:scale-105">
               <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">
                 {currentStreak}
               </div>
               <div className="text-[10px] text-dark-text-muted font-semibold">Current</div>
             </div>
-            <div className="bg-dark-bg-secondary/50 rounded-xl p-3 border border-dark-border-glow backdrop-blur-sm">
+            <div className="bg-dark-bg-secondary/30 backdrop-blur-xl rounded-xl p-3 border border-white/10 hover:border-yellow-400/30 transition-all duration-300 hover:scale-105">
               <div className="text-2xl font-black text-yellow-400">
                 {longestStreak}
               </div>
               <div className="text-[10px] text-dark-text-muted font-semibold">Best</div>
             </div>
-            <div className="bg-dark-bg-secondary/50 rounded-xl p-3 border border-dark-border-glow backdrop-blur-sm">
+            <div className="bg-dark-bg-secondary/30 backdrop-blur-xl rounded-xl p-3 border border-white/10 hover:border-primary-500/30 transition-all duration-300 hover:scale-105">
               <div className="text-2xl font-black text-primary-500">
                 {getStreakPercentage()}%
               </div>
@@ -154,19 +158,19 @@ const StreakCalendar = ({ onClose, currentStreak, longestStreak }) => {
             <>
               {/* Month Navigation */}
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-dark-text-primary">
+                <h3 className="text-lg font-bold text-dark-text-primary bg-gradient-to-r from-primary-300 to-accent-cyan bg-clip-text text-transparent">
                   {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </h3>
                 <div className="flex gap-1.5">
                   <button
                     onClick={goToToday}
-                    className="px-2.5 py-1.5 rounded-lg bg-primary-500/10 border border-primary-500/30 text-primary-500 text-xs font-semibold hover:bg-primary-500/20 transition-all active:scale-95"
+                    className="px-2.5 py-1.5 rounded-lg bg-primary-500/10 backdrop-blur-sm border border-primary-500/30 text-primary-500 text-xs font-semibold hover:bg-primary-500/20 hover:scale-105 transition-all active:scale-95"
                   >
                     Today
                   </button>
                   <button
                     onClick={previousMonth}
-                    className="w-8 h-8 rounded-lg bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary hover:border-primary-500 transition-all active:scale-95"
+                    className="w-8 h-8 rounded-lg bg-dark-bg-tertiary/50 backdrop-blur-sm border border-dark-border-glow text-dark-text-primary hover:border-primary-500 hover:scale-110 hover:-translate-x-1 transition-all active:scale-95"
                   >
                     <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -174,7 +178,7 @@ const StreakCalendar = ({ onClose, currentStreak, longestStreak }) => {
                   </button>
                   <button
                     onClick={nextMonth}
-                    className="w-8 h-8 rounded-lg bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary hover:border-primary-500 transition-all active:scale-95"
+                    className="w-8 h-8 rounded-lg bg-dark-bg-tertiary/50 backdrop-blur-sm border border-dark-border-glow text-dark-text-primary hover:border-primary-500 hover:scale-110 hover:translate-x-1 transition-all active:scale-95"
                   >
                     <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -202,26 +206,27 @@ const StreakCalendar = ({ onClose, currentStreak, longestStreak }) => {
                   return (
                     <div
                       key={index}
-                      className={`aspect-square rounded-lg flex items-center justify-center text-xs font-semibold transition-all ${
+                      className={`aspect-square rounded-lg flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
                         !day
                           ? 'invisible'
                           : future
                           ? 'bg-dark-bg-tertiary/30 text-dark-text-muted cursor-not-allowed opacity-30'
                           : hasStreak
                           ? today
-                            ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-glow-orange ring-2 ring-yellow-400 animate-pulse-soft'
-                            : 'bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-glow-green'
-                          : 'bg-dark-bg-tertiary/50 text-dark-text-muted border border-dark-border-subtle'
+                            ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-[0_0_20px_rgba(251,146,60,0.6)] ring-2 ring-yellow-400 animate-pulse-soft hover:scale-110'
+                            : 'bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:scale-110 hover:shadow-[0_0_25px_rgba(34,197,94,0.6)]'
+                          : 'bg-dark-bg-tertiary/50 text-dark-text-muted border border-dark-border-subtle hover:bg-dark-bg-tertiary hover:border-primary-500/30 hover:scale-105'
                       }`}
+                      style={{ animationDelay: `${index * 0.02}s` }}
                     >
                       {day && (
                         <div className="relative">
-                          <span>{day}</span>
+                          <span className="relative z-10">{day}</span>
                           {hasStreak && !today && (
-                            <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-green-400 rounded-full shadow-glow-green"></div>
+                            <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-green-400 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-ping"></div>
                           )}
                           {today && hasStreak && (
-                            <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[8px]">🔥</div>
+                            <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] animate-bounce-soft">🔥</div>
                           )}
                         </div>
                       )}

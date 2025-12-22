@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import assignmentsService from '../services/assignmentsService'
+import calendarService from '../services/calendarService'
 import authService from '../services/authService'
 import { toast } from './Toast'
 
@@ -58,10 +59,20 @@ const BulkUpload = ({ onClose, onSuccess }) => {
       const parts = line.split(/[,|\-\t]/).map(p => p.trim())
 
       if (parts.length >= 2) {
+        // Parse the date properly
+        let dueDate = null
+        if (parts[2]) {
+          const parsedDate = new Date(parts[2])
+          if (!isNaN(parsedDate.getTime())) {
+            // Format as YYYY-MM-DD for database
+            dueDate = parsedDate.toISOString().split('T')[0]
+          }
+        }
+
         assignments.push({
           title: parts[0],
           subject: parts[1] || 'General',
-          dueDate: parts[2] || null,
+          due_date: dueDate, // Use snake_case for database field
           priority: parts[3]?.toLowerCase() || 'medium',
           description: parts[4] || null,
           source: 'manual'
@@ -93,17 +104,31 @@ const BulkUpload = ({ onClose, onSuccess }) => {
         let successCount = 0
         for (const assignment of assignments) {
           try {
+            // Add to assignments table
             await assignmentsService.createAssignment({
               ...assignment,
               user_id: user.id
             })
+
+            // Also add to calendar if there's a due date
+            if (assignment.due_date) {
+              await calendarService.createActivity({
+                user_id: user.id,
+                activity_date: assignment.due_date,
+                title: assignment.title,
+                activity_type: 'assignment',
+                description: assignment.description || `${assignment.subject} - ${assignment.priority} priority`,
+                is_completed: false
+              })
+            }
+
             successCount++
           } catch (err) {
             console.error(`Failed to create assignment: ${assignment.title}`, err)
           }
         }
 
-        toast.success(`Successfully uploaded ${successCount}/${assignments.length} assignments!`)
+        toast.success(`Successfully uploaded ${successCount}/${assignments.length} assignments to your calendar!`)
         if (onSuccess) onSuccess()
         setTimeout(() => onClose(), 1500)
       }

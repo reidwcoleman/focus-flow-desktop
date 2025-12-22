@@ -133,6 +133,18 @@ const CanvasHub = () => {
     return { text: `${diffDays} days`, color: 'text-green-400' }
   }
 
+  // Filter assignments to exclude those older than 2 weeks
+  const filterRecentAssignments = (assignmentsList) => {
+    const twoWeeksAgo = new Date()
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+
+    return assignmentsList.filter(assignment => {
+      if (!assignment.dueDate) return true // Keep assignments with no due date
+      const dueDate = new Date(assignment.dueDate)
+      return dueDate >= twoWeeksAgo // Only keep assignments due within last 2 weeks or future
+    })
+  }
+
   if (loading) {
     return (
       <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
@@ -191,7 +203,7 @@ const CanvasHub = () => {
           </div>
           <div className="space-y-1">
             <p className="text-dark-text-secondary text-sm">
-              {courses.length} courses • {assignments.filter(a => !a.submitted && !a.graded).length} incomplete • {grades.length} grades
+              {courses.length} courses • {filterRecentAssignments(assignments).filter(a => !a.submitted && !a.graded).length} incomplete • {grades.length} grades
             </p>
             {lastSyncTime && (
               <p className="text-dark-text-muted text-xs">
@@ -255,7 +267,7 @@ const CanvasHub = () => {
             </div>
           ) : (
             courses.map((course) => {
-              const courseAssignments = assignments.filter(a => a.courseId === course.id)
+              const courseAssignments = filterRecentAssignments(assignments).filter(a => a.courseId === course.id)
               const incompleteCount = courseAssignments.filter(a => !a.submitted && !a.graded).length
 
               return (
