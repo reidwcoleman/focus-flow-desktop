@@ -97,39 +97,41 @@ export default function WeeklyComparisonChart({ activities }) {
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={250}>
-        <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" opacity={0.2} />
-          <XAxis
-            dataKey="name"
-            stroke="#9ca3af"
-            style={{ fontSize: '12px' }}
-            tick={{ fill: '#9ca3af' }}
-          />
-          <YAxis
-            stroke="#9ca3af"
-            style={{ fontSize: '12px' }}
-            tick={{ fill: '#9ca3af' }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend
-            wrapperStyle={{ fontSize: '12px' }}
-            iconType="circle"
-          />
-          <Bar
-            dataKey="completed"
-            fill="#22c55e"
-            name="Completed"
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar
-            dataKey="pending"
-            fill="#f59e0b"
-            name="Pending"
-            radius={[4, 4, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      <div style={{ width: '100%', height: 250 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" opacity={0.2} />
+            <XAxis
+              dataKey="name"
+              stroke="#9ca3af"
+              style={{ fontSize: '12px' }}
+              tick={{ fill: '#9ca3af' }}
+            />
+            <YAxis
+              stroke="#9ca3af"
+              style={{ fontSize: '12px' }}
+              tick={{ fill: '#9ca3af' }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend
+              wrapperStyle={{ fontSize: '12px' }}
+              iconType="circle"
+            />
+            <Bar
+              dataKey="completed"
+              fill="#22c55e"
+              name="Completed"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="pending"
+              fill="#f59e0b"
+              name="Pending"
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }

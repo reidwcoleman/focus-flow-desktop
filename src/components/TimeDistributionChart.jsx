@@ -96,25 +96,27 @@ export default function TimeDistributionChart({ activities }) {
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={250}>
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={90}
-            paddingAngle={2}
-            dataKey="value"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-          <Legend content={renderLegend} />
-        </PieChart>
-      </ResponsiveContainer>
+      <div style={{ width: '100%', height: 250 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={90}
+              paddingAngle={2}
+              dataKey="value"
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend content={renderLegend} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }
