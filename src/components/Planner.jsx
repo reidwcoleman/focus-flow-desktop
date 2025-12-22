@@ -256,7 +256,24 @@ const Planner = () => {
           await calendarService.toggleCompletion(id, true)
 
           // Remove from UI
-          setActivities(prev => prev.filter(a => a.id !== id))
+          setActivities(prev => {
+            const updated = prev.filter(a => a.id !== id)
+
+            // Check if all activities for selected day are now completed
+            const dateStr = selectedDate.toISOString().split('T')[0]
+            const dayActivitiesRemaining = updated.filter(a =>
+              a.activity_date === dateStr && !a.is_completed
+            )
+
+            // Trigger celebration if all activities for the day are complete
+            if (dayActivitiesRemaining.length === 0 &&
+                updated.filter(a => a.activity_date === dateStr).length > 0) {
+              setShowCelebration(true)
+            }
+
+            return updated
+          })
+
           setFlyingAwayItems(prev => {
             const next = new Set(prev)
             next.delete(id)
