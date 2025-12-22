@@ -11,7 +11,7 @@ import supabaseFlashcardService from './supabaseFlashcardService'
 
 class StudyGenerationService {
   constructor() {
-    this.maxContentLength = 15000 // Max chars to send to AI
+    this.maxContentLength = 8000 // Reduced to save input tokens on Groq free tier
   }
 
   // ==================== QUIZ GENERATION ====================
@@ -25,9 +25,11 @@ class StudyGenerationService {
       shortAnswer = 3
     } = options
 
-    // Enable Deep Research mode
-    const previousMode = aiService.useDeepResearch
-    aiService.useDeepResearch = true
+    // Use standard mode to save tokens (Groq free tier)
+    const previousDeepMode = aiService.useDeepResearch
+    const previousUltraMode = aiService.useUltraThink
+    aiService.useDeepResearch = false
+    aiService.useUltraThink = false
 
     try {
       const prompt = this._buildQuizPrompt(text, {
@@ -44,7 +46,8 @@ class StudyGenerationService {
       console.error('Quiz generation error:', error)
       throw new Error(`Failed to generate quiz: ${error.message}`)
     } finally {
-      aiService.useDeepResearch = previousMode
+      aiService.useDeepResearch = previousDeepMode
+      aiService.useUltraThink = previousUltraMode
     }
   }
 
@@ -77,8 +80,11 @@ class StudyGenerationService {
   async generateFlashcards(text, options = {}) {
     const { title, subject, cardCount = 30 } = options
 
-    const previousMode = aiService.useDeepResearch
-    aiService.useDeepResearch = true
+    // Use standard mode to save tokens (Groq free tier)
+    const previousDeepMode = aiService.useDeepResearch
+    const previousUltraMode = aiService.useUltraThink
+    aiService.useDeepResearch = false
+    aiService.useUltraThink = false
 
     try {
       const prompt = this._buildFlashcardsPrompt(text, { cardCount })
@@ -90,7 +96,8 @@ class StudyGenerationService {
       console.error('Flashcard generation error:', error)
       throw new Error(`Failed to generate flashcards: ${error.message}`)
     } finally {
-      aiService.useDeepResearch = previousMode
+      aiService.useDeepResearch = previousDeepMode
+      aiService.useUltraThink = previousUltraMode
     }
   }
 
@@ -129,8 +136,11 @@ class StudyGenerationService {
   async generateNotes(text, options = {}) {
     const { title, subject } = options
 
-    const previousMode = aiService.useDeepResearch
-    aiService.useDeepResearch = true
+    // Use standard mode to save tokens (Groq free tier)
+    const previousDeepMode = aiService.useDeepResearch
+    const previousUltraMode = aiService.useUltraThink
+    aiService.useDeepResearch = false
+    aiService.useUltraThink = false
 
     try {
       const prompt = this._buildNotesPrompt(text)
@@ -142,7 +152,8 @@ class StudyGenerationService {
       console.error('Notes generation error:', error)
       throw new Error(`Failed to generate notes: ${error.message}`)
     } finally {
-      aiService.useDeepResearch = previousMode
+      aiService.useDeepResearch = previousDeepMode
+      aiService.useUltraThink = previousUltraMode
     }
   }
 

@@ -45,8 +45,8 @@ class AIService {
   constructor() {
     this.conversationHistory = []
     this.userContext = null
-    this.useUltraThink = true // Enable advanced reasoning mode for desktop
-    this.useDeepResearch = false // Enable deep research mode
+    this.useUltraThink = false // Disabled by default to save tokens on Groq free tier
+    this.useDeepResearch = false // Disabled by default to save tokens
 
     // Deep Research mode prompt - ABSOLUTE MAXIMUM comprehensive academic research
     this.deepResearchPrompt = `You are a world-class research scholar, professor, and expert academic consultant. Your role is to provide ABSOLUTELY COMPREHENSIVE, encyclopedic research with MAXIMUM academic rigor, scholarly depth, and intellectual thoroughness that would rival graduate-level research papers.
@@ -985,7 +985,7 @@ When students ask:
           model: modelToUse,
           messages: messagesForAPI,
           temperature: 0.7,
-          max_tokens: imageData ? 800 : (this.useDeepResearch ? 100000 : (this.useUltraThink ? 5000 : 2000)), // 100k for quiz/study generation, 5k for ultrathink, 2k standard
+          max_tokens: imageData ? 500 : (this.useDeepResearch ? 8000 : (this.useUltraThink ? 3000 : 1500)), // Reduced for Groq free tier: 8k deep, 3k ultra, 1.5k standard
           top_p: 1,
         }),
       })
