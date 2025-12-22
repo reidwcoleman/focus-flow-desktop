@@ -99,7 +99,7 @@ class SupabaseQuizService {
         user_id: user.id,
         question_type: q.type,
         question_text: q.question,
-        options: q.options ? JSON.stringify(q.options) : null,
+        options: q.options || null, // JSONB column handles JSON automatically
         correct_answer: String(q.correctAnswer),
         explanation: q.explanation || null,
         difficulty: q.difficulty || 'medium',
@@ -344,12 +344,23 @@ class SupabaseQuizService {
   }
 
   _mapQuestionFromDatabase(dbQuestion) {
+    // Parse options if it's a string (backwards compatibility)
+    let options = dbQuestion.options || []
+    if (typeof options === 'string') {
+      try {
+        options = JSON.parse(options)
+      } catch (e) {
+        console.error('Failed to parse options:', e)
+        options = []
+      }
+    }
+
     return {
       id: dbQuestion.id,
       quizId: dbQuestion.quiz_id,
       type: dbQuestion.question_type,
       question: dbQuestion.question_text,
-      options: dbQuestion.options || [],
+      options: Array.isArray(options) ? options : [],
       correctAnswer: dbQuestion.correct_answer,
       explanation: dbQuestion.explanation,
       difficulty: dbQuestion.difficulty,
