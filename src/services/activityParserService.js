@@ -234,7 +234,7 @@ class ActivityParserService {
         return {
           type: 'weekly',
           daysOfWeek: days,
-          count: 8 // Create 8 weeks worth
+          count: 15 // Create 15 weeks worth
         }
       }
     }
@@ -268,7 +268,7 @@ class ActivityParserService {
         return {
           type: 'biweekly',
           daysOfWeek: days,
-          count: 8 // Create 8 occurrences (16 weeks)
+          count: 15 // Create 15 occurrences (30 weeks)
         }
       }
     }
