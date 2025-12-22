@@ -195,6 +195,15 @@ export const canvasService = {
             const transformedAssignments = assignments.map(assignment => {
               const submission = assignment.submission || {}
 
+              // Log grade data for debugging
+              if (submission.grade || submission.score) {
+                console.log(`📊 Grade found for "${assignment.name}":`, {
+                  grade: submission.grade,
+                  score: submission.score,
+                  workflow: submission.workflow_state
+                })
+              }
+
               return {
                 id: `canvas-${assignment.id}`,
                 title: assignment.name,
@@ -429,6 +438,7 @@ export const canvasService = {
           points_possible: assignment.points || null,
           submitted: assignment.submitted || false,
           grade_received: assignment.grade || null,
+          score_received: assignment.score || null,
           canvas_url: assignment.htmlUrl || null,
           time_estimate: this.estimateTime(assignment.points)
         }
