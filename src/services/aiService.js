@@ -985,7 +985,7 @@ When students ask:
           model: modelToUse,
           messages: messagesForAPI,
           temperature: 0.7,
-          max_tokens: imageData ? 800 : (this.useDeepResearch ? 32000 : (this.useUltraThink ? 5000 : 2000)), // 32k for MAXIMUM research depth, 5k for ultrathink, 2k standard
+          max_tokens: imageData ? 800 : (this.useDeepResearch ? 100000 : (this.useUltraThink ? 5000 : 2000)), // 100k for quiz/study generation, 5k for ultrathink, 2k standard
           top_p: 1,
         }),
       })
