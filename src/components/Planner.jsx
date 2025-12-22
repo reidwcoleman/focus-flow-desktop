@@ -10,6 +10,7 @@ import activityBreakdownService from '../services/activityBreakdownService'
 import activitySubtasksService from '../services/activitySubtasksService'
 import { CalendarSkeleton, ActivitySkeleton, StatCardSkeleton } from './LoadingSkeleton'
 import { confirmDialog } from './ConfirmDialog'
+import BulkUpload from './BulkUpload'
 
 const Planner = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -28,6 +29,7 @@ const Planner = () => {
   const [subtasksByActivity, setSubtasksByActivity] = useState({})
   const [generatingAI, setGeneratingAI] = useState({}) // Track which activities are generating AI content
   const [collapsedSubtasks, setCollapsedSubtasks] = useState({}) // Track which activities have collapsed subtasks
+  const [showBulkUpload, setShowBulkUpload] = useState(false)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
@@ -396,12 +398,23 @@ const Planner = () => {
       {/* Simplified Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary">Calendar</h1>
-        {activities.length > 0 && (
-          <div className="flex items-center gap-4 text-sm md:text-base text-dark-text-muted">
-            <span><span className="font-semibold text-green-500">{activities.filter(a => a.is_completed).length}</span> done</span>
-            <span><span className="font-semibold text-amber-500">{activities.filter(a => !a.is_completed).length}</span> pending</span>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {activities.length > 0 && (
+            <div className="flex items-center gap-4 text-sm md:text-base text-dark-text-muted">
+              <span><span className="font-semibold text-green-500">{activities.filter(a => a.is_completed).length}</span> done</span>
+              <span><span className="font-semibold text-amber-500">{activities.filter(a => !a.is_completed).length}</span> pending</span>
+            </div>
+          )}
+          <button
+            onClick={() => setShowBulkUpload(true)}
+            className="px-4 py-2 bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-primary font-semibold text-sm rounded-lg hover:bg-dark-bg-tertiary hover:border-primary-500/50 transition-all flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <span className="hidden md:inline">Bulk Upload</span>
+          </button>
+        </div>
       </div>
 
       {/* Simplified AI Input */}
@@ -957,6 +970,14 @@ const Planner = () => {
           )}
           </div>
         )
+      )}
+
+      {/* Bulk Upload Modal */}
+      {showBulkUpload && (
+        <BulkUpload
+          onClose={() => setShowBulkUpload(false)}
+          onSuccess={() => loadActivities()}
+        />
       )}
     </div>
   )

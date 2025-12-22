@@ -170,6 +170,8 @@ export default {
         // Opal animations
         'opal-pulse': 'opal-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'opal-breathe': 'opal-breathe 4s ease-in-out infinite',
+        // Glass morphism float animation
+        'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -208,6 +210,11 @@ export default {
         'opal-breathe': {
           '0%, 100%': { transform: 'scale(1)', opacity: '0.6' },
           '50%': { transform: 'scale(1.05)', opacity: '0.8' },
+        },
+        // Glass morphism float animation
+        'float': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
         },
       },
     },

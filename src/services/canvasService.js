@@ -664,6 +664,47 @@ export const canvasService = {
     if (points <= 100) return '2h'
     return '3h+'
   },
+
+  // Delete a course from local database
+  async deleteCourse(courseId) {
+    const { user } = await authService.getCurrentUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { error } = await supabase
+      .from('canvas_courses')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('canvas_course_id', courseId)
+
+    if (error) {
+      console.error('Failed to delete course:', error)
+      throw new Error('Failed to delete course')
+    }
+
+    console.log(`✅ Deleted course ${courseId}`)
+  },
+
+  // Delete an assignment from local database
+  async deleteAssignment(assignmentId) {
+    const { user } = await authService.getCurrentUser()
+    if (!user) throw new Error('Not authenticated')
+
+    // Extract the numeric ID from "canvas-123" format
+    const canvasId = parseInt(assignmentId.replace('canvas-', ''))
+
+    const { error } = await supabase
+      .from('assignments')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('canvas_assignment_id', canvasId)
+
+    if (error) {
+      console.error('Failed to delete assignment:', error)
+      throw new Error('Failed to delete assignment')
+    }
+
+    console.log(`✅ Deleted assignment ${assignmentId}`)
+  },
 }
 
 export default canvasService

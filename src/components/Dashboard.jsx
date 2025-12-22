@@ -7,8 +7,11 @@ import assignmentParserService from '../services/assignmentParserService'
 import xpService from '../services/xpService'
 import subtasksService from '../services/subtasksService'
 import taskBreakdownService from '../services/taskBreakdownService'
+import infiniteCampusService from '../services/infiniteCampusService'
 import StreakCalendar from './StreakCalendar'
 import XPToast from './XPToast'
+import GradeChart from './GradeChart'
+import AssignmentChart from './AssignmentChart'
 import { toast } from './Toast'
 import { confirmDialog } from './ConfirmDialog'
 
@@ -43,12 +46,14 @@ const Dashboard = ({ onOpenScanner }) => {
   const [lastLoginHour, setLastLoginHour] = useState(null)
   const [emojiTransitioning, setEmojiTransitioning] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [grades, setGrades] = useState([])
 
   useEffect(() => {
     loadUserName()
     loadAssignments()
     checkStreak()
     loadXPData()
+    loadGrades()
   }, [])
 
   // Update time every minute
@@ -63,6 +68,16 @@ const Dashboard = ({ onOpenScanner }) => {
   const loadXPData = async () => {
     const data = await xpService.getXPData()
     setXPData(data)
+  }
+
+  const loadGrades = async () => {
+    try {
+      const syncedGrades = await infiniteCampusService.getSyncedGrades()
+      console.log('📊 Loaded grades for dashboard:', syncedGrades.length)
+      setGrades(syncedGrades)
+    } catch (error) {
+      console.error('Failed to load grades for dashboard:', error)
+    }
   }
 
   const loadUserName = async () => {
@@ -504,20 +519,20 @@ const Dashboard = ({ onOpenScanner }) => {
 
   return (
     <div className="space-y-4 md:space-y-5 lg:space-y-5 pb-6 md:pb-8 lg:pb-8">
-      {/* Welcome Card - Compact with entrance animation */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary-900/40 via-dark-bg-secondary to-accent-cyan/20 p-4 md:p-5 shadow-dark-soft-xl border border-primary-500/40 hover:border-primary-500/60 transition-all animate-opal-card-enter">
-        {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-transparent to-accent-cyan/10 opacity-50"></div>
+      {/* Welcome Card - Glass Morphism */}
+      <div className="relative overflow-hidden rounded-2xl bg-dark-bg-secondary/30 backdrop-blur-2xl p-4 md:p-5 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] border border-white/10 hover:border-primary-500/30 transition-all duration-300 animate-opal-card-enter">
+        {/* Glass shimmer overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-cyan/5 opacity-60"></div>
 
-        {/* Decorative background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500 rounded-full blur-3xl animate-pulse-slow"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-cyan rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+        {/* Floating glow orbs */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/15 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-cyan/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }}></div>
         </div>
 
-        {/* Sparkle effects */}
-        <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-accent-cyan rounded-full animate-ping"></div>
-        <div className="absolute top-6 right-10 w-1 h-1 bg-primary-400 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+        {/* Sparkle particles */}
+        <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-accent-cyan/70 rounded-full animate-ping"></div>
+        <div className="absolute top-6 right-10 w-1 h-1 bg-primary-400/70 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
 
         <div className="relative z-10">
           {/* Greeting Header - Compact */}
@@ -557,10 +572,10 @@ const Dashboard = ({ onOpenScanner }) => {
 
           {/* Streak & XP Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-            {/* Streak Section - Clickable */}
+            {/* Streak Section - Clickable with Glass Effect */}
             <button
               onClick={() => setShowStreakCalendar(true)}
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-sm p-4 border border-orange-500/30 hover:border-orange-500/50 transition-all hover:scale-[1.02] active:scale-[0.98] text-left"
+              className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl p-4 border border-white/10 hover:border-orange-500/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-left shadow-[0_4px_16px_0_rgba(0,0,0,0.25)]"
             >
               <div className="flex items-center gap-3 mb-2">
                 <div className="text-3xl md:text-4xl">🔥</div>
@@ -596,9 +611,9 @@ const Dashboard = ({ onOpenScanner }) => {
               </div>
             </button>
 
-            {/* XP Section */}
+            {/* XP Section with Glass Effect */}
             {xpData && (
-              <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-yellow-500/10 to-orange-500/10 backdrop-blur-sm p-4 border border-yellow-500/30">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-yellow-500/10 to-orange-500/10 backdrop-blur-xl p-4 border border-white/10 hover:border-yellow-500/40 transition-all duration-300 shadow-[0_4px_16px_0_rgba(0,0,0,0.25)]">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="text-3xl md:text-4xl">⭐</div>
                   <div className="flex-1">
@@ -639,8 +654,8 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
       </div>
 
-      {/* AI Assignment Input */}
-      <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-6 border border-dark-border-glow shadow-dark-soft">
+      {/* AI Assignment Input - Glass Morphism */}
+      <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-primary-500/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
         {/* Success/Error Messages */}
         {aiSuccess && (
           <div className="mb-3 md:mb-4 lg:mb-5 p-2.5 md:p-3 lg:p-4 rounded-xl md:rounded-2xl bg-green-500/10 border border-green-500/30 animate-fadeIn">
@@ -1157,6 +1172,41 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
         </div>
       )}
+
+      {/* Data Visualization Section - Glass Morphism */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Grade Trends Chart */}
+        <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-primary-500/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 rounded-lg bg-primary-500/20">
+              <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-dark-text-primary">Grade Trends</h3>
+              <p className="text-xs text-dark-text-muted">Your current grades across courses</p>
+            </div>
+          </div>
+          <GradeChart grades={grades} />
+        </div>
+
+        {/* Assignment Completion Chart */}
+        <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-accent-cyan/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 rounded-lg bg-accent-cyan/20">
+              <svg className="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0h2a2 2 0 012-2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 00-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-dark-text-primary">Assignment Progress</h3>
+              <p className="text-xs text-dark-text-muted">Completion status breakdown</p>
+            </div>
+          </div>
+          <AssignmentChart assignments={assignments} />
+        </div>
+      </div>
     </div>
   )
 }

@@ -11,6 +11,8 @@ const CanvasHub = () => {
   const [syncing, setSyncing] = useState(false)
   const [activeView, setActiveView] = useState('courses') // courses, assignments, grades
   const [lastSyncTime, setLastSyncTime] = useState(null)
+  const [selectedCourse, setSelectedCourse] = useState(null) // For viewing course assignments
+  const [deleting, setDeleting] = useState(null) // Track which item is being deleted
 
   useEffect(() => {
     loadCanvasData()
@@ -72,6 +74,38 @@ const CanvasHub = () => {
       toast.error(`Sync failed: ${err.message}`)
     } finally {
       setSyncing(false)
+    }
+  }
+
+  const handleDeleteCourse = async (courseId) => {
+    if (!confirm('Delete this course from your local data? (You can re-sync to get it back)')) {
+      return
+    }
+
+    setDeleting(courseId)
+    try {
+      await canvasService.deleteCourse(courseId)
+      setCourses(courses.filter(c => c.id !== courseId))
+      toast.success('Course deleted successfully')
+    } catch (err) {
+      console.error('Failed to delete course:', err)
+      toast.error(`Failed to delete course: ${err.message}`)
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  const handleDeleteAssignment = async (assignmentId) => {
+    setDeleting(assignmentId)
+    try {
+      await canvasService.deleteAssignment(assignmentId)
+      setAssignments(assignments.filter(a => a.id !== assignmentId))
+      toast.success('Assignment deleted successfully')
+    } catch (err) {
+      console.error('Failed to delete assignment:', err)
+      toast.error(`Failed to delete assignment: ${err.message}`)
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -157,7 +191,7 @@ const CanvasHub = () => {
           </div>
           <div className="space-y-1">
             <p className="text-dark-text-secondary text-sm">
-              {courses.length} courses • {assignments.length} assignments • {grades.length} grades
+              {courses.length} courses • {assignments.filter(a => !a.submitted && !a.graded).length} incomplete • {grades.length} grades
             </p>
             {lastSyncTime && (
               <p className="text-dark-text-muted text-xs">
@@ -209,7 +243,7 @@ const CanvasHub = () => {
       </div>
 
       {/* Courses View */}
-      {activeView === 'courses' && (
+      {activeView === 'courses' && !selectedCourse && (
         <div className="space-y-3">
           <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary tracking-tight">
             Your Courses ({courses.length})
@@ -220,36 +254,171 @@ const CanvasHub = () => {
               <p className="text-dark-text-secondary">No courses found</p>
             </div>
           ) : (
-            courses.map((course) => (
-              <div
-                key={course.id}
-                className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h4 className="text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary mb-1 tracking-tight leading-snug">
-                      {course.course_code || course.name}
-                    </h4>
-                    {course.course_code && course.course_code !== course.name && (
-                      <p className="text-xs text-dark-text-muted">{course.name}</p>
+            courses.map((course) => {
+              const courseAssignments = assignments.filter(a => a.courseId === course.id)
+              const incompleteCount = courseAssignments.filter(a => !a.submitted && !a.graded).length
+
+              return (
+                <div
+                  key={course.id}
+                  className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h4 className="text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary mb-1 tracking-tight leading-snug">
+                        {course.course_code || course.name}
+                      </h4>
+                      {course.course_code && course.course_code !== course.name && (
+                        <p className="text-xs text-dark-text-muted">{course.name}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {course.enrollments && course.enrollments[0]?.type && (
+                        <span className="px-2 py-1 bg-primary-500/20 text-primary-500 text-xs font-semibold rounded-lg">
+                          {course.enrollments[0].type}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => handleDeleteCourse(course.id)}
+                        disabled={deleting === course.id}
+                        className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        title="Delete course"
+                      >
+                        {deleting === course.id ? (
+                          <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    {course.term && course.term.name && (
+                      <div className="flex items-center gap-2 text-xs text-dark-text-secondary">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>{course.term.name}</span>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => setSelectedCourse(course)}
+                      className="px-3 py-1.5 rounded-lg bg-primary-500/20 text-primary-400 hover:bg-primary-500/30 transition-colors text-xs font-semibold flex items-center gap-1.5"
+                    >
+                      <span>{incompleteCount} Incomplete</span>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
+
+      {/* Course Detail View - Show assignments for selected course */}
+      {activeView === 'courses' && selectedCourse && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 mb-2">
+            <button
+              onClick={() => setSelectedCourse(null)}
+              className="p-2 rounded-lg bg-dark-bg-secondary hover:bg-dark-bg-tertiary transition-colors"
+            >
+              <svg className="w-5 h-5 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary tracking-tight">
+                {selectedCourse.course_code || selectedCourse.name}
+              </h3>
+              <p className="text-xs text-dark-text-muted">
+                {assignments.filter(a => a.courseId === selectedCourse.id && !a.submitted && !a.graded).length} incomplete assignments
+              </p>
+            </div>
+          </div>
+
+          {assignments.filter(a => a.courseId === selectedCourse.id && !a.submitted && !a.graded).length === 0 ? (
+            <div className="text-center py-8 bg-dark-bg-secondary rounded-lg border border-dark-border-subtle">
+              <div className="text-4xl mb-3">✅</div>
+              <p className="text-dark-text-secondary">All caught up! No incomplete assignments.</p>
+            </div>
+          ) : (
+            assignments
+              .filter(a => a.courseId === selectedCourse.id && !a.submitted && !a.graded)
+              .map((assignment) => {
+                const dueInfo = getDaysUntilDue(assignment.dueDate)
+                return (
+                  <div
+                    key={assignment.id}
+                    className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
+                  >
+                    {/* Title */}
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="flex-1 text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary tracking-tight leading-snug">
+                        {assignment.title}
+                      </h4>
+                      <button
+                        onClick={() => handleDeleteAssignment(assignment.id)}
+                        disabled={deleting === assignment.id}
+                        className="ml-2 p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        title="Delete assignment"
+                      >
+                        {deleting === assignment.id ? (
+                          <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Meta Info */}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-dark-text-secondary mb-3">
+                      {assignment.dueDate && (
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span>{formatDate(assignment.dueDate)}</span>
+                          {dueInfo && (
+                            <span className={`font-semibold ${dueInfo.color}`}>
+                              ({dueInfo.text})
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {assignment.points && (
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                          </svg>
+                          <span>{assignment.points} pts</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Link */}
+                    {assignment.htmlUrl && (
+                      <a
+                        href={assignment.htmlUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex px-2.5 py-1 bg-primary-500/20 text-primary-400 text-xs font-semibold rounded-lg hover:bg-primary-500/30 transition-colors"
+                      >
+                        View in Canvas →
+                      </a>
                     )}
                   </div>
-                  {course.enrollments && course.enrollments[0]?.type && (
-                    <span className="px-2 py-1 bg-primary-500/20 text-primary-500 text-xs font-semibold rounded-lg">
-                      {course.enrollments[0].type}
-                    </span>
-                  )}
-                </div>
-                {course.term && course.term.name && (
-                  <div className="flex items-center gap-2 text-xs text-dark-text-secondary">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{course.term.name}</span>
-                  </div>
-                )}
-              </div>
-            ))
+                )
+              })
           )}
         </div>
       )}
@@ -258,85 +427,91 @@ const CanvasHub = () => {
       {activeView === 'assignments' && (
         <div className="space-y-3">
           <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary tracking-tight">
-            Assignments ({assignments.length})
+            Incomplete Assignments ({assignments.filter(a => !a.submitted && !a.graded).length})
           </h3>
-          {assignments.length === 0 ? (
+          {assignments.filter(a => !a.submitted && !a.graded).length === 0 ? (
             <div className="text-center py-8 bg-dark-bg-secondary rounded-lg border border-dark-border-subtle">
-              <div className="text-4xl mb-3">📝</div>
-              <p className="text-dark-text-secondary">No assignments found</p>
+              <div className="text-4xl mb-3">✅</div>
+              <p className="text-dark-text-secondary">All caught up! No incomplete assignments.</p>
             </div>
           ) : (
-            assignments.map((assignment) => {
-              const dueInfo = getDaysUntilDue(assignment.dueDate)
-              return (
-                <div
-                  key={assignment.id}
-                  className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
-                >
-                  {/* Subject/Course Badge */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                    <span className="text-xs font-semibold text-dark-text-secondary tracking-tight">
-                      {assignment.subject}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h4 className="text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary mb-3 tracking-tight leading-snug">
-                    {assignment.title}
-                  </h4>
-
-                  {/* Meta Info */}
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-dark-text-secondary mb-3">
-                    {assignment.dueDate && (
-                      <div className="flex items-center gap-1.5">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>{formatDate(assignment.dueDate)}</span>
-                        {dueInfo && (
-                          <span className={`font-semibold ${dueInfo.color}`}>
-                            ({dueInfo.text})
-                          </span>
+            assignments
+              .filter(a => !a.submitted && !a.graded)
+              .map((assignment) => {
+                const dueInfo = getDaysUntilDue(assignment.dueDate)
+                return (
+                  <div
+                    key={assignment.id}
+                    className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
+                  >
+                    {/* Subject/Course Badge */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                        <span className="text-xs font-semibold text-dark-text-secondary tracking-tight">
+                          {assignment.subject}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteAssignment(assignment.id)}
+                        disabled={deleting === assignment.id}
+                        className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        title="Delete assignment"
+                      >
+                        {deleting === assignment.id ? (
+                          <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                         )}
-                      </div>
-                    )}
-                    {assignment.points && (
-                      <div className="flex items-center gap-1.5">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                        <span>{assignment.points} pts</span>
-                      </div>
-                    )}
-                  </div>
+                      </button>
+                    </div>
 
-                  {/* Status Badges */}
-                  <div className="flex items-center gap-2">
-                    {assignment.submitted && (
-                      <span className="px-2.5 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-lg">
-                        ✓ Submitted
-                      </span>
-                    )}
-                    {assignment.graded && assignment.grade && (
-                      <span className="px-2.5 py-1 bg-blue-500/20 text-blue-400 text-xs font-semibold rounded-lg">
-                        Grade: {assignment.grade}
-                      </span>
-                    )}
+                    {/* Title */}
+                    <h4 className="text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary mb-3 tracking-tight leading-snug">
+                      {assignment.title}
+                    </h4>
+
+                    {/* Meta Info */}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-dark-text-secondary mb-3">
+                      {assignment.dueDate && (
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span>{formatDate(assignment.dueDate)}</span>
+                          {dueInfo && (
+                            <span className={`font-semibold ${dueInfo.color}`}>
+                              ({dueInfo.text})
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {assignment.points && (
+                        <div className="flex items-center gap-1.5">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                          </svg>
+                          <span>{assignment.points} pts</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Link */}
                     {assignment.htmlUrl && (
                       <a
                         href={assignment.htmlUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-2.5 py-1 bg-primary-500/20 text-primary-400 text-xs font-semibold rounded-lg hover:bg-primary-500/30 transition-colors"
+                        className="inline-flex px-2.5 py-1 bg-primary-500/20 text-primary-400 text-xs font-semibold rounded-lg hover:bg-primary-500/30 transition-colors"
                       >
                         View in Canvas →
                       </a>
                     )}
                   </div>
-                </div>
-              )
-            })
+                )
+              })
           )}
         </div>
       )}
