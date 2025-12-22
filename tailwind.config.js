@@ -170,8 +170,24 @@ export default {
         // Opal animations
         'opal-pulse': 'opal-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'opal-breathe': 'opal-breathe 4s ease-in-out infinite',
+        'opal-card-enter': 'opalCardEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        'opal-gradient': 'opalGradient 3s linear infinite',
         // Glass morphism float animation
         'float': 'float 6s ease-in-out infinite',
+        // Enhanced micro-interactions
+        'bounce-soft': 'bounceSoft 1s ease-in-out infinite',
+        'wiggle': 'wiggle 0.5s ease-in-out',
+        'glow': 'glow 2s ease-in-out infinite',
+        'slide-in-right': 'slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'slide-in-left': 'slideInLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        // Stagger animations
+        'stagger-fade-in': 'fadeIn 0.5s ease-out backwards',
+        // Flying away animation for completed tasks
+        'fly-away': 'flyAway 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        // Emoji transition animations
+        'emoji-exit': 'emojiExit 3.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        'emoji-enter': 'emojiEnter 3.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        'bounce-slow': 'bounceSlow 3s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -211,10 +227,60 @@ export default {
           '0%, 100%': { transform: 'scale(1)', opacity: '0.6' },
           '50%': { transform: 'scale(1.05)', opacity: '0.8' },
         },
+        'opalCardEnter': {
+          '0%': { opacity: '0', transform: 'translateY(20px) scale(0.95)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        'opalGradient': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
         // Glass morphism float animation
         'float': {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-20px)' },
+        },
+        // Enhanced micro-interactions
+        'bounceSoft': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'wiggle': {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(-5deg)' },
+          '75%': { transform: 'rotate(5deg)' },
+        },
+        'glow': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(88, 166, 255, 0.3)' },
+          '50%': { boxShadow: '0 0 40px rgba(88, 166, 255, 0.6)' },
+        },
+        'slideInRight': {
+          '0%': { opacity: '0', transform: 'translateX(-20px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'slideInLeft': {
+          '0%': { opacity: '0', transform: 'translateX(20px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        // Flying away animation for completed tasks
+        'flyAway': {
+          '0%': { transform: 'translateY(0) scale(1)', opacity: '1' },
+          '50%': { transform: 'translateY(-30px) scale(1.05)', opacity: '0.8' },
+          '100%': { transform: 'translateY(-100px) scale(0.8)', opacity: '0' },
+        },
+        // Emoji transition animations
+        'emojiExit': {
+          '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '100%': { opacity: '0', transform: 'translateY(-30px) scale(0.5)' },
+        },
+        'emojiEnter': {
+          '0%': { opacity: '0', transform: 'translateY(30px) scale(0.5)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        'bounceSlow': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
         },
       },
     },

@@ -553,19 +553,32 @@ const Dashboard = ({ onOpenScanner }) => {
               <h1 className="text-xl md:text-2xl lg:text-3xl font-black bg-gradient-to-r from-primary-300 via-accent-cyan to-primary-300 bg-clip-text text-transparent bg-[length:200%_auto] animate-opal-gradient truncate">
                 {getTimeOfDayGreeting()}, {userName}
               </h1>
-              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                <p className="text-dark-text-secondary text-xs md:text-sm font-medium flex items-center gap-1.5">
-                  <svg className="w-3 h-3 md:w-4 md:h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+              {/* Date & Time - Larger */}
+              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg font-bold flex items-center gap-2">
+                  <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </p>
-                <p className="text-dark-text-secondary text-xs md:text-sm font-medium flex items-center gap-1.5">
-                  <svg className="w-3 h-3 md:w-4 md:h-4 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <p className="text-accent-cyan text-sm md:text-base lg:text-lg font-bold flex items-center gap-2">
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                 </p>
+              </div>
+
+              {/* Assignment Summary */}
+              <div className="mt-2 flex items-center gap-2 text-sm md:text-base">
+                <span className="text-green-400 font-semibold">
+                  {assignments.filter(a => a.completed).length} completed
+                </span>
+                <span className="text-dark-text-muted">•</span>
+                <span className="text-orange-400 font-semibold">
+                  {assignments.filter(a => !a.completed).length} to do
+                </span>
               </div>
             </div>
           </div>
@@ -681,13 +694,16 @@ const Dashboard = ({ onOpenScanner }) => {
           <button
             onClick={handleAiCreateAssignment}
             disabled={aiProcessing || !aiInput.trim()}
-            className="px-4 md:px-5 py-2.5 md:py-3 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base font-semibold rounded-lg hover:shadow-dark-soft-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2"
+            className="group px-4 md:px-5 py-2.5 md:py-3 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base font-semibold rounded-lg hover:shadow-dark-soft-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 hover:scale-105 flex items-center gap-2 relative overflow-hidden"
           >
+            {/* Shimmer effect on hover */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+
             {aiProcessing ? (
               <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
             ) : (
               <>
-                <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <span className="hidden sm:inline">Create</span>
@@ -756,16 +772,19 @@ const Dashboard = ({ onOpenScanner }) => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
         <button
           onClick={onOpenScanner}
-          className="relative overflow-hidden bg-dark-bg-secondary rounded-xl p-3 md:p-4 shadow-dark-soft border border-dark-border-glow hover:shadow-dark-soft-lg hover:border-primary-500/30 transition-all active:scale-[0.98]">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center">
+          className="group relative overflow-hidden bg-dark-bg-secondary rounded-xl p-3 md:p-4 shadow-dark-soft border border-dark-border-glow hover:shadow-dark-soft-lg hover:border-primary-500/30 transition-all duration-300 active:scale-[0.96] hover:scale-[1.02]">
+          {/* Shimmer effect on hover */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-primary-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+
+          <div className="flex items-center gap-2 relative z-10">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
             <div className="text-left">
-              <div className="font-semibold text-dark-text-primary text-sm md:text-base">Scan</div>
+              <div className="font-semibold text-dark-text-primary text-sm md:text-base group-hover:text-primary-400 transition-colors">Scan</div>
               <div className="text-xs md:text-sm text-dark-text-muted">Homework</div>
             </div>
           </div>
@@ -773,15 +792,18 @@ const Dashboard = ({ onOpenScanner }) => {
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="relative overflow-hidden bg-dark-bg-secondary rounded-xl p-3 md:p-4 shadow-dark-soft border border-dark-border-glow hover:shadow-dark-soft-lg hover:border-green-500/30 transition-all active:scale-[0.98]">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center">
+          className="group relative overflow-hidden bg-dark-bg-secondary rounded-xl p-3 md:p-4 shadow-dark-soft border border-dark-border-glow hover:shadow-dark-soft-lg hover:border-green-500/30 transition-all duration-300 active:scale-[0.96] hover:scale-[1.02]">
+          {/* Shimmer effect on hover */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-green-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+
+          <div className="flex items-center gap-2 relative z-10">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </div>
             <div className="text-left">
-              <div className="font-semibold text-dark-text-primary text-sm md:text-base">Add</div>
+              <div className="font-semibold text-dark-text-primary text-sm md:text-base group-hover:text-green-400 transition-colors">Add</div>
               <div className="text-xs md:text-sm text-dark-text-muted">Assignment</div>
             </div>
           </div>
@@ -815,10 +837,10 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-2 gap-4 md:gap-5 lg:gap-6">
-          {assignments.map((assignment) => (
+          {assignments.map((assignment, index) => (
             <div
               key={assignment.id}
-              className={`relative overflow-hidden rounded-xl transition-all active:scale-[0.99] ${
+              className={`relative overflow-hidden rounded-xl transition-all active:scale-[0.99] animate-stagger-fade-in hover:scale-[1.02] ${
                 assignment.aiCaptured
                   ? 'bg-dark-bg-secondary border border-primary-500/40 p-4 md:p-6'
                   : `${getSubjectBgColor(assignment.subject)} border border-dark-border-glow shadow-dark-soft hover:shadow-dark-soft-lg p-4 md:p-6`
@@ -829,6 +851,7 @@ const Dashboard = ({ onOpenScanner }) => {
                   ? 'duration-300 opacity-80'
                   : 'duration-200'
               }`}
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* AI Badge - Top Left Position */}
               {assignment.aiCaptured && (
