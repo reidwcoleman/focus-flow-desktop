@@ -731,13 +731,13 @@ const Dashboard = ({ onOpenScanner }) => {
                 {/* XP Progress */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-dark-text-muted">{xpData.currentLevelXP.toLocaleString()} XP</span>
-                    <span className="text-yellow-400 font-semibold">{xpData.xpToNextLevel.toLocaleString()} to next</span>
+                    <span className="text-dark-text-muted">{(xpData.currentLevelXP || 0).toLocaleString()} XP</span>
+                    <span className="text-yellow-400 font-semibold">{(xpData.xpToNextLevel || 0).toLocaleString()} to next</span>
                   </div>
                   <div className="h-1.5 bg-dark-bg-tertiary/70 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-1000"
-                      style={{ width: `${(xpData.currentLevelXP / (xpData.currentLevelXP + xpData.xpToNextLevel)) * 100}%` }}
+                      style={{ width: `${((xpData.currentLevelXP || 0) / ((xpData.currentLevelXP || 0) + (xpData.xpToNextLevel || 1))) * 100}%` }}
                     ></div>
                   </div>
                 </div>
