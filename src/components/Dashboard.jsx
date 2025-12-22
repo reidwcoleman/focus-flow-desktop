@@ -714,33 +714,35 @@ const Dashboard = ({ onOpenScanner }) => {
             </button>
 
             {/* XP Section */}
-            <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-yellow-500/10 to-orange-500/10 backdrop-blur-sm p-4 border border-yellow-500/30">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="text-3xl md:text-4xl">⭐</div>
-                <div className="flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
-                      Level {xpData.level}
-                    </span>
+            {xpData && (
+              <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-yellow-500/10 to-orange-500/10 backdrop-blur-sm p-4 border border-yellow-500/30">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="text-3xl md:text-4xl">⭐</div>
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
+                        Level {xpData.level}
+                      </span>
+                    </div>
+                    <p className="text-xs text-dark-text-muted font-medium">{xpData.levelTitle}</p>
                   </div>
-                  <p className="text-xs text-dark-text-muted font-medium">{xpData.levelTitle}</p>
                 </div>
-              </div>
 
-              {/* XP Progress */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-dark-text-muted">{xpData.currentLevelXP.toLocaleString()} XP</span>
-                  <span className="text-yellow-400 font-semibold">{xpData.xpToNextLevel.toLocaleString()} to next</span>
-                </div>
-                <div className="h-1.5 bg-dark-bg-tertiary/70 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-1000"
-                    style={{ width: `${(xpData.currentLevelXP / (xpData.currentLevelXP + xpData.xpToNextLevel)) * 100}%` }}
-                  ></div>
+                {/* XP Progress */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-dark-text-muted">{xpData.currentLevelXP.toLocaleString()} XP</span>
+                    <span className="text-yellow-400 font-semibold">{xpData.xpToNextLevel.toLocaleString()} to next</span>
+                  </div>
+                  <div className="h-1.5 bg-dark-bg-tertiary/70 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-1000"
+                      style={{ width: `${(xpData.currentLevelXP / (xpData.currentLevelXP + xpData.xpToNextLevel)) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Motivational message */}
