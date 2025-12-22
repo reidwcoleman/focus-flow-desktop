@@ -910,7 +910,7 @@ const Dashboard = ({ onOpenScanner }) => {
                 </h4>
 
                 {/* Meta Info */}
-                <div className="flex items-center gap-4 md:gap-5 text-xs md:text-sm text-dark-text-secondary mb-3.5 md:mb-4">
+                <div className="flex items-center gap-4 md:gap-5 text-xs md:text-sm text-dark-text-secondary mb-3.5 md:mb-4 flex-wrap">
                 <div className="flex items-center gap-1.5 md:gap-2">
                   <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -923,6 +923,17 @@ const Dashboard = ({ onOpenScanner }) => {
                   </svg>
                   <span className="font-semibold">{getDaysUntilDue(assignment.dueDate)}</span>
                 </div>
+                {/* Grade Display */}
+                {(assignment.gradeReceived || assignment.scoreReceived) && (
+                  <div className="flex items-center gap-1.5 md:gap-2 px-2 py-1 rounded-lg bg-green-500/20 border border-green-500/30">
+                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-bold text-green-400">
+                      {assignment.gradeReceived || `${assignment.scoreReceived}%`}
+                    </span>
+                  </div>
+                )}
                 </div>
 
                 {/* Mark as Done Checkbox */}
