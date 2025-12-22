@@ -25,11 +25,11 @@ class StudyGenerationService {
       shortAnswer = 3
     } = options
 
-    // Use standard mode to save tokens (Groq free tier)
+    // Use UltraThink mode to get enough tokens for complete quiz JSON
     const previousDeepMode = aiService.useDeepResearch
     const previousUltraMode = aiService.useUltraThink
     aiService.useDeepResearch = false
-    aiService.useUltraThink = false
+    aiService.useUltraThink = true // Need 3000 tokens for complete quiz JSON
 
     try {
       const prompt = this._buildQuizPrompt(text, {
@@ -80,11 +80,11 @@ class StudyGenerationService {
   async generateFlashcards(text, options = {}) {
     const { title, subject, cardCount = 30 } = options
 
-    // Use standard mode to save tokens (Groq free tier)
+    // Use UltraThink mode to get enough tokens for complete flashcards JSON
     const previousDeepMode = aiService.useDeepResearch
     const previousUltraMode = aiService.useUltraThink
     aiService.useDeepResearch = false
-    aiService.useUltraThink = false
+    aiService.useUltraThink = true // Need 3000 tokens for complete flashcards JSON
 
     try {
       const prompt = this._buildFlashcardsPrompt(text, { cardCount })
@@ -136,11 +136,11 @@ class StudyGenerationService {
   async generateNotes(text, options = {}) {
     const { title, subject } = options
 
-    // Use standard mode to save tokens (Groq free tier)
+    // Use UltraThink mode to get enough tokens for complete JSON response
     const previousDeepMode = aiService.useDeepResearch
     const previousUltraMode = aiService.useUltraThink
     aiService.useDeepResearch = false
-    aiService.useUltraThink = false
+    aiService.useUltraThink = true // Need 3000 tokens for complete notes JSON
 
     try {
       const prompt = this._buildNotesPrompt(text)
