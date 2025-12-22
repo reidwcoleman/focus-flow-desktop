@@ -91,8 +91,8 @@ async function handleLogin(body: any): Promise<Response> {
     const loginData = new URLSearchParams({
       username: username,
       password: password,
-      appName: 'psu920wakeco',
-      nonBrowser: 'true'  // CRITICAL: Enables API access mode for JSON endpoints
+      appName: 'psu920wakeco'
+      // Note: NOT using nonBrowser=true for login, only for API requests
     })
 
     const loginResponse = await fetch(loginUrl, {
