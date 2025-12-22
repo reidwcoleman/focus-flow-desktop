@@ -351,18 +351,18 @@ const CanvasHub = () => {
                 {selectedCourse.course_code || selectedCourse.name}
               </h3>
               <p className="text-xs text-dark-text-muted">
-                {assignments.filter(a => a.courseId === selectedCourse.id && !a.submitted && !a.graded).length} incomplete assignments
+                {filterRecentAssignments(assignments).filter(a => a.courseId === selectedCourse.id && !a.submitted && !a.graded).length} incomplete assignments
               </p>
             </div>
           </div>
 
-          {assignments.filter(a => a.courseId === selectedCourse.id && !a.submitted && !a.graded).length === 0 ? (
+          {filterRecentAssignments(assignments).filter(a => a.courseId === selectedCourse.id && !a.submitted && !a.graded).length === 0 ? (
             <div className="text-center py-8 bg-dark-bg-secondary rounded-lg border border-dark-border-subtle">
               <div className="text-4xl mb-3">✅</div>
               <p className="text-dark-text-secondary">All caught up! No incomplete assignments.</p>
             </div>
           ) : (
-            assignments
+            filterRecentAssignments(assignments)
               .filter(a => a.courseId === selectedCourse.id && !a.submitted && !a.graded)
               .map((assignment) => {
                 const dueInfo = getDaysUntilDue(assignment.dueDate)
@@ -439,15 +439,15 @@ const CanvasHub = () => {
       {activeView === 'assignments' && (
         <div className="space-y-3">
           <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary tracking-tight">
-            Incomplete Assignments ({assignments.filter(a => !a.submitted && !a.graded).length})
+            Incomplete Assignments ({filterRecentAssignments(assignments).filter(a => !a.submitted && !a.graded).length})
           </h3>
-          {assignments.filter(a => !a.submitted && !a.graded).length === 0 ? (
+          {filterRecentAssignments(assignments).filter(a => !a.submitted && !a.graded).length === 0 ? (
             <div className="text-center py-8 bg-dark-bg-secondary rounded-lg border border-dark-border-subtle">
               <div className="text-4xl mb-3">✅</div>
               <p className="text-dark-text-secondary">All caught up! No incomplete assignments.</p>
             </div>
           ) : (
-            assignments
+            filterRecentAssignments(assignments)
               .filter(a => !a.submitted && !a.graded)
               .map((assignment) => {
                 const dueInfo = getDaysUntilDue(assignment.dueDate)
