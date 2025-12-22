@@ -12,6 +12,7 @@ import StreakCalendar from './StreakCalendar'
 import XPToast from './XPToast'
 import GradeChart from './GradeChart'
 import AssignmentChart from './AssignmentChart'
+import AIPlanningSuggestions from './AIPlanningSuggestions'
 import { toast } from './Toast'
 import { confirmDialog } from './ConfirmDialog'
 
@@ -47,6 +48,18 @@ const Dashboard = ({ onOpenScanner }) => {
   const [emojiTransitioning, setEmojiTransitioning] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [grades, setGrades] = useState([])
+
+  // Filter assignments to exclude those older than 2 weeks
+  const filterRecentAssignments = (assignmentsList) => {
+    const twoWeeksAgo = new Date()
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+
+    return assignmentsList.filter(assignment => {
+      if (!assignment.dueDate) return true // Keep assignments with no due date
+      const dueDate = new Date(assignment.dueDate)
+      return dueDate >= twoWeeksAgo // Only keep assignments due within last 2 weeks or future
+    })
+  }
 
   useEffect(() => {
     loadUserName()
@@ -573,11 +586,11 @@ const Dashboard = ({ onOpenScanner }) => {
               {/* Assignment Summary */}
               <div className="mt-2 flex items-center gap-2 text-sm md:text-base">
                 <span className="text-green-400 font-semibold">
-                  {assignments.filter(a => a.completed).length} completed
+                  {filterRecentAssignments(assignments).filter(a => a.completed).length} completed
                 </span>
                 <span className="text-dark-text-muted">•</span>
                 <span className="text-orange-400 font-semibold">
-                  {assignments.filter(a => !a.completed).length} to do
+                  {filterRecentAssignments(assignments).filter(a => !a.completed).length} to do
                 </span>
               </div>
             </div>
@@ -768,6 +781,9 @@ const Dashboard = ({ onOpenScanner }) => {
         )}
       </div>
 
+      {/* AI Smart Planning Suggestions */}
+      <AIPlanningSuggestions assignments={assignments} grades={grades} />
+
       {/* Quick Actions */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
         <button
@@ -837,7 +853,7 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-2 gap-4 md:gap-5 lg:gap-6">
-          {assignments.map((assignment, index) => (
+          {filterRecentAssignments(assignments).map((assignment, index) => (
             <div
               key={assignment.id}
               className={`relative overflow-hidden rounded-xl transition-all active:scale-[0.99] animate-stagger-fade-in hover:scale-[1.02] ${
