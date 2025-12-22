@@ -1199,9 +1199,12 @@ const Dashboard = ({ onOpenScanner }) => {
       {/* Data Visualization Section - Glass Morphism */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Grade Trends Chart */}
-        <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-primary-500/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 rounded-lg bg-primary-500/20">
+        <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-primary-500/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] animate-slide-in-right hover:scale-[1.02]">
+          {/* Floating glow orb */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl animate-float"></div>
+
+          <div className="flex items-center gap-2 mb-4 relative z-10">
+            <div className="p-2 rounded-lg bg-primary-500/20 group-hover:scale-110 transition-transform">
               <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
@@ -1215,9 +1218,12 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
 
         {/* Assignment Completion Chart */}
-        <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-accent-cyan/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 rounded-lg bg-accent-cyan/20">
+        <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-accent-cyan/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] animate-slide-in-left hover:scale-[1.02]">
+          {/* Floating glow orb */}
+          <div className="absolute -top-20 -left-20 w-40 h-40 bg-accent-cyan/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+
+          <div className="flex items-center gap-2 mb-4 relative z-10">
+            <div className="p-2 rounded-lg bg-accent-cyan/20 group-hover:scale-110 transition-transform">
               <svg className="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0h2a2 2 0 012-2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 00-2 2z" />
               </svg>
