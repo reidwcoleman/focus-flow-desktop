@@ -422,38 +422,55 @@ const Planner = () => {
 
   return (
     <div className="space-y-5 md:space-y-6 pb-6 md:pb-8 animate-fadeIn">
-      {/* Simplified Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary">Calendar</h1>
-        <div className="flex items-center gap-3">
-          {activities.length > 0 && (
-            <div className="flex items-center gap-4 text-sm md:text-base text-dark-text-muted">
-              <span><span className="font-semibold text-green-500">{activities.filter(a => a.is_completed).length}</span> done</span>
-              <span><span className="font-semibold text-amber-500">{activities.filter(a => !a.is_completed).length}</span> pending</span>
-            </div>
-          )}
+      {/* Glass Morphism Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-dark-bg-secondary/30 backdrop-blur-2xl p-4 md:p-5 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] border border-white/10 hover:border-primary-500/30 transition-all duration-300">
+        {/* Floating glow orbs */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/15 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-cyan/15 rounded-full blur-3xl animate-float" style={{animationDelay: '1.5s'}}></div>
+
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-primary-300 via-accent-cyan to-primary-300 bg-clip-text text-transparent bg-[length:200%_auto] animate-opal-gradient">
+              Calendar & Planning
+            </h1>
+            {activities.length > 0 && (
+              <div className="flex items-center gap-4 text-sm md:text-base text-dark-text-muted mt-2">
+                <span className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="font-semibold text-green-400">{activities.filter(a => a.is_completed).length}</span> done
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                  <span className="font-semibold text-amber-400">{activities.filter(a => !a.is_completed).length}</span> pending
+                </span>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => setShowBulkUpload(true)}
-            className="px-5 py-2.5 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-bold text-sm md:text-base rounded-lg hover:scale-105 transition-all flex items-center gap-2 shadow-lg shadow-primary-500/20"
+            className="group relative overflow-hidden px-5 py-2.5 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-bold text-sm md:text-base rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-primary-500/20"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+
+            <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
-            <span>Bulk Upload</span>
+            <span className="relative z-10">Bulk Upload</span>
           </button>
         </div>
       </div>
 
-      {/* Simplified AI Input */}
-      <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5 border border-dark-border-subtle">
+      {/* AI Input - Glass Morphism */}
+      <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-white/10 hover:border-primary-500/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-3 p-2.5 rounded-lg bg-green-500/10 border border-green-500/30 animate-fadeIn">
+          <div className="mb-3 p-2.5 rounded-lg bg-green-500/10 backdrop-blur-sm border border-green-500/30 animate-fadeIn">
             <p className="text-green-400 text-sm font-medium">{success}</p>
           </div>
         )}
         {error && (
-          <div className="mb-3 p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 animate-fadeIn">
+          <div className="mb-3 p-2.5 rounded-lg bg-red-500/10 backdrop-blur-sm border border-red-500/30 animate-fadeIn">
             <p className="text-red-400 text-sm font-medium">{error}</p>
           </div>
         )}
@@ -465,22 +482,25 @@ const Planner = () => {
             onChange={(e) => setAiInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAiCreate()}
             placeholder="Study chemistry tomorrow at 3pm..."
-            className="flex-1 px-4 py-2.5 text-sm md:text-base rounded-lg bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-primary placeholder:text-dark-text-muted focus:outline-none focus:border-primary-500 transition-colors"
+            className="flex-1 px-4 py-2.5 text-sm md:text-base rounded-xl bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary placeholder:text-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
             disabled={aiProcessing}
           />
           <button
             onClick={handleAiCreate}
             disabled={aiProcessing || !aiInput.trim()}
-            className="px-4 py-2.5 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="group relative overflow-hidden px-4 py-2.5 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base font-semibold rounded-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+
             {aiProcessing ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin relative z-10"></div>
             ) : (
               <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 relative z-10 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                <span className="hidden sm:inline">Add</span>
+                <span className="hidden sm:inline relative z-10">Add</span>
               </>
             )}
           </button>
@@ -510,6 +530,9 @@ const Planner = () => {
           {showExamples ? 'Hide' : 'Show'} examples
         </button>
       </div>
+
+      {/* AI Smart Planning Suggestions */}
+      <AIPlanningSuggestions assignments={assignments} grades={grades} />
 
       {/* Simplified View & Filter */}
       <div className="flex items-center justify-between gap-3">
@@ -554,24 +577,27 @@ const Planner = () => {
           <CalendarSkeleton />
         ) : (
           <div
-            className="bg-dark-bg-secondary rounded-xl p-4 md:p-5 border border-dark-border-subtle animate-fadeIn"
+            className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] animate-slide-in-right"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg md:text-xl font-bold text-dark-text-primary">
+          {/* Floating glow orb */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl animate-float"></div>
+
+          <div className="flex items-center justify-between mb-4 relative z-10">
+            <h2 className="text-lg md:text-xl font-bold text-dark-text-primary bg-gradient-to-r from-primary-300 to-accent-cyan bg-clip-text text-transparent">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
             <div className="flex gap-2">
               <button
                 onClick={goToToday}
-                className="px-3 py-1.5 rounded-lg bg-primary-500/10 text-primary-500 text-xs font-medium hover:bg-primary-500/20 transition-colors"
+                className="px-3 py-1.5 rounded-lg bg-primary-500/10 backdrop-blur-sm border border-primary-500/30 text-primary-500 text-xs font-medium hover:bg-primary-500/20 hover:scale-105 transition-all"
               >
                 Today
               </button>
               <button
                 onClick={previousMonth}
-                className="w-8 h-8 rounded-lg bg-dark-bg-tertiary text-dark-text-primary hover:bg-dark-bg-surface transition-colors"
+                className="w-8 h-8 rounded-lg bg-dark-bg-tertiary/50 backdrop-blur-sm border border-dark-border-glow text-dark-text-primary hover:border-primary-500 hover:scale-110 hover:-translate-x-1 transition-all"
               >
                 <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -579,7 +605,7 @@ const Planner = () => {
               </button>
               <button
                 onClick={nextMonth}
-                className="w-8 h-8 rounded-lg bg-dark-bg-tertiary text-dark-text-primary hover:bg-dark-bg-surface transition-colors"
+                className="w-8 h-8 rounded-lg bg-dark-bg-tertiary/50 backdrop-blur-sm border border-dark-border-glow text-dark-text-primary hover:border-primary-500 hover:scale-110 hover:translate-x-1 transition-all"
               >
                 <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -597,44 +623,63 @@ const Planner = () => {
             ))}
           </div>
 
-          {/* Calendar Days */}
-          <div className="grid grid-cols-7 gap-1">
+          {/* Calendar Days - Enhanced */}
+          <div className="grid grid-cols-7 gap-1.5 relative z-10">
             {getDaysInMonth().map((day, index) => {
               const dayActivities = getFilteredActivities(getActivitiesForDay(day))
               const hasActivities = dayActivities.length > 0
               const hasIncompleteActivities = dayActivities.some(a => !a.is_completed)
+              const activityTypes = [...new Set(dayActivities.map(a => a.activity_type))]
 
               return (
                 <button
                   key={index}
                   onClick={() => day && setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
                   disabled={!day}
-                  className={`aspect-square rounded-lg p-1 transition-all text-center relative ${
+                  className={`aspect-square rounded-lg p-1 transition-all duration-300 text-center relative hover:scale-110 ${
                     !day
                       ? 'invisible'
                       : isSelected(day)
-                      ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white'
+                      ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white shadow-[0_0_20px_rgba(88,166,255,0.6)] ring-2 ring-primary-400'
                       : isToday(day)
-                      ? 'bg-primary-500/20 border-2 border-primary-500 text-dark-text-primary font-bold'
+                      ? 'bg-primary-500/20 border-2 border-primary-500 text-dark-text-primary font-bold shadow-[0_0_15px_rgba(88,166,255,0.4)]'
                       : hasActivities && hasIncompleteActivities
-                      ? 'bg-amber-500/20 border-2 border-amber-500 text-dark-text-primary font-bold'
+                      ? 'bg-amber-500/20 border-2 border-amber-500 text-dark-text-primary font-bold hover:bg-amber-500/30'
                       : hasActivities
-                      ? 'bg-dark-bg-tertiary text-dark-text-muted border border-dark-border-subtle'
-                      : 'bg-dark-bg-tertiary text-dark-text-muted border border-dark-border-subtle'
+                      ? 'bg-green-500/20 border-2 border-green-500 text-dark-text-primary hover:bg-green-500/30'
+                      : 'bg-dark-bg-tertiary/50 text-dark-text-muted border border-dark-border-subtle hover:bg-dark-bg-tertiary hover:border-primary-500/30'
                   }`}
+                  style={{ animationDelay: `${index * 0.02}s` }}
                 >
                   {day && (
                     <div className="flex flex-col items-center justify-center h-full relative">
-                      <span className={`text-sm font-semibold ${isSelected(day) ? 'text-white' : ''}`}>
+                      <span className={`text-sm font-semibold relative z-10 ${isSelected(day) ? 'text-white' : ''}`}>
                         {day}
                       </span>
+
+                      {/* Activity count badge */}
                       {hasActivities && dayActivities.length > 0 && (
                         <div className={`absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-xs font-bold ${
                           isSelected(day)
                             ? 'bg-white text-primary-500'
-                            : 'bg-amber-500 text-white'
-                        }`}>
+                            : hasIncompleteActivities
+                            ? 'bg-amber-500 text-white shadow-[0_0_8px_rgba(245,158,11,0.6)]'
+                            : 'bg-green-500 text-white shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                        } animate-pulse-soft`}>
                           {dayActivities.length}
+                        </div>
+                      )}
+
+                      {/* Activity type dots */}
+                      {hasActivities && activityTypes.length > 0 && (
+                        <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
+                          {activityTypes.slice(0, 3).map((type, i) => (
+                            <div
+                              key={i}
+                              className={`w-1 h-1 rounded-full ${getTypeColor(type).replace('bg-', 'bg-')} ${isSelected(day) ? 'opacity-70' : ''}`}
+                              title={type}
+                            ></div>
+                          ))}
                         </div>
                       )}
                     </div>
