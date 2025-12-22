@@ -316,6 +316,10 @@ IMPORTANT: Your response must START with { and END with }. Nothing else.`
       cleaned = cleaned.substring(firstBrace, lastBrace + 1)
     }
 
+    // Sanitize JSON string by fixing common control character issues
+    // This handles unescaped newlines, tabs, and other control chars in string values
+    cleaned = this._sanitizeJSON(cleaned)
+
     // Try parsing the cleaned text
     try {
       const parsed = JSON.parse(cleaned)
@@ -324,7 +328,7 @@ IMPORTANT: Your response must START with { and END with }. Nothing else.`
       }
     } catch (e) {
       console.error('JSON parse error:', e)
-      console.error('Attempted to parse:', cleaned.substring(0, 200))
+      console.error('Attempted to parse:', cleaned.substring(0, 500))
     }
 
     // Try various regex patterns as fallback
@@ -337,7 +341,8 @@ IMPORTANT: Your response must START with { and END with }. Nothing else.`
       const match = text.match(pattern)
       if (match) {
         try {
-          const parsed = JSON.parse(match[0])
+          const sanitized = this._sanitizeJSON(match[0])
+          const parsed = JSON.parse(sanitized)
           if (typeof parsed === 'object' && parsed !== null) {
             return parsed
           }
@@ -348,6 +353,72 @@ IMPORTANT: Your response must START with { and END with }. Nothing else.`
     }
 
     throw new Error('No valid JSON found in response')
+  }
+
+  _sanitizeJSON(jsonString) {
+    // Fix unescaped control characters within JSON string values
+    // Strategy: Find string values and escape unescaped control characters
+
+    let result = ''
+    let inString = false
+    let escaped = false
+
+    for (let i = 0; i < jsonString.length; i++) {
+      const char = jsonString[i]
+      const prevChar = i > 0 ? jsonString[i - 1] : ''
+
+      // Track if we're inside a string
+      if (char === '"' && prevChar !== '\\') {
+        inString = !inString
+        result += char
+        continue
+      }
+
+      // If not in a string, just copy the character
+      if (!inString) {
+        result += char
+        continue
+      }
+
+      // Inside a string - handle control characters
+      if (char === '\\') {
+        // Already escaped sequence - keep it
+        result += char
+        if (i + 1 < jsonString.length) {
+          i++
+          result += jsonString[i]
+        }
+        continue
+      }
+
+      // Escape unescaped control characters
+      switch (char) {
+        case '\n':
+          result += '\\n'
+          break
+        case '\r':
+          result += '\\r'
+          break
+        case '\t':
+          result += '\\t'
+          break
+        case '\f':
+          result += '\\f'
+          break
+        case '\b':
+          result += '\\b'
+          break
+        default:
+          // Remove other control characters (ASCII 0-31 and 127)
+          if (char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127) {
+            result += ' ' // Replace with space
+          } else {
+            result += char
+          }
+      }
+    }
+
+    return result
   }
 
   _normalizeQuestionType(type) {
