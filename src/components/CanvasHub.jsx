@@ -647,6 +647,70 @@ const CanvasHub = () => {
           )}
         </div>
       )}
+
+      {/* Deleted Courses View */}
+      {activeView === 'deleted' && (
+        <div className="space-y-3">
+          <h3 className="text-base md:text-lg lg:text-xl font-bold text-dark-text-primary tracking-tight">
+            Deleted Courses ({blockedCourses.length})
+          </h3>
+          <p className="text-sm text-dark-text-secondary">
+            Courses you've deleted will stay hidden even after syncing. Click "Recover" to restore a course.
+          </p>
+          {blockedCourses.length === 0 ? (
+            <div className="text-center py-8 bg-dark-bg-secondary rounded-lg border border-dark-border-subtle">
+              <div className="text-4xl mb-3">🗑️</div>
+              <p className="text-dark-text-secondary">No deleted courses</p>
+            </div>
+          ) : (
+            blockedCourses.map((blockedCourse) => {
+              const blockedDate = new Date(blockedCourse.blocked_at)
+              return (
+                <div
+                  key={blockedCourse.id}
+                  className="bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary rounded-lg p-4 border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="text-sm md:text-base lg:text-lg font-semibold text-dark-text-primary mb-1 tracking-tight leading-snug">
+                        Course ID: {blockedCourse.canvas_course_id}
+                      </h4>
+                      <p className="text-xs text-dark-text-muted">
+                        Deleted {blockedDate.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleRecoverCourse(blockedCourse.canvas_course_id)}
+                      disabled={recovering === blockedCourse.canvas_course_id}
+                      className="px-3 py-2 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors text-xs font-semibold flex items-center gap-2 disabled:opacity-50"
+                    >
+                      {recovering === blockedCourse.canvas_course_id ? (
+                        <>
+                          <div className="w-3 h-3 border border-green-400 border-t-transparent rounded-full animate-spin"></div>
+                          <span>Recovering...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          <span>Recover</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
     </div>
   )
 }
