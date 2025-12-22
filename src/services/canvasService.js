@@ -126,7 +126,14 @@ export const canvasService = {
     return await this.makeRequest('/users/self')
   },
 
-  // Get all active courses with pagination
+  // Check if text contains Arabic characters
+  _containsArabic(text) {
+    if (!text) return false
+    const arabicPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
+    return arabicPattern.test(text)
+  },
+
+  // Get all active courses with pagination (filtered to exclude Arabic courses)
   async getCourses() {
     const courses = []
     let page = 1
@@ -138,7 +145,19 @@ export const canvasService = {
       )
 
       if (response && response.length > 0) {
-        courses.push(...response)
+        // Filter out courses with Arabic names
+        const filteredCourses = response.filter(course => {
+          const hasArabicName = this._containsArabic(course.name)
+          const hasArabicCode = this._containsArabic(course.course_code)
+
+          if (hasArabicName || hasArabicCode) {
+            console.log(`🚫 Filtering out Arabic course: ${course.name}`)
+            return false
+          }
+          return true
+        })
+
+        courses.push(...filteredCourses)
         hasMore = response.length === 100 // If we got 100, there might be more
         page++
       } else {
@@ -146,6 +165,7 @@ export const canvasService = {
       }
     }
 
+    console.log(`📚 Loaded ${courses.length} courses (Arabic courses filtered out)`)
     return courses
   },
 
