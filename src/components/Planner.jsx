@@ -11,6 +11,9 @@ import activitySubtasksService from '../services/activitySubtasksService'
 import { CalendarSkeleton, ActivitySkeleton, StatCardSkeleton } from './LoadingSkeleton'
 import { confirmDialog } from './ConfirmDialog'
 import BulkUpload from './BulkUpload'
+import AIPlanningSuggestions from './AIPlanningSuggestions'
+import assignmentsService from '../services/assignmentsService'
+import infiniteCampusService from '../services/infiniteCampusService'
 
 const Planner = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -30,6 +33,8 @@ const Planner = () => {
   const [generatingAI, setGeneratingAI] = useState({}) // Track which activities are generating AI content
   const [collapsedSubtasks, setCollapsedSubtasks] = useState({}) // Track which activities have collapsed subtasks
   const [showBulkUpload, setShowBulkUpload] = useState(false)
+  const [assignments, setAssignments] = useState([])
+  const [grades, setGrades] = useState([])
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
@@ -39,6 +44,8 @@ const Planner = () => {
 
   useEffect(() => {
     loadActivities()
+    loadAssignments()
+    loadGrades()
   }, [currentDate])
 
   useEffect(() => {
@@ -96,6 +103,26 @@ const Planner = () => {
       return a.start_time.localeCompare(b.start_time)
     })
     setDayActivities(sorted)
+  }
+
+  const loadAssignments = async () => {
+    try {
+      const { data, error } = await assignmentsService.getUpcomingAssignments()
+      if (error) throw error
+      const formatted = assignmentsService.toAppFormatBatch(data)
+      setAssignments(formatted)
+    } catch (error) {
+      console.error('Failed to load assignments:', error)
+    }
+  }
+
+  const loadGrades = async () => {
+    try {
+      const syncedGrades = await infiniteCampusService.getSyncedGrades()
+      setGrades(syncedGrades)
+    } catch (error) {
+      console.error('Failed to load grades:', error)
+    }
   }
 
   const handleAiCreate = async () => {

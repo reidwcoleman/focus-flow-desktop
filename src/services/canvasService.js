@@ -336,15 +336,36 @@ export const canvasService = {
     )
   },
 
+  // Get blocked courses for a user
+  async getBlockedCourses(userId) {
+    const { data, error } = await supabase
+      .from('blocked_courses')
+      .select('canvas_course_id')
+      .eq('user_id', userId)
+
+    if (error) {
+      console.error('Failed to get blocked courses:', error)
+      return []
+    }
+
+    return (data || []).map(row => row.canvas_course_id)
+  },
+
   // Sync courses to canvas_courses table - BATCH UPSERT
   async syncCourses(userId) {
     try {
       const courses = await this.getCourses()
 
-      console.log(`📚 Syncing ${courses.length} courses...`)
+      // Get blocked courses
+      const blockedCourseIds = await this.getBlockedCourses(userId)
+      console.log(`🚫 Blocked courses: ${blockedCourseIds.length}`)
+
+      // Filter out blocked courses
+      const filteredCourses = courses.filter(course => !blockedCourseIds.includes(course.id))
+      console.log(`📚 Syncing ${filteredCourses.length} courses (${courses.length - filteredCourses.length} blocked)...`)
 
       // Prepare all course data
-      const courseDataArray = courses.map(course => ({
+      const courseDataArray = filteredCourses.map(course => ({
         user_id: userId,
         canvas_course_id: course.id,
         name: course.name,
@@ -365,11 +386,11 @@ export const canvasService = {
 
       if (error) {
         console.error('Failed to sync courses:', error)
-        return { synced: 0, total: courses.length, error: error.message }
+        return { synced: 0, total: filteredCourses.length, error: error.message }
       }
 
-      console.log(`✅ Successfully synced ${courses.length} courses`)
-      return { synced: courses.length, total: courses.length }
+      console.log(`✅ Successfully synced ${filteredCourses.length} courses`)
+      return { synced: filteredCourses.length, total: filteredCourses.length }
     } catch (error) {
       console.error('Failed to sync courses:', error)
       return { synced: 0, error: error.message }
@@ -381,10 +402,16 @@ export const canvasService = {
     try {
       const canvasAssignments = await this.getAllAssignments()
 
-      console.log(`📝 Syncing ${canvasAssignments.length} assignments...`)
+      // Get blocked courses and filter out their assignments
+      const blockedCourseIds = await this.getBlockedCourses(userId)
+      const filteredAssignments = canvasAssignments.filter(assignment =>
+        !blockedCourseIds.includes(assignment.courseId)
+      )
+
+      console.log(`📝 Syncing ${filteredAssignments.length} assignments (${canvasAssignments.length - filteredAssignments.length} from blocked courses)...`)
 
       // Prepare all assignment data
-      const assignmentDataArray = canvasAssignments.map(assignment => {
+      const assignmentDataArray = filteredAssignments.map(assignment => {
         const canvasId = parseInt(assignment.id.replace('canvas-', ''))
 
         return {
@@ -417,11 +444,11 @@ export const canvasService = {
 
       if (error) {
         console.error('Failed to sync assignments:', error)
-        return { synced: 0, total: canvasAssignments.length, error: error.message }
+        return { synced: 0, total: filteredAssignments.length, error: error.message }
       }
 
-      console.log(`✅ Successfully synced ${canvasAssignments.length} assignments`)
-      return { synced: canvasAssignments.length, total: canvasAssignments.length }
+      console.log(`✅ Successfully synced ${filteredAssignments.length} assignments`)
+      return { synced: filteredAssignments.length, total: filteredAssignments.length }
     } catch (error) {
       console.error('Failed to sync assignments:', error)
       return { synced: 0, error: error.message }
@@ -433,10 +460,16 @@ export const canvasService = {
     try {
       const grades = await this.getAllGrades()
 
-      console.log(`📊 Syncing ${grades.length} course grades...`)
+      // Get blocked courses and filter out their grades
+      const blockedCourseIds = await this.getBlockedCourses(userId)
+      const filteredGrades = grades.filter(grade =>
+        !blockedCourseIds.includes(grade.courseId)
+      )
+
+      console.log(`📊 Syncing ${filteredGrades.length} course grades (${grades.length - filteredGrades.length} from blocked courses)...`)
 
       // Prepare all grade data
-      const gradeDataArray = grades.map(grade => ({
+      const gradeDataArray = filteredGrades.map(grade => ({
         user_id: userId,
         canvas_course_id: grade.courseId,
         course_name: grade.courseName,
@@ -458,11 +491,11 @@ export const canvasService = {
 
       if (error) {
         console.error('Failed to sync grades:', error)
-        return { synced: 0, total: grades.length, error: error.message }
+        return { synced: 0, total: filteredGrades.length, error: error.message }
       }
 
-      console.log(`✅ Successfully synced ${grades.length} grades`)
-      return { synced: grades.length, total: grades.length }
+      console.log(`✅ Successfully synced ${filteredGrades.length} grades`)
+      return { synced: filteredGrades.length, total: filteredGrades.length }
     } catch (error) {
       console.error('Failed to sync grades:', error)
       return { synced: 0, error: error.message }
@@ -665,11 +698,26 @@ export const canvasService = {
     return '3h+'
   },
 
-  // Delete a course from local database
+  // Delete a course from local database and add to blocklist
   async deleteCourse(courseId) {
     const { user } = await authService.getCurrentUser()
     if (!user) throw new Error('Not authenticated')
 
+    // Add to blocklist first
+    const { error: blockError } = await supabase
+      .from('blocked_courses')
+      .insert({
+        user_id: user.id,
+        canvas_course_id: courseId
+      })
+      .select()
+
+    if (blockError && blockError.code !== '23505') { // 23505 is unique constraint violation (already blocked)
+      console.error('Failed to add course to blocklist:', blockError)
+      throw new Error('Failed to block course')
+    }
+
+    // Delete from canvas_courses
     const { error } = await supabase
       .from('canvas_courses')
       .delete()
@@ -681,7 +729,29 @@ export const canvasService = {
       throw new Error('Failed to delete course')
     }
 
-    console.log(`✅ Deleted course ${courseId}`)
+    // Delete all assignments for this course
+    const { error: assignmentError } = await supabase
+      .from('assignments')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('canvas_course_id', courseId)
+
+    if (assignmentError) {
+      console.error('Failed to delete course assignments:', assignmentError)
+    }
+
+    // Delete grades for this course
+    const { error: gradesError } = await supabase
+      .from('course_grades')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('canvas_course_id', courseId)
+
+    if (gradesError) {
+      console.error('Failed to delete course grades:', gradesError)
+    }
+
+    console.log(`✅ Deleted and blocked course ${courseId}`)
   },
 
   // Delete an assignment from local database
