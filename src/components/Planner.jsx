@@ -39,6 +39,7 @@ const Planner = () => {
   const [assignments, setAssignments] = useState([])
   const [grades, setGrades] = useState([])
   const [showCelebration, setShowCelebration] = useState(false)
+  const [hoveredDay, setHoveredDay] = useState(null)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
@@ -309,6 +310,54 @@ const Planner = () => {
         console.error('Failed to delete activity:', err)
       }
     }
+  }
+
+  // Get heatmap intensity based on activity count (0-4 scale)
+  const getHeatmapIntensity = (activityCount) => {
+    if (activityCount === 0) return 0
+    if (activityCount === 1) return 1
+    if (activityCount === 2) return 2
+    if (activityCount <= 4) return 3
+    return 4 // 5 or more
+  }
+
+  // Get heatmap colors based on intensity
+  const getHeatmapColor = (intensity) => {
+    const colors = {
+      0: 'bg-dark-bg-tertiary/50 border-dark-border-subtle',
+      1: 'bg-primary-500/10 border-primary-500/20',
+      2: 'bg-primary-500/25 border-primary-500/40',
+      3: 'bg-primary-500/40 border-primary-500/60',
+      4: 'bg-primary-500/60 border-primary-500/80'
+    }
+    return colors[intensity] || colors[0]
+  }
+
+  // Detect time conflicts for a day
+  const hasTimeConflicts = (dayActivities) => {
+    const timedActivities = dayActivities.filter(a => a.start_time && a.duration_minutes)
+
+    for (let i = 0; i < timedActivities.length; i++) {
+      for (let j = i + 1; j < timedActivities.length; j++) {
+        const act1 = timedActivities[i]
+        const act2 = timedActivities[j]
+
+        // Calculate end times
+        const [h1, m1] = act1.start_time.split(':').map(Number)
+        const start1 = h1 * 60 + m1
+        const end1 = start1 + act1.duration_minutes
+
+        const [h2, m2] = act2.start_time.split(':').map(Number)
+        const start2 = h2 * 60 + m2
+        const end2 = start2 + act2.duration_minutes
+
+        // Check for overlap
+        if (start1 < end2 && start2 < end1) {
+          return true
+        }
+      }
+    }
+    return false
   }
 
   const getDaysInMonth = () => {
@@ -651,24 +700,28 @@ const Planner = () => {
               const hasActivities = dayActivities.length > 0
               const hasIncompleteActivities = dayActivities.some(a => !a.is_completed)
               const activityTypes = [...new Set(dayActivities.map(a => a.activity_type))]
+              const intensity = getHeatmapIntensity(dayActivities.length)
+              const hasConflicts = hasTimeConflicts(dayActivities)
 
               return (
                 <button
                   key={index}
                   onClick={() => day && setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
+                  onMouseEnter={() => day && setHoveredDay(day)}
+                  onMouseLeave={() => setHoveredDay(null)}
                   disabled={!day}
-                  className={`aspect-square rounded-lg p-1 transition-all duration-300 text-center relative hover:scale-110 ${
+                  className={`aspect-square rounded-lg p-1 transition-all duration-300 text-center relative hover:scale-110 border-2 ${
                     !day
                       ? 'invisible'
                       : isSelected(day)
                       ? 'bg-gradient-to-br from-primary-500 to-accent-cyan text-white shadow-[0_0_20px_rgba(88,166,255,0.6)] ring-2 ring-primary-400'
                       : isToday(day)
-                      ? 'bg-primary-500/20 border-2 border-primary-500 text-dark-text-primary font-bold shadow-[0_0_15px_rgba(88,166,255,0.4)]'
+                      ? 'bg-primary-500/20 border-primary-500 text-dark-text-primary font-bold shadow-[0_0_15px_rgba(88,166,255,0.4)]'
                       : hasActivities && hasIncompleteActivities
-                      ? 'bg-amber-500/20 border-2 border-amber-500 text-dark-text-primary font-bold hover:bg-amber-500/30'
+                      ? 'bg-amber-500/20 border-amber-500 text-dark-text-primary font-bold hover:bg-amber-500/30'
                       : hasActivities
-                      ? 'bg-green-500/20 border-2 border-green-500 text-dark-text-primary hover:bg-green-500/30'
-                      : 'bg-dark-bg-tertiary/50 text-dark-text-muted border border-dark-border-subtle hover:bg-dark-bg-tertiary hover:border-primary-500/30'
+                      ? `${getHeatmapColor(intensity)} text-dark-text-primary hover:border-primary-500/50`
+                      : 'bg-dark-bg-tertiary/50 text-dark-text-muted border-dark-border-subtle hover:bg-dark-bg-tertiary hover:border-primary-500/30'
                   }`}
                   style={{ animationDelay: `${index * 0.02}s` }}
                 >
@@ -677,6 +730,15 @@ const Planner = () => {
                       <span className={`text-sm font-semibold relative z-10 ${isSelected(day) ? 'text-white' : ''}`}>
                         {day}
                       </span>
+
+                      {/* Conflict warning badge */}
+                      {hasConflicts && (
+                        <div className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 rounded-full border-2 border-dark-bg-secondary flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse z-20">
+                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
 
                       {/* Activity count badge */}
                       {hasActivities && dayActivities.length > 0 && (
@@ -703,6 +765,41 @@ const Planner = () => {
                           ))}
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Hover preview popup */}
+                  {hoveredDay === day && hasActivities && (
+                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-64 bg-dark-bg-tertiary/95 backdrop-blur-xl rounded-xl p-3 border border-primary-500/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] z-50 animate-fadeIn pointer-events-none">
+                      <div className="text-xs font-bold text-dark-text-primary mb-2 flex items-center gap-2">
+                        <span>{monthNames[currentDate.getMonth()]} {day}</span>
+                        {hasConflicts && (
+                          <span className="text-red-400 flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            Conflicts!
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {dayActivities.slice(0, 5).map((activity) => (
+                          <div key={activity.id} className="flex items-center gap-2 text-xs">
+                            <div className={`w-2 h-2 rounded-full bg-gradient-to-br ${getTypeColor(activity.activity_type).replace('from-', 'from-').replace('to-', 'to-')}`}></div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-dark-text-primary font-medium truncate">{activity.title}</div>
+                              {activity.start_time && (
+                                <div className="text-dark-text-muted">{activity.start_time.slice(0, 5)}</div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                        {dayActivities.length > 5 && (
+                          <div className="text-xs text-dark-text-muted text-center pt-1 border-t border-dark-border-subtle">
+                            +{dayActivities.length - 5} more
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </button>
@@ -1110,6 +1207,12 @@ const Planner = () => {
           onSuccess={() => loadActivities()}
         />
       )}
+
+      {/* Celebration Overlay */}
+      <CelebrationOverlay
+        show={showCelebration}
+        onComplete={() => setShowCelebration(false)}
+      />
     </div>
   )
 }
