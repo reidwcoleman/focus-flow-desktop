@@ -561,105 +561,85 @@ const Dashboard = ({ onOpenScanner }) => {
             </div>
           </div>
 
-          {/* Progress Summary Bar - Compact */}
-          {assignments.length > 0 && (
-            <div className="mb-3">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs md:text-sm font-semibold text-dark-text-secondary">Progress</span>
-                <span className="text-xs md:text-sm font-bold text-green-400">
-                  {Math.round((assignments.filter(a => a.completed).length / assignments.length) * 100)}%
-                </span>
-              </div>
-              <div className="h-2 md:h-2.5 bg-dark-bg-tertiary/70 rounded-full overflow-hidden backdrop-blur-sm border border-dark-border-subtle">
-                <div
-                  className="h-full bg-gradient-to-r from-green-500 via-green-400 to-green-500 transition-all duration-1000 ease-out relative overflow-hidden"
-                  style={{ width: `${(assignments.filter(a => a.completed).length / assignments.length) * 100}%` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+          {/* Streak & XP Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+            {/* Streak Section - Clickable */}
+            <button
+              onClick={() => setShowStreakCalendar(true)}
+              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-sm p-4 border border-orange-500/30 hover:border-orange-500/50 transition-all hover:scale-[1.02] active:scale-[0.98] text-left"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="text-3xl md:text-4xl">🔥</div>
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">
+                      {streak.currentStreak}
+                    </span>
+                    <span className="text-sm md:text-base font-bold text-orange-300">
+                      {streak.currentStreak === 1 ? 'day' : 'days'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-dark-text-muted font-medium">Current streak</p>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Stats Grid - Compact */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {/* Assignments */}
-            <div className="group bg-gradient-to-br from-primary-500/10 to-primary-500/5 backdrop-blur-sm rounded-lg p-3 border border-primary-500/30 hover:border-primary-500/50 transition-all hover:scale-105">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="p-1 rounded bg-primary-500/20 group-hover:bg-primary-500/30 transition-colors">
-                  <svg className="w-3 h-3 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              {/* Best streak badge */}
+              {streak.longestStreak > 0 && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-500/20 border border-yellow-500/30 w-fit">
+                  <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
+                  <span className="text-xs font-bold text-yellow-300">Best: {streak.longestStreak}</span>
                 </div>
-                <span className="text-xs text-dark-text-muted font-bold uppercase tracking-wide">Tasks</span>
-              </div>
-              <div className="text-2xl md:text-3xl font-black text-primary-400 group-hover:text-primary-300 transition-colors">
-                {assignments.length}
-              </div>
-            </div>
+              )}
 
-            {/* Completed */}
-            <div className="group bg-gradient-to-br from-green-500/10 to-green-500/5 backdrop-blur-sm rounded-lg p-3 border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-105">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="p-1 rounded bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
-                  <svg className="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <span className="text-xs text-dark-text-muted font-bold uppercase tracking-wide">Done</span>
+              {/* Calendar hint */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
               </div>
-              <div className="text-2xl md:text-3xl font-black text-green-400 group-hover:text-green-300 transition-colors">
-                {assignments.filter(a => a.completed).length}
-              </div>
-            </div>
+            </button>
 
-            {/* Due Today */}
-            <div className="group bg-gradient-to-br from-orange-500/10 to-orange-500/5 backdrop-blur-sm rounded-lg p-3 border border-orange-500/30 hover:border-orange-500/50 transition-all hover:scale-105">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="p-1 rounded bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
-                  <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+            {/* XP Section */}
+            {xpData && (
+              <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-yellow-500/10 to-orange-500/10 backdrop-blur-sm p-4 border border-yellow-500/30">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="text-3xl md:text-4xl">⭐</div>
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
+                        Level {xpData.level}
+                      </span>
+                    </div>
+                    <p className="text-xs text-dark-text-muted font-medium">{xpData.levelTitle}</p>
+                  </div>
                 </div>
-                <span className="text-xs text-dark-text-muted font-bold uppercase tracking-wide">Today</span>
-              </div>
-              <div className="text-2xl md:text-3xl font-black text-orange-400 group-hover:text-orange-300 transition-colors">
-                {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date).toDateString() === new Date().toDateString()).length}
-              </div>
-            </div>
 
-            {/* Overdue */}
-            <div className="group bg-gradient-to-br from-red-500/10 to-red-500/5 backdrop-blur-sm rounded-lg p-3 border border-red-500/30 hover:border-red-500/50 transition-all hover:scale-105">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="p-1 rounded bg-red-500/20 group-hover:bg-red-500/30 transition-colors">
-                  <svg className="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
+                {/* XP Progress */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-dark-text-muted">{(xpData.currentLevelXP || 0).toLocaleString()} XP</span>
+                    <span className="text-yellow-400 font-semibold">{(xpData.xpToNextLevel || 0).toLocaleString()} to next</span>
+                  </div>
+                  <div className="h-1.5 bg-dark-bg-tertiary/70 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-1000"
+                      style={{ width: `${((xpData.currentLevelXP || 0) / ((xpData.currentLevelXP || 0) + (xpData.xpToNextLevel || 1))) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <span className="text-xs text-dark-text-muted font-bold uppercase tracking-wide">Late</span>
               </div>
-              <div className="text-2xl md:text-3xl font-black text-red-400 group-hover:text-red-300 transition-colors">
-                {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date() && new Date(a.due_date).toDateString() !== new Date().toDateString()).length}
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Motivational Message - Compact */}
-          {assignments.length > 0 && assignments.filter(a => a.completed).length === assignments.length && (
-            <div className="mt-3 p-2.5 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/40 animate-fadeIn">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🎉</span>
-                <p className="text-green-300 font-bold text-sm">All caught up! Great work!</p>
-              </div>
-            </div>
-          )}
-
-          {assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date()).length > 0 && (
-            <div className="mt-3 p-2.5 rounded-lg bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/40 animate-fadeIn">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">⚠️</span>
-                <p className="text-red-300 font-bold text-sm">{assignments.filter(a => !a.completed && a.due_date && new Date(a.due_date) < new Date()).length} overdue - time to catch up!</p>
-              </div>
+          {/* Motivational message */}
+          {showStreakCelebration && (
+            <div className="mt-3 text-center animate-fadeIn">
+              <p className="text-sm font-bold text-orange-300">
+                🎉 Streak increased! Keep it going!
+              </p>
             </div>
           )}
         </div>

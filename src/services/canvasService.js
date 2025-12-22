@@ -449,14 +449,14 @@ export const canvasService = {
     }
   },
 
-  // Delete old past-due assignments (over 2 weeks old)
+  // Delete old assignments (2+ weeks old, regardless of completion status)
   async deleteOldPastDueAssignments(userId) {
     try {
       const twoWeeksAgo = new Date()
       twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
       const twoWeeksAgoStr = twoWeeksAgo.toISOString().split('T')[0]
 
-      console.log(`🗑️  Cleaning up assignments past due before ${twoWeeksAgoStr}...`)
+      console.log(`🗑️  Cleaning up assignments from before ${twoWeeksAgoStr}...`)
 
       const { data, error } = await supabase
         .from('assignments')
@@ -464,7 +464,7 @@ export const canvasService = {
         .eq('user_id', userId)
         .eq('source', 'canvas')
         .lt('due_date', twoWeeksAgoStr)
-        .eq('submitted', false) // Only delete unsubmitted ones
+        // Removed submitted filter - delete ALL old assignments
 
       if (error) {
         console.error('Failed to delete old assignments:', error)
@@ -473,9 +473,9 @@ export const canvasService = {
 
       const deletedCount = data?.length || 0
       if (deletedCount > 0) {
-        console.log(`✅ Deleted ${deletedCount} old past-due assignments`)
+        console.log(`✅ Deleted ${deletedCount} old assignments (2+ weeks old)`)
       } else {
-        console.log(`✅ No old past-due assignments to delete`)
+        console.log(`✅ No old assignments to delete`)
       }
 
       return { deleted: deletedCount }
