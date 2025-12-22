@@ -9,10 +9,12 @@ const CanvasHub = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [syncing, setSyncing] = useState(false)
-  const [activeView, setActiveView] = useState('courses') // courses, assignments, grades
+  const [activeView, setActiveView] = useState('courses') // courses, assignments, grades, deleted
   const [lastSyncTime, setLastSyncTime] = useState(null)
   const [selectedCourse, setSelectedCourse] = useState(null) // For viewing course assignments
   const [deleting, setDeleting] = useState(null) // Track which item is being deleted
+  const [blockedCourses, setBlockedCourses] = useState([]) // Deleted/blocked courses
+  const [recovering, setRecovering] = useState(null) // Track which course is being recovered
 
   useEffect(() => {
     loadCanvasData()
@@ -30,19 +32,22 @@ const CanvasHub = () => {
       }
 
       // Load synced data from database (faster and persisted)
-      const [coursesData, assignmentsData, gradesData] = await Promise.all([
+      const [coursesData, assignmentsData, gradesData, blockedCoursesData] = await Promise.all([
         canvasService.getSyncedCourses().catch(() => []),
         canvasService.getSyncedAssignments().catch(() => []),
-        canvasService.getSyncedGrades().catch(() => [])
+        canvasService.getSyncedGrades().catch(() => []),
+        canvasService.getBlockedCoursesWithDetails().catch(() => [])
       ])
 
       console.log('📚 Loaded synced courses:', coursesData?.length || 0)
       console.log('📝 Loaded synced assignments:', assignmentsData?.length || 0)
       console.log('📊 Loaded synced grades:', gradesData?.length || 0)
+      console.log('🚫 Loaded blocked courses:', blockedCoursesData?.length || 0)
 
       setCourses(coursesData || [])
       setAssignments(assignmentsData || [])
       setGrades(gradesData || [])
+      setBlockedCourses(blockedCoursesData || [])
 
       // Set last sync time from the most recent item
       const latestSync = coursesData?.[0]?.syncedAt || gradesData?.[0]?.syncedAt
@@ -106,6 +111,20 @@ const CanvasHub = () => {
       toast.error(`Failed to delete assignment: ${err.message}`)
     } finally {
       setDeleting(null)
+    }
+  }
+
+  const handleRecoverCourse = async (courseId) => {
+    setRecovering(courseId)
+    try {
+      await canvasService.unblockCourse(courseId)
+      setBlockedCourses(blockedCourses.filter(c => c.canvas_course_id !== courseId))
+      toast.success('Course recovered! Sync Canvas to restore course data.')
+    } catch (err) {
+      console.error('Failed to recover course:', err)
+      toast.error(`Failed to recover course: ${err.message}`)
+    } finally {
+      setRecovering(null)
     }
   }
 
@@ -251,6 +270,16 @@ const CanvasHub = () => {
           }`}
         >
           Grades
+        </button>
+        <button
+          onClick={() => setActiveView('deleted')}
+          className={`flex-1 py-2 md:py-2.5 px-3 md:px-4 rounded-lg font-semibold text-xs md:text-sm transition-all ${
+            activeView === 'deleted'
+              ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
+              : 'text-dark-text-secondary hover:text-dark-text-primary'
+          }`}
+        >
+          Deleted {blockedCourses.length > 0 && `(${blockedCourses.length})`}
         </button>
       </div>
 

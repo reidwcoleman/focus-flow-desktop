@@ -775,6 +775,44 @@ export const canvasService = {
 
     console.log(`✅ Deleted assignment ${assignmentId}`)
   },
+
+  // Get all blocked courses with details
+  async getBlockedCoursesWithDetails() {
+    const { user } = await authService.getCurrentUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+      .from('blocked_courses')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('blocked_at', { ascending: false })
+
+    if (error) {
+      console.error('Failed to get blocked courses:', error)
+      return []
+    }
+
+    return data || []
+  },
+
+  // Unblock/recover a course
+  async unblockCourse(courseId) {
+    const { user } = await authService.getCurrentUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { error } = await supabase
+      .from('blocked_courses')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('canvas_course_id', courseId)
+
+    if (error) {
+      console.error('Failed to unblock course:', error)
+      throw new Error('Failed to unblock course')
+    }
+
+    console.log(`✅ Unblocked course ${courseId}`)
+  },
 }
 
 export default canvasService
