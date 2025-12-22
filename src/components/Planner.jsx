@@ -12,6 +12,7 @@ import { CalendarSkeleton, ActivitySkeleton, StatCardSkeleton } from './LoadingS
 import { confirmDialog } from './ConfirmDialog'
 import BulkUpload from './BulkUpload'
 import AIPlanningSuggestions from './AIPlanningSuggestions'
+import ActivityTimeline from './ActivityTimeline'
 import assignmentsService from '../services/assignmentsService'
 import infiniteCampusService from '../services/infiniteCampusService'
 
@@ -27,6 +28,7 @@ const Planner = () => {
   const [success, setSuccess] = useState('')
   const [showExamples, setShowExamples] = useState(false)
   const [viewMode, setViewMode] = useState('calendar') // 'calendar' or 'upcoming'
+  const [dayViewMode, setDayViewMode] = useState('timeline') // 'list' or 'timeline'
   const [filterType, setFilterType] = useState('all') // 'all' or specific activity type
   const [flyingAwayItems, setFlyingAwayItems] = useState(new Set())
   const [subtasksByActivity, setSubtasksByActivity] = useState({})
@@ -892,22 +894,59 @@ const Planner = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5 border border-dark-border-subtle animate-fadeIn">
-          <h3 className="text-lg md:text-xl font-bold text-dark-text-primary mb-3">
-            {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-          </h3>
+          <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] animate-slide-in-left">
+          {/* Floating glow orb */}
+          <div className="absolute -top-20 -left-20 w-40 h-40 bg-accent-cyan/10 rounded-full blur-3xl animate-float"></div>
 
-          {getFilteredActivities(dayActivities).length === 0 ? (
-            <div className="text-center py-6 md:py-8 lg:py-12">
-              <div className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-2 md:mb-3 lg:mb-4 rounded-xl md:rounded-2xl bg-dark-bg-tertiary flex items-center justify-center border border-dark-border-glow">
-                <svg className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg">No activities</p>
-              <p className="text-dark-text-muted text-xs md:text-sm lg:text-base mt-0.5 md:mt-1">Use AI to create one</p>
+          <div className="flex items-center justify-between mb-4 relative z-10">
+            <h3 className="text-lg md:text-xl font-bold text-dark-text-primary bg-gradient-to-r from-accent-cyan to-primary-300 bg-clip-text text-transparent">
+              {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            </h3>
+
+            {/* View mode toggle */}
+            <div className="flex gap-2 bg-dark-bg-tertiary/50 backdrop-blur-sm rounded-lg p-1 border border-dark-border-glow">
+              <button
+                onClick={() => setDayViewMode('timeline')}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  dayViewMode === 'timeline'
+                    ? 'bg-primary-500 text-white shadow-lg'
+                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:scale-105'
+                }`}
+              >
+                Timeline
+              </button>
+              <button
+                onClick={() => setDayViewMode('list')}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  dayViewMode === 'list'
+                    ? 'bg-primary-500 text-white shadow-lg'
+                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:scale-105'
+                }`}
+              >
+                List
+              </button>
             </div>
-          ) : (
+          </div>
+
+          <div className="relative z-10">
+            {getFilteredActivities(dayActivities).length === 0 ? (
+              <div className="text-center py-6 md:py-8 lg:py-12">
+                <div className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-2 md:mb-3 lg:mb-4 rounded-xl md:rounded-2xl bg-dark-bg-tertiary flex items-center justify-center border border-dark-border-glow">
+                  <svg className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg">No activities</p>
+                <p className="text-dark-text-muted text-xs md:text-sm lg:text-base mt-0.5 md:mt-1">Use AI to create one</p>
+              </div>
+            ) : dayViewMode === 'timeline' ? (
+              <ActivityTimeline
+                activities={getFilteredActivities(dayActivities)}
+                selectedDate={selectedDate}
+                onToggleComplete={handleToggleComplete}
+                onDelete={handleDeleteActivity}
+              />
+            ) : (
             <div className="space-y-2.5 md:space-y-3 lg:space-y-4">
               {getFilteredActivities(dayActivities).map((activity) => (
                 <div
@@ -1039,7 +1078,8 @@ const Planner = () => {
                 </div>
               ))}
             </div>
-          )}
+            )}
+          </div>
           </div>
         )
       )}
