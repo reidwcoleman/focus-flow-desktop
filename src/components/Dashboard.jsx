@@ -287,7 +287,6 @@ const Dashboard = ({ onOpenScanner }) => {
               }
               await courseStatsService.recordAssignmentCompleted(assignment.subject, null, timeMinutes)
             }
-          }
 
           // Remove from UI
           setAssignments(prev => prev.filter(a => a.id !== assignmentId))
@@ -544,88 +543,6 @@ const Dashboard = ({ onOpenScanner }) => {
               </div>
             </div>
           </div>
-
-          {/* Streak & XP Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-            {/* Streak Section - Clickable with Glass Effect */}
-            <button
-              onClick={() => setShowStreakCalendar(true)}
-              className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 backdrop-blur-xl p-4 border border-white/10 hover:border-orange-500/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] text-left shadow-[0_4px_16px_0_rgba(0,0,0,0.25)]"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="text-3xl md:text-4xl">🔥</div>
-                <div className="flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">
-                      {streak.currentStreak}
-                    </span>
-                    <span className="text-sm md:text-base font-bold text-orange-300">
-                      {streak.currentStreak === 1 ? 'day' : 'days'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-dark-text-muted font-medium">Current streak</p>
-                </div>
-              </div>
-
-              {/* Best streak badge */}
-              {streak.longestStreak > 0 && (
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-500/20 border border-yellow-500/30 w-fit">
-                  <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <span className="text-xs font-bold text-yellow-300">Best: {streak.longestStreak}</span>
-                </div>
-              )}
-
-              {/* Calendar hint */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </div>
-            </button>
-
-            {/* XP Section with Glass Effect */}
-            {xpData && (
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-yellow-500/10 to-orange-500/10 backdrop-blur-xl p-4 border border-white/10 hover:border-yellow-500/40 transition-all duration-300 shadow-[0_4px_16px_0_rgba(0,0,0,0.25)]">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="text-3xl md:text-4xl">⭐</div>
-                  <div className="flex-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
-                        Level {xpData.level}
-                      </span>
-                    </div>
-                    <p className="text-xs text-dark-text-muted font-medium">{xpData.levelTitle}</p>
-                  </div>
-                </div>
-
-                {/* XP Progress */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-dark-text-muted">{(xpData.currentLevelXP || 0).toLocaleString()} XP</span>
-                    <span className="text-yellow-400 font-semibold">{(xpData.xpToNextLevel || 0).toLocaleString()} to next</span>
-                  </div>
-                  <div className="h-1.5 bg-dark-bg-tertiary/70 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-1000"
-                      style={{ width: `${((xpData.currentLevelXP || 0) / ((xpData.currentLevelXP || 0) + (xpData.xpToNextLevel || 1))) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Motivational message */}
-          {showStreakCelebration && (
-            <div className="mt-3 text-center animate-fadeIn">
-              <p className="text-sm font-bold text-orange-300">
-                🎉 Streak increased! Keep it going!
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
@@ -1074,26 +991,6 @@ const Dashboard = ({ onOpenScanner }) => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Streak Calendar Modal */}
-      {showStreakCalendar && (
-        <StreakCalendar
-          onClose={() => setShowStreakCalendar(false)}
-          currentStreak={streak.currentStreak}
-          longestStreak={streak.longestStreak}
-        />
-      )}
-
-      {/* XP Toast Notifications */}
-      {xpToast && (
-        <XPToast
-          xp={xpToast.xp}
-          levelUp={xpToast.levelUp}
-          newLevel={xpToast.newLevel}
-          message={xpToast.message}
-          onClose={() => setXPToast(null)}
-        />
       )}
 
       {/* AI Breakdown Modal */}
