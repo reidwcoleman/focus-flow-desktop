@@ -78,28 +78,46 @@ export default function ProductivityHeatmap({ activities }) {
   if (heatmapData.length === 0) return null
 
   return (
-    <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-xl p-5 border border-white/10 shadow-[0_4px_16px_0_rgba(0,0,0,0.25)]">
+    <div className="relative overflow-hidden bg-gradient-to-br from-dark-bg-secondary/50 to-dark-bg-tertiary/30 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-primary-500/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:border-primary-500/20 transition-all">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-2 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20">
-          <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-500/20 via-emerald-500/20 to-teal-500/20 border border-green-500/20">
+            <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+              Activity Heatmap
+            </h3>
+            <p className="text-sm text-dark-text-muted mt-0.5">Last 3 months of your productivity journey</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-bold text-dark-text-primary">Activity Heatmap</h3>
-          <p className="text-xs text-dark-text-muted">Last 3 months</p>
+
+        {/* Legend */}
+        <div className="hidden md:flex items-center gap-2 text-sm text-dark-text-muted">
+          <span>Less</span>
+          <div className="flex gap-1.5">
+            <div className="w-4 h-4 rounded bg-dark-bg-tertiary/50 border border-dark-border-glow"></div>
+            <div className="w-4 h-4 rounded bg-green-500/20"></div>
+            <div className="w-4 h-4 rounded bg-green-500/40"></div>
+            <div className="w-4 h-4 rounded bg-green-500/60"></div>
+            <div className="w-4 h-4 rounded bg-green-500/80"></div>
+            <div className="w-4 h-4 rounded bg-green-500"></div>
+          </div>
+          <span>More</span>
         </div>
       </div>
 
       {/* Heatmap Grid */}
-      <div className="overflow-x-auto">
-        <div className="flex gap-1 min-w-max">
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-primary-500/20 scrollbar-track-transparent">
+        <div className="flex gap-1.5 min-w-max pb-2">
           {/* Day labels */}
-          <div className="flex flex-col gap-1 pr-2">
-            <div className="h-3"></div> {/* Space for month labels */}
+          <div className="flex flex-col gap-1.5 pr-3">
+            <div className="h-4"></div> {/* Space for month labels */}
             {['Mon', 'Wed', 'Fri'].map((day) => (
-              <div key={day} className="h-3 text-xs text-dark-text-muted flex items-center">
+              <div key={day} className="h-4 text-xs text-dark-text-muted flex items-center font-medium">
                 {day}
               </div>
             ))}
@@ -107,9 +125,9 @@ export default function ProductivityHeatmap({ activities }) {
 
           {/* Weeks */}
           {heatmapData.map((week, weekIndex) => (
-            <div key={weekIndex} className="flex flex-col gap-1">
-              {/* Month label (only on first day of month) */}
-              <div className="h-3 text-xs text-dark-text-muted font-medium">
+            <div key={weekIndex} className="flex flex-col gap-1.5">
+              {/* Month label */}
+              <div className="h-4 text-xs text-primary-400 font-semibold">
                 {weekIndex % 4 === 0 ? getMonthLabel(week) : ''}
               </div>
 
@@ -117,12 +135,13 @@ export default function ProductivityHeatmap({ activities }) {
               {week.map((day, dayIndex) => (
                 <div
                   key={dayIndex}
-                  className={`w-3 h-3 rounded-sm ${getIntensityColor(day.minutes)} transition-all hover:ring-2 hover:ring-primary-500/50 cursor-pointer group relative`}
+                  className={`w-4 h-4 rounded ${getIntensityColor(day.minutes)} transition-all hover:scale-125 hover:ring-2 hover:ring-green-400/50 hover:shadow-lg hover:shadow-green-500/20 cursor-pointer group relative`}
                   title={`${day.date}: ${day.count} activities (${day.minutes} min)`}
                 >
-                  {/* Tooltip on hover */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-dark-bg-tertiary/95 backdrop-blur-xl rounded border border-primary-500/30 text-xs text-dark-text-primary whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
-                    {new Date(day.date).toLocaleDateString()}: {day.count} activities ({day.minutes}m)
+                  {/* Enhanced Tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-2 bg-dark-bg-tertiary/98 backdrop-blur-xl rounded-lg border border-green-500/40 text-xs text-dark-text-primary whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 shadow-xl">
+                    <div className="font-semibold text-green-400">{new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                    <div className="text-dark-text-muted mt-1">{day.count} activities • {day.minutes}min</div>
                   </div>
                 </div>
               ))}
@@ -131,16 +150,16 @@ export default function ProductivityHeatmap({ activities }) {
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center gap-2 mt-4 text-xs text-dark-text-muted">
+      {/* Mobile Legend */}
+      <div className="flex md:hidden items-center justify-center gap-2 mt-6 text-xs text-dark-text-muted">
         <span>Less</span>
         <div className="flex gap-1">
-          <div className="w-3 h-3 rounded-sm bg-dark-bg-tertiary/50"></div>
-          <div className="w-3 h-3 rounded-sm bg-green-500/20"></div>
-          <div className="w-3 h-3 rounded-sm bg-green-500/40"></div>
-          <div className="w-3 h-3 rounded-sm bg-green-500/60"></div>
-          <div className="w-3 h-3 rounded-sm bg-green-500/80"></div>
-          <div className="w-3 h-3 rounded-sm bg-green-500"></div>
+          <div className="w-3 h-3 rounded bg-dark-bg-tertiary/50"></div>
+          <div className="w-3 h-3 rounded bg-green-500/20"></div>
+          <div className="w-3 h-3 rounded bg-green-500/40"></div>
+          <div className="w-3 h-3 rounded bg-green-500/60"></div>
+          <div className="w-3 h-3 rounded bg-green-500/80"></div>
+          <div className="w-3 h-3 rounded bg-green-500"></div>
         </div>
         <span>More</span>
       </div>

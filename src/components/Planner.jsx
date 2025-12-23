@@ -19,6 +19,7 @@ import ConflictModal from './ConflictModal'
 import assignmentsService from '../services/assignmentsService'
 import infiniteCampusService from '../services/infiniteCampusService'
 import schedulingService from '../services/schedulingService'
+import calendarImportService from '../services/calendarImportService'
 
 const Planner = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -45,6 +46,8 @@ const Planner = () => {
   const [hoveredDay, setHoveredDay] = useState(null)
   const [conflictData, setConflictData] = useState(null) // { activity, conflicts, suggestions }
   const [showConflictModal, setShowConflictModal] = useState(false)
+  const [showCalendarImport, setShowCalendarImport] = useState(false)
+  const [importProgress, setImportProgress] = useState(null)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
 
@@ -587,6 +590,67 @@ const Planner = () => {
     return activities.reduce((sum, a) => sum + (a.duration_minutes || 0), 0) / 60
   }
 
+  // Calendar import handler
+  const handleCalendarImport = async (file) => {
+    try {
+      setImportProgress({ status: 'processing', message: 'Parsing calendar file...' })
+
+      const results = await calendarImportService.importCalendarFile(file, {
+        skipDuplicates: true,
+        skipCompleted: true
+      })
+
+      setImportProgress({
+        status: 'complete',
+        message: `Imported ${results.imported} events. Skipped ${results.skipped} duplicates.`,
+        results
+      })
+
+      // Reload activities to show imported events
+      await loadActivities()
+
+      // Auto-close after 3 seconds
+      setTimeout(() => {
+        setShowCalendarImport(false)
+        setImportProgress(null)
+      }, 3000)
+
+    } catch (error) {
+      console.error('Calendar import failed:', error)
+      setImportProgress({
+        status: 'error',
+        message: `Import failed: ${error.message}`
+      })
+    }
+  }
+
+  // Clear all activities for selected day
+  const handleClearDay = async () => {
+    const confirmed = await confirmDialog(
+      'Clear Day',
+      `Delete all activities for ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}?`
+    )
+
+    if (confirmed) {
+      try {
+        const dateStr = selectedDate.toISOString().split('T')[0]
+        const dayActivities = activities.filter(a => a.activity_date === dateStr)
+
+        for (const activity of dayActivities) {
+          await calendarService.deleteActivity(activity.id)
+        }
+
+        await loadActivities()
+        setSuccess(`Cleared ${dayActivities.length} activities`)
+        setTimeout(() => setSuccess(''), 3000)
+      } catch (error) {
+        console.error('Failed to clear day:', error)
+        setError('Failed to clear day')
+        setTimeout(() => setError(''), 3000)
+      }
+    }
+  }
+
   const getTimeOfDay = (time) => {
     if (!time) return 'No time'
     const hour = parseInt(time.split(':')[0])
@@ -621,18 +685,30 @@ const Planner = () => {
               </div>
             )}
           </div>
-          <button
-            onClick={() => setShowBulkUpload(true)}
-            className="group relative overflow-hidden px-5 py-2.5 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-bold text-sm md:text-base rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-primary-500/20"
-          >
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+          <div className="flex gap-2 md:gap-3">
+            <button
+              onClick={() => setShowCalendarImport(true)}
+              className="group relative overflow-hidden px-4 py-2.5 bg-gradient-to-r from-accent-purple to-accent-pink text-white font-bold text-sm md:text-base rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-accent-purple/20"
+              title="Import Google/Apple Calendar"
+            >
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="hidden md:inline relative z-10">Import Calendar</span>
+            </button>
 
-            <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <span className="relative z-10">Bulk Upload</span>
-          </button>
+            <button
+              onClick={() => setShowBulkUpload(true)}
+              className="group relative overflow-hidden px-4 py-2.5 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-bold text-sm md:text-base rounded-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-primary-500/20"
+            >
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              <svg className="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <span className="hidden md:inline relative z-10">Bulk Upload</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1155,28 +1231,44 @@ const Planner = () => {
               {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </h3>
 
-            {/* View mode toggle */}
-            <div className="flex gap-2 bg-dark-bg-tertiary/50 backdrop-blur-sm rounded-lg p-1 border border-dark-border-glow">
-              <button
-                onClick={() => setDayViewMode('timeline')}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  dayViewMode === 'timeline'
-                    ? 'bg-primary-500 text-white shadow-lg'
-                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:scale-105'
-                }`}
-              >
-                Timeline
-              </button>
-              <button
-                onClick={() => setDayViewMode('list')}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  dayViewMode === 'list'
-                    ? 'bg-primary-500 text-white shadow-lg'
-                    : 'text-dark-text-secondary hover:text-dark-text-primary hover:scale-105'
-                }`}
-              >
-                List
-              </button>
+            <div className="flex items-center gap-2">
+              {/* Clear Day Button */}
+              {getFilteredActivities(dayActivities).length > 0 && (
+                <button
+                  onClick={handleClearDay}
+                  className="px-3 py-1.5 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium rounded-lg hover:bg-red-500/20 hover:scale-105 transition-all flex items-center gap-1.5"
+                  title="Clear all activities for this day"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span className="hidden sm:inline">Clear Day</span>
+                </button>
+              )}
+
+              {/* View mode toggle */}
+              <div className="flex gap-2 bg-dark-bg-tertiary/50 backdrop-blur-sm rounded-lg p-1 border border-dark-border-glow">
+                <button
+                  onClick={() => setDayViewMode('timeline')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    dayViewMode === 'timeline'
+                      ? 'bg-primary-500 text-white shadow-lg'
+                      : 'text-dark-text-secondary hover:text-dark-text-primary hover:scale-105'
+                  }`}
+                >
+                  Timeline
+                </button>
+                <button
+                  onClick={() => setDayViewMode('list')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    dayViewMode === 'list'
+                      ? 'bg-primary-500 text-white shadow-lg'
+                      : 'text-dark-text-secondary hover:text-dark-text-primary hover:scale-105'
+                  }`}
+                >
+                  List
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1360,6 +1452,104 @@ const Planner = () => {
           onCreateAnyway={handleConflictCreateAnyway}
           onCancel={handleConflictCancel}
         />
+      )}
+
+      {/* Calendar Import Modal */}
+      {showCalendarImport && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-dark-bg-secondary rounded-2xl p-6 max-w-md w-full border border-dark-border-glow shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] animate-scale-in">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-dark-text-primary">Import Calendar</h3>
+              <button
+                onClick={() => {
+                  setShowCalendarImport(false)
+                  setImportProgress(null)
+                }}
+                className="w-8 h-8 rounded-lg bg-dark-bg-tertiary text-dark-text-muted hover:text-dark-text-primary hover:bg-dark-bg-surface transition-colors"
+              >
+                <svg className="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {!importProgress ? (
+              <>
+                <p className="text-sm text-dark-text-secondary mb-4">
+                  Upload your Google Calendar or Apple Calendar (.ics file) to sync events with your planner.
+                </p>
+
+                <div className="mb-4 bg-primary-500/10 border border-primary-500/30 rounded-lg p-3">
+                  <p className="text-xs text-primary-400 font-medium mb-2">How to export your calendar:</p>
+                  <ul className="text-xs text-dark-text-secondary space-y-1">
+                    <li><strong className="text-primary-400">Google Calendar:</strong> Settings → Import & Export → Export</li>
+                    <li><strong className="text-primary-400">Apple Calendar:</strong> File → Export → Export</li>
+                  </ul>
+                </div>
+
+                <label className="block">
+                  <div className="border-2 border-dashed border-dark-border-glow rounded-xl p-8 text-center hover:border-primary-500/50 hover:bg-dark-bg-tertiary/50 transition-all cursor-pointer">
+                    <input
+                      type="file"
+                      accept=".ics"
+                      onChange={(e) => {
+                        const file = e.target.files[0]
+                        if (file) handleCalendarImport(file)
+                      }}
+                      className="hidden"
+                    />
+                    <svg className="w-12 h-12 mx-auto mb-3 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm font-semibold text-dark-text-primary mb-1">Click to upload</p>
+                    <p className="text-xs text-dark-text-muted">Supports .ics files</p>
+                  </div>
+                </label>
+              </>
+            ) : (
+              <div className="py-8">
+                {importProgress.status === 'processing' && (
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-sm text-dark-text-primary font-medium">{importProgress.message}</p>
+                  </div>
+                )}
+
+                {importProgress.status === 'complete' && (
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-green-400 font-medium mb-2">{importProgress.message}</p>
+                    {importProgress.results && (
+                      <div className="text-xs text-dark-text-secondary space-y-1">
+                        <p>Total events: {importProgress.results.total}</p>
+                        <p>Imported: {importProgress.results.imported}</p>
+                        <p>Skipped (duplicates): {importProgress.results.skipped}</p>
+                        {importProgress.results.failed > 0 && (
+                          <p className="text-red-400">Failed: {importProgress.results.failed}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {importProgress.status === 'error' && (
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-red-400 font-medium">{importProgress.message}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.87.1",
+    "ical.js": "^2.2.1",
     "mammoth": "^1.11.0",
     "pdfjs-dist": "^5.4.449",
     "react": "^19.2.0",
