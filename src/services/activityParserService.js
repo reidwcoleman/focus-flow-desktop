@@ -205,15 +205,20 @@ class ActivityParserService {
   detectMultipleDays(userInput) {
     const lower = userInput.toLowerCase()
 
+    console.log('🔍 detectMultipleDays checking:', userInput)
+
     // Check if it's NOT a recurring pattern
     if (lower.match(/every\s+(week|weekly|day|daily|other)/i)) {
+      console.log('❌ Skipping - detected recurring pattern')
       return null // This is recurring, not multiple days
     }
 
-    // Check for "and" between day names
-    const hasAndBetweenDays = lower.match(/(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+and\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i)
+    // Check for "and" with day names (more flexible pattern)
+    // Also check for commas between days
+    const hasMultipleDays = lower.match(/(monday|tuesday|wednesday|thursday|friday|saturday|sunday).*(and|,).*(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i)
 
-    if (hasAndBetweenDays) {
+    if (hasMultipleDays) {
+      console.log('✅ Found multiple days pattern')
       const days = []
       const dayPatterns = {
         'monday': 1, 'mon': 1,
@@ -225,19 +230,26 @@ class ActivityParserService {
         'sunday': 0, 'sun': 0
       }
 
+      // Extract unique days
       Object.keys(dayPatterns).forEach(dayName => {
         if (lower.includes(dayName)) {
           const dayNum = dayPatterns[dayName]
           if (!days.includes(dayNum)) {
             days.push(dayNum)
+            console.log(`  📅 Found day: ${dayName} (${dayNum})`)
           }
         }
       })
 
       if (days.length >= 2) {
         days.sort()
+        console.log('✅ Returning days:', days)
         return days
+      } else {
+        console.log('❌ Only found', days.length, 'day(s)')
       }
+    } else {
+      console.log('❌ No multiple days pattern found')
     }
 
     return null

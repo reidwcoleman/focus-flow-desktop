@@ -146,21 +146,26 @@ const Planner = () => {
       // Parse activity with AI (may return single activity or recurring activities)
       const parseResult = await activityParserService.parseActivity(aiInput)
 
-      // Handle recurring activities
+      // Handle recurring activities or multiple days
       if (parseResult.isRecurring) {
-        console.log('🔄 Creating recurring activities:', parseResult.activities.length)
+        console.log('🔄 Creating multiple activities:', parseResult.activities.length)
+        console.log('📋 Activities to create:', parseResult.activities.map(a => ({ title: a.title, date: a.activity_date })))
 
         let createdCount = 0
         for (const activityData of parseResult.activities) {
           try {
+            console.log(`  ➕ Creating activity for ${activityData.activity_date}: ${activityData.title}`)
             await createActivity(activityData, true) // Skip success message for bulk
             createdCount++
           } catch (err) {
-            console.error('Failed to create recurring activity:', err)
+            console.error('Failed to create activity:', err)
           }
         }
 
-        setSuccess(`Created ${createdCount} recurring activities!`)
+        const message = parseResult.multipleDays
+          ? `Created ${createdCount} activities!`
+          : `Created ${createdCount} recurring activities!`
+        setSuccess(message)
         setAiInput('')
         setTimeout(() => setSuccess(''), 3000)
         setAiProcessing(false)
