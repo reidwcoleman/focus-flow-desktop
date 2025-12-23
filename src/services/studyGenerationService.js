@@ -136,11 +136,11 @@ class StudyGenerationService {
   async generateNotes(text, options = {}) {
     const { title, subject } = options
 
-    // Use UltraThink mode to get enough tokens for complete JSON response
+    // Use Deep Research mode for notes - needs 8k tokens for comprehensive content
     const previousDeepMode = aiService.useDeepResearch
     const previousUltraMode = aiService.useUltraThink
-    aiService.useDeepResearch = false
-    aiService.useUltraThink = true // Need 3000 tokens for complete notes JSON
+    aiService.useDeepResearch = true // Need 8000 tokens for complete notes JSON
+    aiService.useUltraThink = false
 
     try {
       const prompt = this._buildNotesPrompt(text)
