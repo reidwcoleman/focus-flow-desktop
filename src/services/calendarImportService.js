@@ -1,28 +1,42 @@
 /**
  * Calendar Import Service
- * Parses and imports calendar files from Google Calendar and Apple Calendar (.ics format)
+ * Parses and imports calendar files from Google Calendar and Apple Calendar (.ics or .zip format)
  */
 
 import ICAL from 'ical.js'
+import JSZip from 'jszip'
 import calendarService from './calendarService'
 
 class CalendarImportService {
   /**
-   * Parse and import calendar file
-   * @param {File} file - .ics calendar file
+   * Parse and import calendar file (supports .ics and .zip)
+   * @param {File} file - .ics or .zip calendar file
    * @param {Object} options - Import options
    * @returns {Promise<Object>} - Import results
    */
   async importCalendarFile(file, options = {}) {
     try {
-      // Read file content
-      const content = await this.readFile(file)
+      // Check file type
+      const isZip = file.name.toLowerCase().endsWith('.zip') || file.type === 'application/zip'
 
-      // Parse ICS format
-      const events = await this.parseICS(content)
+      let allEvents = []
+
+      if (isZip) {
+        // Handle ZIP file (Google Calendar export)
+        const icsFiles = await this.extractICSFromZip(file)
+
+        for (const icsContent of icsFiles) {
+          const events = await this.parseICS(icsContent)
+          allEvents = allEvents.concat(events)
+        }
+      } else {
+        // Handle single ICS file (Apple Calendar export)
+        const content = await this.readFile(file)
+        allEvents = await this.parseICS(content)
+      }
 
       // Convert to our format and filter
-      const activities = this.convertEventsToActivities(events, options)
+      const activities = this.convertEventsToActivities(allEvents, options)
 
       // Import to database
       const results = await this.importActivities(activities, options)
@@ -31,6 +45,38 @@ class CalendarImportService {
     } catch (error) {
       console.error('Calendar import error:', error)
       throw new Error(`Failed to import calendar: ${error.message}`)
+    }
+  }
+
+  /**
+   * Extract .ics files from ZIP archive
+   * @param {File} zipFile - ZIP file containing .ics files
+   * @returns {Promise<Array<string>>} - Array of .ics file contents
+   */
+  async extractICSFromZip(zipFile) {
+    try {
+      const zip = new JSZip()
+      const zipContents = await zip.loadAsync(zipFile)
+      const icsFiles = []
+
+      // Find all .ics files in the ZIP
+      for (const filename in zipContents.files) {
+        if (filename.toLowerCase().endsWith('.ics')) {
+          const fileData = zipContents.files[filename]
+          const content = await fileData.async('text')
+          icsFiles.push(content)
+        }
+      }
+
+      if (icsFiles.length === 0) {
+        throw new Error('No .ics files found in ZIP archive')
+      }
+
+      console.log(`Extracted ${icsFiles.length} .ics file(s) from ZIP`)
+      return icsFiles
+    } catch (error) {
+      console.error('ZIP extraction error:', error)
+      throw new Error(`Failed to extract ZIP file: ${error.message}`)
     }
   }
 

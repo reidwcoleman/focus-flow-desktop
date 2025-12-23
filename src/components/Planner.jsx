@@ -1470,14 +1470,14 @@ const Planner = () => {
             {!importProgress ? (
               <>
                 <p className="text-sm text-dark-text-secondary mb-4">
-                  Upload your Google Calendar or Apple Calendar (.ics file) to sync events with your planner.
+                  Upload your Google Calendar (.zip) or Apple Calendar (.ics) to sync events with your planner.
                 </p>
 
                 <div className="mb-4 bg-primary-500/10 border border-primary-500/30 rounded-lg p-3">
                   <p className="text-xs text-primary-400 font-medium mb-2">How to export your calendar:</p>
                   <ul className="text-xs text-dark-text-secondary space-y-1">
-                    <li><strong className="text-primary-400">Google Calendar:</strong> Settings → Import & Export → Export</li>
-                    <li><strong className="text-primary-400">Apple Calendar:</strong> File → Export → Export</li>
+                    <li><strong className="text-primary-400">Google Calendar:</strong> Settings → Import & Export → Export (.zip file)</li>
+                    <li><strong className="text-primary-400">Apple Calendar:</strong> File → Export → Export (.ics file)</li>
                   </ul>
                 </div>
 
@@ -1485,7 +1485,7 @@ const Planner = () => {
                   <div className="border-2 border-dashed border-dark-border-glow rounded-xl p-8 text-center hover:border-primary-500/50 hover:bg-dark-bg-tertiary/50 transition-all cursor-pointer">
                     <input
                       type="file"
-                      accept=".ics"
+                      accept=".ics,.zip"
                       onChange={(e) => {
                         const file = e.target.files[0]
                         if (file) handleCalendarImport(file)
@@ -1496,7 +1496,7 @@ const Planner = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <p className="text-sm font-semibold text-dark-text-primary mb-1">Click to upload</p>
-                    <p className="text-xs text-dark-text-muted">Supports .ics files</p>
+                    <p className="text-xs text-dark-text-muted">Supports .ics and .zip files</p>
                   </div>
                 </label>
               </>
