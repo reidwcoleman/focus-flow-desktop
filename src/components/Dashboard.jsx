@@ -2,15 +2,11 @@ import { useState, useEffect } from 'react'
 import canvasService from '../services/canvasService'
 import authService from '../services/authService'
 import assignmentsService from '../services/assignmentsService'
-import streakService from '../services/streakService'
 import assignmentParserService from '../services/assignmentParserService'
-import xpService from '../services/xpService'
 import subtasksService from '../services/subtasksService'
 import taskBreakdownService from '../services/taskBreakdownService'
 import infiniteCampusService from '../services/infiniteCampusService'
 import courseStatsService from '../services/courseStatsService'
-import StreakCalendar from './StreakCalendar'
-import XPToast from './XPToast'
 import GradeChart from './GradeChart'
 import AssignmentChart from './AssignmentChart'
 import AIPlanningSuggestions from './AIPlanningSuggestions'
@@ -23,12 +19,7 @@ const Dashboard = ({ onOpenScanner }) => {
   const [isLoadingCanvas, setIsLoadingCanvas] = useState(false)
   const [isLoadingAssignments, setIsLoadingAssignments] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [showStreakCalendar, setShowStreakCalendar] = useState(false)
-  const [streak, setStreak] = useState({ currentStreak: 0, longestStreak: 0, isNewStreak: false })
-  const [showStreakCelebration, setShowStreakCelebration] = useState(false)
   const [flyingAwayItems, setFlyingAwayItems] = useState(new Set())
-  const [xpData, setXPData] = useState(null)
-  const [xpToast, setXPToast] = useState(null)
   const [aiInput, setAiInput] = useState('')
   const [aiProcessing, setAiProcessing] = useState(false)
   const [aiError, setAiError] = useState('')
@@ -65,8 +56,6 @@ const Dashboard = ({ onOpenScanner }) => {
   useEffect(() => {
     loadUserName()
     loadAssignments()
-    checkStreak()
-    loadXPData()
     loadGrades()
   }, [])
 
@@ -78,11 +67,6 @@ const Dashboard = ({ onOpenScanner }) => {
 
     return () => clearInterval(timer)
   }, [])
-
-  const loadXPData = async () => {
-    const data = await xpService.getXPData()
-    setXPData(data)
-  }
 
   const loadGrades = async () => {
     try {
@@ -107,41 +91,6 @@ const Dashboard = ({ onOpenScanner }) => {
     const name = profile?.full_name || user?.email?.split('@')[0] || 'there'
     console.log('👋 Final name to display:', name)
     setUserName(name)
-  }
-
-  const checkStreak = async () => {
-    try {
-      const { user } = await authService.getCurrentUser()
-      if (!user) return
-
-      // Just load the current streak (App.jsx handles updating it globally)
-      const streakData = await streakService.getStreak(user.id)
-      setStreak({
-        currentStreak: streakData.currentStreak,
-        longestStreak: streakData.longestStreak,
-        isNewStreak: false
-      })
-
-      // Get last login time for emoji transition
-      if (streakData.lastLoginDate) {
-        // Extract hour from last login (assuming it was same time yesterday or before)
-        // We'll use localStorage to persist the last session's hour
-        const lastSessionHour = localStorage.getItem('lastSessionHour')
-        if (lastSessionHour) {
-          setLastLoginHour(parseInt(lastSessionHour))
-          setEmojiTransitioning(true)
-          // Transition for 3.5 seconds (matching animation duration)
-          setTimeout(() => {
-            setEmojiTransitioning(false)
-          }, 3500)
-        }
-      }
-
-      // Store current hour for next session
-      localStorage.setItem('lastSessionHour', new Date().getHours().toString())
-    } catch (error) {
-      console.error('Failed to load streak:', error)
-    }
   }
 
   const loadAssignments = async () => {
@@ -325,23 +274,8 @@ const Dashboard = ({ onOpenScanner }) => {
             progress: 100
           })
 
-          // Award XP for completing assignment
-          if (assignment) {
-            const xpResult = await xpService.awardXP('assignment_complete', { assignment })
-            if (xpResult) {
-              // Show XP toast notification
-              setXPToast({
-                xp: xpResult.xpAwarded,
-                levelUp: xpResult.leveledUp,
-                newLevel: xpResult.newLevel,
-                message: 'Assignment completed!'
-              })
-              // Reload XP data to update widget
-              await loadXPData()
-            }
-
-            // Track course stats with time estimate
-            if (assignment.subject) {
+          // Track course stats with time estimate
+          if (assignment && assignment.subject) {
               // Parse time estimate (e.g., "2h", "30m", "1h 30m")
               let timeMinutes = 0
               if (assignment.timeEstimate) {

@@ -14,7 +14,6 @@ import ToastContainer, { toast } from './components/Toast'
 import ConfirmDialogContainer from './components/ConfirmDialog'
 import { StudyProvider } from './contexts/StudyContext'
 import authService from './services/authService'
-import streakService from './services/streakService'
 import { printDatabaseStatus } from './utils/databaseCheck'
 import './App.css'
 
@@ -41,16 +40,6 @@ function App() {
         const userProfile = authService.getUserProfile()
         console.log('🔄 App.jsx checkAuth - Loaded user profile:', userProfile)
         setProfile(userProfile)
-
-        // Check and update streak on login
-        const streakResult = await streakService.checkAndUpdateStreak(user.id)
-
-        // Show notification if streak was broken
-        if (streakResult.streakBroken) {
-          toast.warning('Your streak was broken! Starting fresh today.')
-        } else if (streakResult.isNewStreak && streakResult.currentStreak > 1) {
-          toast.success(`🔥 Streak: ${streakResult.currentStreak} days!`)
-        }
       }
     }
 
@@ -64,14 +53,12 @@ function App() {
       console.log('🔐 Auth state change:', event)
       setUser(session?.user || null)
 
-      // Load profile and update streak when user signs in
+      // Load profile when user signs in
       if (session?.user) {
         await authService.refreshUserProfile()
         const userProfile = authService.getUserProfile()
         console.log('🔄 App.jsx onAuthStateChange - Loaded user profile:', userProfile)
         setProfile(userProfile)
-
-        await streakService.checkAndUpdateStreak(session.user.id)
       } else {
         setProfile(null)
       }
@@ -94,38 +81,6 @@ function App() {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed))
   }, [sidebarCollapsed])
 
-  // Check streak when app becomes visible again (user returns to tab)
-  useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (!document.hidden && user) {
-        console.log('👁️ App became visible, checking streak...')
-        await streakService.checkAndUpdateStreak(user.id)
-        // Refresh dashboard to show updated streak
-        setDashboardKey(prev => prev + 1)
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [user])
-
-  // Periodic streak check (every 5 minutes) to catch day changes
-  useEffect(() => {
-    if (!user) return
-
-    const checkStreakPeriodically = async () => {
-      await streakService.checkAndUpdateStreak(user.id)
-      setDashboardKey(prev => prev + 1)
-    }
-
-    // Check every 5 minutes
-    const interval = setInterval(checkStreakPeriodically, 5 * 60 * 1000)
-
-    return () => clearInterval(interval)
-  }, [user])
 
   const tabs = [
     { id: 'dashboard', label: 'Home', icon: 'home' },

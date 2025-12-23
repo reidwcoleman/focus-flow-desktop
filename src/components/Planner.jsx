@@ -14,7 +14,6 @@ import BulkUpload from './BulkUpload'
 import AIPlanningSuggestions from './AIPlanningSuggestions'
 import ActivityTimeline from './ActivityTimeline'
 import CelebrationOverlay from './CelebrationOverlay'
-import ProductivityHeatmap from './ProductivityHeatmap'
 import ConflictModal from './ConflictModal'
 import assignmentsService from '../services/assignmentsService'
 import infiniteCampusService from '../services/infiniteCampusService'
@@ -808,11 +807,6 @@ const Planner = () => {
 
       {/* AI Smart Planning Suggestions */}
       <AIPlanningSuggestions assignments={assignments} grades={grades} activities={activities} />
-
-      {/* Activity Heatmap */}
-      <div className="space-y-4">
-        <ProductivityHeatmap activities={activities} />
-      </div>
 
       {/* Simplified View & Filter */}
       <div className="flex items-center justify-between gap-3">
