@@ -23,6 +23,12 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [sidebarLocked, setSidebarLocked] = useState(false)
 
+  // Focus timer state (persists across tab switches)
+  const [focusTask, setFocusTask] = useState(null)
+  const [focusTime, setFocusTime] = useState(0)
+  const [focusActive, setFocusActive] = useState(false)
+  const [focusPaused, setFocusPaused] = useState(false)
+
   useEffect(() => {
     const checkAuth = async () => {
       const { user } = await authService.getCurrentUser()
@@ -66,6 +72,30 @@ function App() {
     localStorage.setItem('sidebarLocked', JSON.stringify(sidebarLocked))
     if (sidebarLocked) setSidebarCollapsed(false)
   }, [sidebarLocked])
+
+  // Focus timer countdown
+  useEffect(() => {
+    let interval = null
+    if (focusActive && !focusPaused) {
+      interval = setInterval(() => {
+        setFocusTime(t => t + 1)
+      }, 1000)
+    }
+    return () => clearInterval(interval)
+  }, [focusActive, focusPaused])
+
+  const formatFocusTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${String(secs).padStart(2, '0')}`
+  }
+
+  const focusTimerProps = {
+    focusTask, setFocusTask,
+    focusTime, setFocusTime,
+    focusActive, setFocusActive,
+    focusPaused, setFocusPaused
+  }
 
   const tabs = [
     { id: 'dashboard', label: 'Home', icon: 'home' },
@@ -264,7 +294,7 @@ function App() {
           <div className="h-screen overflow-y-auto overflow-x-hidden pb-20 md:pb-0">
             {activeTab === 'dashboard' && (
               <div key="dashboard" className="animate-fade-in">
-                <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
+                <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} focusTimerProps={focusTimerProps} />
               </div>
             )}
             {activeTab === 'planner' && (
@@ -344,6 +374,53 @@ function App() {
           </div>
         </nav>
       </div>
+
+      {/* Floating Focus Timer - shows when active and not on dashboard */}
+      {focusTask && activeTab !== 'dashboard' && (
+        <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50 animate-scale-in">
+          <div className="bg-surface-elevated border border-primary/30 rounded-2xl shadow-lg shadow-primary/10 p-4 min-w-[200px]">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center ${focusActive && !focusPaused ? 'animate-pulse' : ''}`}>
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-primary font-medium uppercase tracking-wider">
+                  {focusActive && !focusPaused ? 'Focusing' : 'Paused'}
+                </p>
+                <p className="text-sm font-medium text-text-primary truncate">{focusTask.title}</p>
+              </div>
+              <span className="text-2xl font-mono font-bold text-primary tabular-nums">
+                {formatFocusTime(focusTime)}
+              </span>
+            </div>
+            <div className="flex gap-2 mt-3">
+              {focusActive && !focusPaused ? (
+                <button
+                  onClick={() => setFocusPaused(true)}
+                  className="flex-1 py-2 px-3 bg-surface-overlay hover:bg-surface-base rounded-lg text-sm font-medium text-text-secondary transition-colors"
+                >
+                  Pause
+                </button>
+              ) : (
+                <button
+                  onClick={() => setFocusPaused(false)}
+                  className="flex-1 py-2 px-3 bg-primary/20 hover:bg-primary/30 rounded-lg text-sm font-medium text-primary transition-colors"
+                >
+                  Resume
+                </button>
+              )}
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className="flex-1 py-2 px-3 bg-primary hover:bg-primary-hover rounded-lg text-sm font-medium text-white transition-colors"
+              >
+                View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ToastContainer />
       <ConfirmDialogContainer />

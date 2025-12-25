@@ -126,14 +126,15 @@ export const canvasService = {
     return await this.makeRequest('/users/self')
   },
 
-  // Check if text contains Arabic characters
-  _containsArabic(text) {
+  // Check if text contains non-Latin characters (Arabic, Chinese, Japanese, Korean, Cyrillic, Hebrew, Thai, etc.)
+  _containsNonLatin(text) {
     if (!text) return false
-    const arabicPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
-    return arabicPattern.test(text)
+    // Pattern matches: Arabic, Hebrew, Chinese, Japanese, Korean, Cyrillic, Thai, Devanagari, Bengali, Tamil, Telugu, and other non-Latin scripts
+    const nonLatinPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0590-\u05FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF\u0400-\u04FF\u0E00-\u0E7F\u0900-\u097F\u0980-\u09FF\u0B80-\u0BFF\u0C00-\u0C7F\u1100-\u11FF\u3130-\u318F\uA960-\uA97F\uD7B0-\uD7FF]/
+    return nonLatinPattern.test(text)
   },
 
-  // Get all active courses with pagination (filtered to exclude Arabic courses)
+  // Get all active courses with pagination (filtered to exclude non-English courses)
   async getCourses() {
     const courses = []
     let page = 1
@@ -145,13 +146,13 @@ export const canvasService = {
       )
 
       if (response && response.length > 0) {
-        // Filter out courses with Arabic names
+        // Filter out courses with non-English names
         const filteredCourses = response.filter(course => {
-          const hasArabicName = this._containsArabic(course.name)
-          const hasArabicCode = this._containsArabic(course.course_code)
+          const hasNonLatinName = this._containsNonLatin(course.name)
+          const hasNonLatinCode = this._containsNonLatin(course.course_code)
 
-          if (hasArabicName || hasArabicCode) {
-            console.log(`🚫 Filtering out Arabic course: ${course.name}`)
+          if (hasNonLatinName || hasNonLatinCode) {
+            console.log(`🚫 Filtering out non-English course: ${course.name}`)
             return false
           }
           return true
@@ -165,7 +166,7 @@ export const canvasService = {
       }
     }
 
-    console.log(`📚 Loaded ${courses.length} courses (Arabic courses filtered out)`)
+    console.log(`📚 Loaded ${courses.length} courses (non-English courses filtered out)`)
     return courses
   },
 

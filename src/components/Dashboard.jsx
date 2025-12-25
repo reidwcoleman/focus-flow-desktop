@@ -10,7 +10,15 @@ import calendarService from '../services/calendarService'
 import { toast } from './Toast'
 import { confirmDialog } from './ConfirmDialog'
 
-const Dashboard = ({ onOpenScanner }) => {
+const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
+  // Destructure focus timer props from App (persists across tabs)
+  const {
+    focusTask, setFocusTask,
+    focusTime, setFocusTime,
+    focusActive, setFocusActive,
+    focusPaused, setFocusPaused
+  } = focusTimerProps || {}
+
   const [userName, setUserName] = useState('there')
   const [assignments, setAssignments] = useState([])
   const [isLoadingCanvas, setIsLoadingCanvas] = useState(false)
@@ -29,10 +37,6 @@ const Dashboard = ({ onOpenScanner }) => {
   const [expandedAssignments, setExpandedAssignments] = useState(new Set())
   const [breakdownModal, setBreakdownModal] = useState(null)
   const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
-  const [focusTask, setFocusTask] = useState(null)
-  const [focusTime, setFocusTime] = useState(0)
-  const [focusActive, setFocusActive] = useState(false)
-  const [focusPaused, setFocusPaused] = useState(false)
   const [dailyGoal, setDailyGoal] = useState(() => {
     const saved = localStorage.getItem('dailyStudyGoal')
     return saved ? parseInt(saved) : 120 // Default 2 hours
@@ -56,16 +60,7 @@ const Dashboard = ({ onOpenScanner }) => {
     loadProductivityStats()
   }, [])
 
-  // Focus timer countdown
-  useEffect(() => {
-    let interval = null
-    if (focusActive && !focusPaused) {
-      interval = setInterval(() => {
-        setFocusTime(t => t + 1)
-      }, 1000)
-    }
-    return () => clearInterval(interval)
-  }, [focusActive, focusPaused])
+  // Focus timer countdown is now handled in App.jsx
 
   const loadProductivityStats = async () => {
     try {
