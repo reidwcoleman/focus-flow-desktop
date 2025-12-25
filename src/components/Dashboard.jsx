@@ -23,6 +23,11 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
   const [assignments, setAssignments] = useState([])
   const [isLoadingCanvas, setIsLoadingCanvas] = useState(false)
   const [isLoadingAssignments, setIsLoadingAssignments] = useState(true)
+  const [canvasConfigured, setCanvasConfigured] = useState(true)
+  const [showCanvasSetup, setShowCanvasSetup] = useState(false)
+  const [canvasUrl, setCanvasUrl] = useState('')
+  const [canvasToken, setCanvasToken] = useState('')
+  const [savingCanvas, setSavingCanvas] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [aiInput, setAiInput] = useState('')
   const [aiProcessing, setAiProcessing] = useState(false)
@@ -111,6 +116,30 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
     await authService.refreshUserProfile()
     const profile = authService.getUserProfile()
     setUserName(profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there')
+    setCanvasConfigured(!!profile?.canvas_url)
+  }
+
+  const handleSaveCanvasSetup = async () => {
+    if (!canvasUrl.trim() || !canvasToken.trim()) {
+      toast.error('Both URL and token are required')
+      return
+    }
+    setSavingCanvas(true)
+    try {
+      await authService.updateUserProfile({
+        canvas_url: canvasUrl.trim(),
+        canvas_token: canvasToken.trim()
+      })
+      setCanvasConfigured(true)
+      setShowCanvasSetup(false)
+      toast.success('Canvas connected! Syncing assignments...')
+      // Auto-sync after setup
+      await loadCanvasAssignments()
+    } catch (err) {
+      toast.error('Failed to save Canvas settings')
+    } finally {
+      setSavingCanvas(false)
+    }
   }
 
   const loadAssignments = async () => {
@@ -621,7 +650,7 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 mb-10 animate-fade-up stagger-2">
+      <div className="grid grid-cols-2 gap-3 mb-6 animate-fade-up stagger-2">
         <button
           onClick={onOpenScanner}
           className="group p-5 bg-surface-elevated hover:bg-surface-overlay rounded-2xl transition-all duration-300 hover:-translate-y-0.5"
@@ -657,6 +686,105 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
           </div>
         </button>
       </div>
+
+      {/* Canvas Setup Card - shows when not configured */}
+      {!canvasConfigured && !showCanvasSetup && (
+        <div className="mb-10 animate-fade-up stagger-2">
+          <div className="bg-gradient-to-br from-primary/5 to-accent-cool/5 border border-primary/10 rounded-2xl p-5">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-text-primary">Connect Canvas LMS</h3>
+                <p className="text-sm text-text-secondary mt-1">Automatically sync your assignments and due dates from Canvas</p>
+                <button
+                  onClick={() => setShowCanvasSetup(true)}
+                  className="mt-4 px-4 py-2 bg-primary text-text-inverse rounded-xl hover:bg-primary-hover transition-colors text-sm font-medium"
+                >
+                  Set Up Canvas
+                </button>
+              </div>
+              <button
+                onClick={() => setCanvasConfigured(true)}
+                className="p-1.5 text-text-muted hover:text-text-secondary transition-colors"
+                title="Dismiss"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Canvas Setup Form */}
+      {showCanvasSetup && (
+        <div className="mb-10 animate-fade-up">
+          <div className="bg-surface-elevated rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-semibold text-text-primary">Connect Canvas</h3>
+              <button
+                onClick={() => setShowCanvasSetup(false)}
+                className="p-1.5 text-text-muted hover:text-text-secondary transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-text-secondary mb-2 block">Canvas URL</label>
+                <input
+                  type="url"
+                  value={canvasUrl}
+                  onChange={(e) => setCanvasUrl(e.target.value)}
+                  className="input"
+                  placeholder="https://school.instructure.com"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-text-secondary mb-2 block">API Token</label>
+                <input
+                  type="password"
+                  value={canvasToken}
+                  onChange={(e) => setCanvasToken(e.target.value)}
+                  className="input"
+                  placeholder="Your Canvas API token"
+                />
+                <p className="text-xs text-text-muted mt-2">
+                  Find your token: Canvas → Account → Settings → New Access Token
+                </p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowCanvasSetup(false)}
+                  className="flex-1 py-3 bg-surface-overlay text-text-secondary rounded-xl hover:bg-surface-overlay/80 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveCanvasSetup}
+                  disabled={savingCanvas}
+                  className="flex-1 py-3 bg-primary text-text-inverse rounded-xl hover:bg-primary-hover transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {savingCanvas ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Connecting...
+                    </>
+                  ) : 'Connect Canvas'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tasks Section */}
       <section className="animate-fade-up stagger-3">

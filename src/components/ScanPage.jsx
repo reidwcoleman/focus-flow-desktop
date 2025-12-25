@@ -185,6 +185,40 @@ const ScanPage = () => {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  const dismissNotes = () => {
+    setNotesData(null)
+    setCapturedImage(null)
+  }
+
+  const downloadNotes = () => {
+    if (!notesData) return
+
+    const title = notesData.title || 'Scanned Notes'
+    const content = notesData.content || notesData.text || ''
+    const subject = notesData.subject || 'General'
+    const date = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+
+    // Create markdown content
+    const markdown = `# ${title}\n\n**Subject:** ${subject}  \n**Date:** ${date}\n\n---\n\n${content}`
+
+    // Create blob and download
+    const blob = new Blob([markdown], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    toast.success('Notes downloaded!')
+  }
+
   const scanModes = [
     { id: 'homework', label: 'Homework', icon: '📝', description: 'Scan assignments to track' },
     { id: 'notes', label: 'Notes', icon: '📓', description: 'Digitize handwritten notes' },
@@ -390,38 +424,109 @@ const ScanPage = () => {
 
       {/* Results - Notes */}
       {notesData && !isProcessing && (
-        <div className="bg-surface-elevated rounded-2xl p-6 border border-border animate-fade-up">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-accent-warm/10 flex items-center justify-center">
-              <span className="text-xl">📓</span>
+        <div className="animate-fade-up">
+          {/* Document-style notes card */}
+          <div className="bg-surface-elevated rounded-2xl border border-border overflow-hidden shadow-lg shadow-black/5">
+            {/* Header with gradient accent */}
+            <div className="relative bg-gradient-to-r from-accent-warm/10 via-accent-warm/5 to-transparent p-6 border-b border-border">
+              {/* Close button */}
+              <button
+                onClick={dismissNotes}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-base/80 hover:bg-surface-overlay flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Title and metadata */}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-accent-warm/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-accent-warm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0 pr-8">
+                  <h3 className="text-xl font-semibold text-text-primary mb-1">
+                    {notesData.title || 'Scanned Notes'}
+                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {notesData.subject && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent-warm/20 text-accent-warm">
+                        {notesData.subject}
+                      </span>
+                    )}
+                    <span className="text-xs text-text-muted">
+                      {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-text-primary">Notes Extracted</h3>
-              <p className="text-xs text-text-muted">Review your digitized notes</p>
+
+            {/* Content area - styled like a document */}
+            <div className="p-6">
+              <div className="bg-surface-base rounded-xl p-6 min-h-[200px] max-h-[400px] overflow-y-auto border border-border/50">
+                {/* Decorative line accent */}
+                <div className="w-12 h-1 bg-accent-warm/30 rounded-full mb-4" />
+
+                {/* Notes content with nice typography */}
+                <div className="prose prose-sm max-w-none">
+                  <p className="text-text-primary whitespace-pre-wrap leading-relaxed text-[15px]">
+                    {notesData.content || notesData.text || 'No text detected'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Word count */}
+              <p className="text-xs text-text-muted mt-3 text-right">
+                {(notesData.content || notesData.text || '').split(/\s+/).filter(Boolean).length} words
+              </p>
+            </div>
+
+            {/* Action buttons */}
+            <div className="px-6 pb-6">
+              <div className="flex gap-3">
+                <button
+                  onClick={downloadNotes}
+                  className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-surface-base hover:bg-surface-overlay text-text-secondary font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download
+                </button>
+                <button
+                  onClick={resetScan}
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-surface-base hover:bg-surface-overlay text-text-secondary font-medium transition-colors"
+                >
+                  Scan Another
+                </button>
+                <button
+                  onClick={handleSaveNotes}
+                  disabled={isSaving}
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-accent-warm text-white font-medium hover:opacity-90 transition-colors disabled:opacity-50"
+                >
+                  {isSaving ? 'Saving...' : 'Save to Library'}
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="p-4 bg-surface-base rounded-xl mb-6 max-h-64 overflow-y-auto">
-            <p className="text-text-primary whitespace-pre-wrap text-sm leading-relaxed">
-              {notesData.content || notesData.text || 'No text detected'}
-            </p>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={resetScan}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-surface-base text-text-secondary font-medium hover:bg-surface-overlay transition-colors"
-            >
-              Scan Another
-            </button>
-            <button
-              onClick={handleSaveNotes}
-              disabled={isSaving}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-accent-warm text-white font-medium hover:opacity-90 transition-colors disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : 'Save Notes'}
-            </button>
-          </div>
+          {/* Scanned image thumbnail */}
+          {capturedImage && (
+            <div className="mt-4 flex items-center gap-3 p-3 bg-surface-elevated rounded-xl border border-border">
+              <img
+                src={capturedImage}
+                alt="Source"
+                className="w-16 h-16 rounded-lg object-cover border border-border"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-text-primary">Source Image</p>
+                <p className="text-xs text-text-muted">Original scan used for extraction</p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -471,8 +576,8 @@ const ScanPage = () => {
         </div>
       )}
 
-      {/* Image Preview */}
-      {capturedImage && !isProcessing && (
+      {/* Image Preview - only for homework and flashcards */}
+      {capturedImage && !isProcessing && !notesData && (
         <div className="mt-6 animate-fade-up">
           <p className="text-xs text-text-muted mb-2">Scanned Image</p>
           <img

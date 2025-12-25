@@ -187,6 +187,9 @@ export default function Account() {
                   className="input"
                   placeholder="Your Canvas API token"
                 />
+                <p className="text-xs text-text-muted mt-2">
+                  Find your token in Canvas: Account → Settings → New Access Token
+                </p>
               </div>
               <div className="flex gap-3">
                 <button
@@ -207,9 +210,12 @@ export default function Account() {
           ) : (
             <div className="space-y-4">
               {profile?.canvas_url ? (
-                <div className="flex items-center gap-3 p-4 bg-surface-base rounded-xl">
-                  <div className="w-2 h-2 rounded-full bg-success" />
-                  <span className="text-sm text-text-secondary">Connected to Canvas</span>
+                <div className="flex items-center justify-between p-4 bg-surface-base rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-success" />
+                    <span className="text-sm text-text-secondary">Connected to Canvas</span>
+                  </div>
+                  <span className="text-xs text-text-muted truncate max-w-[150px]">{profile.canvas_url}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 p-4 bg-surface-base rounded-xl">
@@ -217,20 +223,43 @@ export default function Account() {
                   <span className="text-sm text-text-muted">Not configured</span>
                 </div>
               )}
+
+              {profile?.canvas_url && (
+                <button
+                  onClick={handleSyncCanvas}
+                  disabled={syncing}
+                  className="w-full py-3 bg-primary text-text-inverse rounded-xl hover:bg-primary-hover transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {syncing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Sync Assignments
+                    </>
+                  )}
+                </button>
+              )}
+
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsEditingCanvas(true)}
                   className="flex-1 py-3 bg-surface-base text-text-secondary rounded-xl hover:bg-surface-overlay hover:text-text-primary transition-all font-medium"
                 >
-                  {profile?.canvas_url ? 'Edit Settings' : 'Set Up'}
+                  {profile?.canvas_url ? 'Edit Settings' : 'Set Up Canvas'}
                 </button>
                 {profile?.canvas_url && (
                   <button
                     onClick={handleTestConnection}
                     disabled={testing}
-                    className="flex-1 py-3 bg-primary/10 text-primary rounded-xl hover:bg-primary/15 transition-colors font-medium disabled:opacity-50"
+                    className="flex-1 py-3 bg-surface-base text-text-secondary rounded-xl hover:bg-surface-overlay hover:text-text-primary transition-all font-medium disabled:opacity-50"
                   >
-                    {testing ? 'Testing...' : 'Test Connection'}
+                    {testing ? 'Testing...' : 'Test'}
                   </button>
                 )}
               </div>
