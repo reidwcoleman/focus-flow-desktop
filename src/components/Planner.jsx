@@ -338,70 +338,119 @@ const Planner = () => {
             {selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
           </p>
 
-          {dayActivities.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-surface-base flex items-center justify-center">
-                <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-text-muted text-sm">No activities</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {dayActivities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className={`p-4 rounded-xl transition-all ${
-                    activity.is_completed
-                      ? 'bg-surface-base/50'
-                      : 'bg-surface-base hover:bg-surface-overlay'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <button
-                      onClick={() => handleToggleComplete(activity.id, activity.is_completed)}
-                      className={`mt-0.5 w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${
-                        activity.is_completed
-                          ? 'bg-success/20'
-                          : 'border-2 border-text-muted/30 hover:border-primary'
-                      }`}
-                    >
-                      {activity.is_completed && (
-                        <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </button>
+          {(() => {
+            const selectedAssignments = showAssignments
+              ? assignments
+                  .filter(a => a.dueDate === selectedDateStr && !a.completed)
+                  .map(a => ({
+                    id: a.id,
+                    title: a.title,
+                    subject: a.subject,
+                    isAssignment: true,
+                    priority: a.priority
+                  }))
+              : []
+            const allItems = [...dayActivities, ...selectedAssignments]
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-1.5 h-1.5 rounded-full ${getActivityColor(activity.activity_type)}`} />
-                        {activity.start_time && (
-                          <span className="text-xs text-text-muted">{formatTime(activity.start_time)}</span>
+            if (allItems.length === 0) {
+              return (
+                <div className="text-center py-12">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-surface-base flex items-center justify-center">
+                    <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-text-muted text-sm">No activities{showAssignments ? ' or assignments' : ''}</p>
+                </div>
+              )
+            }
+
+            return (
+              <div className="space-y-3">
+                {/* Activities */}
+                {dayActivities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className={`p-4 rounded-xl transition-all ${
+                      activity.is_completed
+                        ? 'bg-surface-base/50'
+                        : 'bg-surface-base hover:bg-surface-overlay'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <button
+                        onClick={() => handleToggleComplete(activity.id, activity.is_completed)}
+                        className={`mt-0.5 w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${
+                          activity.is_completed
+                            ? 'bg-success/20'
+                            : 'border-2 border-text-muted/30 hover:border-primary'
+                        }`}
+                      >
+                        {activity.is_completed && (
+                          <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </button>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-1.5 h-1.5 rounded-full ${getActivityColor(activity.activity_type)}`} />
+                          {activity.start_time && (
+                            <span className="text-xs text-text-muted">{formatTime(activity.start_time)}</span>
+                          )}
+                        </div>
+                        <h4 className={`font-medium text-sm ${activity.is_completed ? 'text-text-muted line-through' : 'text-text-primary'}`}>
+                          {activity.title}
+                        </h4>
+                        {activity.duration_minutes && (
+                          <p className="text-xs text-text-muted mt-1">{activity.duration_minutes} min</p>
                         )}
                       </div>
-                      <h4 className={`font-medium text-sm ${activity.is_completed ? 'text-text-muted line-through' : 'text-text-primary'}`}>
-                        {activity.title}
-                      </h4>
-                      {activity.duration_minutes && (
-                        <p className="text-xs text-text-muted mt-1">{activity.duration_minutes} min</p>
-                      )}
-                    </div>
 
-                    <button
-                      onClick={() => handleDelete(activity.id)}
-                      className="p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                      <button
+                        onClick={() => handleDelete(activity.id)}
+                        className="p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-all"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+
+                {/* Assignments */}
+                {selectedAssignments.map((assignment) => (
+                  <div
+                    key={`assignment-${assignment.id}`}
+                    className="p-4 rounded-xl bg-accent-warm/5 border border-accent-warm/20 hover:border-accent-warm/40 transition-all"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center bg-accent-warm/20">
+                        <svg className="w-3 h-3 text-accent-warm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-accent-warm" />
+                          <span className="text-xs text-accent-warm font-medium">Assignment Due</span>
+                        </div>
+                        <h4 className="font-medium text-sm text-text-primary">
+                          {assignment.title}
+                        </h4>
+                        {assignment.subject && (
+                          <p className="text-xs text-text-muted mt-1">{assignment.subject}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
         </div>
       </div>
     </div>
