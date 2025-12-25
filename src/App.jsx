@@ -20,6 +20,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true)
   const [dashboardKey, setDashboardKey] = useState(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
+  const [sidebarLocked, setSidebarLocked] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -52,15 +53,18 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const saved = localStorage.getItem('sidebarCollapsed')
-    if (saved !== null) {
-      setSidebarCollapsed(JSON.parse(saved))
+    const savedLocked = localStorage.getItem('sidebarLocked')
+    if (savedLocked !== null) {
+      const isLocked = JSON.parse(savedLocked)
+      setSidebarLocked(isLocked)
+      if (isLocked) setSidebarCollapsed(false)
     }
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed))
-  }, [sidebarCollapsed])
+    localStorage.setItem('sidebarLocked', JSON.stringify(sidebarLocked))
+    if (sidebarLocked) setSidebarCollapsed(false)
+  }, [sidebarLocked])
 
   const tabs = [
     { id: 'dashboard', label: 'Home', icon: 'home' },
@@ -143,8 +147,8 @@ function App() {
         {/* Sidebar - Desktop */}
         <aside
           className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'w-18' : 'w-60'} bg-surface-base fixed left-0 top-0 bottom-0 z-40 transition-all duration-300 ease-gentle`}
-          onMouseEnter={() => setSidebarCollapsed(false)}
-          onMouseLeave={() => setSidebarCollapsed(true)}
+          onMouseEnter={() => !sidebarLocked && setSidebarCollapsed(false)}
+          onMouseLeave={() => !sidebarLocked && setSidebarCollapsed(true)}
         >
           {/* Logo */}
           <div className="h-18 flex items-center justify-center">
@@ -219,8 +223,33 @@ function App() {
             })}
           </nav>
 
-          {/* Bottom spacer */}
-          <div className="h-6" />
+          {/* Lock Toggle Button */}
+          <div className="px-3 pb-4">
+            <button
+              onClick={() => setSidebarLocked(!sidebarLocked)}
+              className={`w-full ${sidebarCollapsed ? 'p-3 justify-center' : 'px-3 py-2.5'} rounded-xl flex items-center gap-3 transition-all duration-200 ${
+                sidebarLocked
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-text-muted hover:bg-surface-elevated/50 hover:text-text-secondary'
+              }`}
+              title={sidebarLocked ? 'Unlock sidebar' : 'Lock sidebar open'}
+            >
+              <div className="w-5 h-5 flex items-center justify-center">
+                {sidebarLocked ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                  </svg>
+                )}
+              </div>
+              {!sidebarCollapsed && (
+                <span className="text-sm">{sidebarLocked ? 'Locked' : 'Lock open'}</span>
+              )}
+            </button>
+          </div>
         </aside>
 
         {/* Main Content */}
