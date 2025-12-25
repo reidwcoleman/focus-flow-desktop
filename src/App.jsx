@@ -221,31 +221,31 @@ function App() {
         </aside>
 
         {/* Main Content */}
-        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-56'} transition-all duration-200`}>
-          {/* Content wrapper with proper padding for mobile bottom nav */}
-          <div className="min-h-screen pb-20 md:pb-0">
+        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-56'} transition-all duration-300`}>
+          {/* Scrollable content wrapper */}
+          <div className="h-screen overflow-y-auto overflow-x-hidden pb-20 md:pb-0">
             {activeTab === 'dashboard' && (
-              <div className="animate-fadeIn">
+              <div key="dashboard" className="animate-fadeIn">
                 <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
               </div>
             )}
             {activeTab === 'planner' && (
-              <div className="animate-fadeIn">
+              <div key="planner" className="animate-fadeIn">
                 <Planner />
               </div>
             )}
             {activeTab === 'study' && (
-              <div className="animate-fadeIn">
+              <div key="study" className="animate-fadeIn">
                 <StudyHub />
               </div>
             )}
             {activeTab === 'tutor' && (
-              <div className="animate-fadeIn h-[calc(100vh-5rem)] md:h-screen">
+              <div key="tutor" className="animate-fadeIn h-[calc(100vh-5rem)] md:h-screen">
                 <AITutor />
               </div>
             )}
             {activeTab === 'account' && (
-              <div className="animate-fadeIn">
+              <div key="account" className="animate-fadeIn">
                 <Account />
               </div>
             )}
