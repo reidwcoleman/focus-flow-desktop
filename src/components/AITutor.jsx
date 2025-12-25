@@ -14,7 +14,7 @@ const AITutor = () => {
     {
       id: 1,
       role: 'assistant',
-      content: "Hello! I'm your AI tutor. I'm here to help you understand concepts, work through problems, and prepare for exams. What would you like to explore today?",
+      content: "Hello! I'm your AI tutor. I can help you with homework, explain concepts, and prepare for exams.\n\n**Pro tip:** You can also add assignments to your planner just by telling me! Try saying \"Add math homework due Friday\" or \"I have a biology test next week.\"",
       timestamp: new Date(),
     },
   ])
@@ -30,10 +30,10 @@ const AITutor = () => {
   const fileInputRef = useRef(null)
 
   const quickSuggestions = [
+    { icon: '📅', label: 'Add Assignment', prompt: 'I need to add an assignment to my planner', featured: true },
+    { icon: '✅', label: 'Add Task', prompt: 'Add a task to my to-do list', featured: true },
     { icon: '📐', label: 'Math Help', prompt: 'Help me solve a math problem' },
     { icon: '📝', label: 'Essay Review', prompt: 'Review my essay and give feedback' },
-    { icon: '🧪', label: 'Science Concepts', prompt: 'Explain a science concept to me' },
-    { icon: '📚', label: 'Study Tips', prompt: 'Give me effective study strategies' },
   ]
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const AITutor = () => {
     setMessages([{
       id: Date.now(),
       role: 'assistant',
-      content: "Hello! I'm your AI tutor. I'm here to help you understand concepts, work through problems, and prepare for exams. What would you like to explore today?",
+      content: "Hello! I'm your AI tutor. I can help you with homework, explain concepts, and prepare for exams.\n\n**Pro tip:** You can also add assignments to your planner just by telling me! Try saying \"Add math homework due Friday\" or \"I have a biology test next week.\"",
       timestamp: new Date(),
     }])
     setCurrentChatId(null)
@@ -338,11 +338,19 @@ const AITutor = () => {
                     <button
                       key={index}
                       onClick={() => handleSend(suggestion.prompt)}
-                      className="px-4 py-2.5 bg-surface-elevated hover:bg-surface-overlay border border-border hover:border-primary/30 rounded-xl transition-all flex items-center gap-2 text-sm group"
+                      className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm group ${
+                        suggestion.featured
+                          ? 'bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50'
+                          : 'bg-surface-elevated hover:bg-surface-overlay border border-border hover:border-primary/30'
+                      }`}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <span className="text-lg">{suggestion.icon}</span>
-                      <span className="text-text-secondary group-hover:text-text-primary transition-colors">
+                      <span className={`transition-colors ${
+                        suggestion.featured
+                          ? 'text-primary font-medium'
+                          : 'text-text-secondary group-hover:text-text-primary'
+                      }`}>
                         {suggestion.label}
                       </span>
                     </button>
