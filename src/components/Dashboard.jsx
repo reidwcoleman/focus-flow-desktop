@@ -7,9 +7,6 @@ import subtasksService from '../services/subtasksService'
 import taskBreakdownService from '../services/taskBreakdownService'
 import infiniteCampusService from '../services/infiniteCampusService'
 import courseStatsService from '../services/courseStatsService'
-import GradeChart from './GradeChart'
-import AssignmentChart from './AssignmentChart'
-import AIPlanningSuggestions from './AIPlanningSuggestions'
 import { toast } from './Toast'
 import { confirmDialog } from './ConfirmDialog'
 
@@ -19,12 +16,8 @@ const Dashboard = ({ onOpenScanner }) => {
   const [isLoadingCanvas, setIsLoadingCanvas] = useState(false)
   const [isLoadingAssignments, setIsLoadingAssignments] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [flyingAwayItems, setFlyingAwayItems] = useState(new Set())
   const [aiInput, setAiInput] = useState('')
   const [aiProcessing, setAiProcessing] = useState(false)
-  const [aiError, setAiError] = useState('')
-  const [aiSuccess, setAiSuccess] = useState('')
-  const [showExamples, setShowExamples] = useState(false)
   const [newAssignment, setNewAssignment] = useState({
     title: '',
     subject: '',
@@ -36,74 +29,36 @@ const Dashboard = ({ onOpenScanner }) => {
   const [expandedAssignments, setExpandedAssignments] = useState(new Set())
   const [breakdownModal, setBreakdownModal] = useState(null)
   const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
-  const [lastLoginHour, setLastLoginHour] = useState(null)
-  const [emojiTransitioning, setEmojiTransitioning] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [grades, setGrades] = useState([])
+  const [showStats, setShowStats] = useState(false)
 
-  // Filter assignments to exclude those older than 2 weeks
   const filterRecentAssignments = (assignmentsList) => {
     const twoWeeksAgo = new Date()
     twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
-
     return assignmentsList.filter(assignment => {
-      if (!assignment.dueDate) return true // Keep assignments with no due date
-      const dueDate = new Date(assignment.dueDate)
-      return dueDate >= twoWeeksAgo // Only keep assignments due within last 2 weeks or future
+      if (!assignment.dueDate) return true
+      return new Date(assignment.dueDate) >= twoWeeksAgo
     })
   }
 
   useEffect(() => {
     loadUserName()
     loadAssignments()
-    loadGrades()
   }, [])
-
-  // Update time every minute
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 60000) // Update every minute
-
-    return () => clearInterval(timer)
-  }, [])
-
-  const loadGrades = async () => {
-    try {
-      const syncedGrades = await infiniteCampusService.getSyncedGrades()
-      console.log('📊 Loaded grades for dashboard:', syncedGrades.length)
-      setGrades(syncedGrades)
-    } catch (error) {
-      console.error('Failed to load grades for dashboard:', error)
-    }
-  }
 
   const loadUserName = async () => {
     const { user } = await authService.getCurrentUser()
     await authService.refreshUserProfile()
     const profile = authService.getUserProfile()
-
-    console.log('👤 User profile:', profile)
-    console.log('📧 User email:', user?.email)
-    console.log('✏️ Full name from profile:', profile?.full_name)
-
-    // Use full_name if available, otherwise use email username
-    const name = profile?.full_name || user?.email?.split('@')[0] || 'there'
-    console.log('👋 Final name to display:', name)
-    setUserName(name)
+    setUserName(profile?.full_name || user?.email?.split('@')[0] || 'there')
   }
 
   const loadAssignments = async () => {
     setIsLoadingAssignments(true)
     try {
-      const { data, error} = await assignmentsService.getUpcomingAssignments()
+      const { data, error } = await assignmentsService.getUpcomingAssignments()
       if (error) throw error
-
-      // Convert to app format
       const formatted = assignmentsService.toAppFormatBatch(data)
       setAssignments(formatted)
-
-      // Load subtasks for all assignments
       await loadAllSubtasks(formatted)
     } catch (error) {
       console.error('Failed to load assignments:', error)
@@ -117,20 +72,10 @@ const Dashboard = ({ onOpenScanner }) => {
     await Promise.all(
       assignmentList.map(async (assignment) => {
         const subtasks = await subtasksService.getSubtasks(assignment.id)
-        if (subtasks.length > 0) {
-          subtasksMap[assignment.id] = subtasks
-        }
+        if (subtasks.length > 0) subtasksMap[assignment.id] = subtasks
       })
     )
     setSubtasksByAssignment(subtasksMap)
-  }
-
-  const loadSubtasksForAssignment = async (assignmentId) => {
-    const subtasks = await subtasksService.getSubtasks(assignmentId)
-    setSubtasksByAssignment(prev => ({
-      ...prev,
-      [assignmentId]: subtasks
-    }))
   }
 
   const handleCreateAssignment = async () => {
@@ -138,9 +83,8 @@ const Dashboard = ({ onOpenScanner }) => {
       toast.error('Please enter a title')
       return
     }
-
     try {
-      const { data, error} = await assignmentsService.createAssignment({
+      await assignmentsService.createAssignment({
         title: newAssignment.title,
         subject: newAssignment.subject,
         dueDate: newAssignment.dueDate || null,
@@ -148,172 +92,80 @@ const Dashboard = ({ onOpenScanner }) => {
         timeEstimate: newAssignment.timeEstimate || null,
         source: 'manual',
       })
-
-      if (error) throw error
-
-      // Reload assignments
       await loadAssignments()
-
-      // Reset form and close modal
-      setNewAssignment({
-        title: '',
-        subject: '',
-        dueDate: '',
-        priority: 'medium',
-        timeEstimate: '',
-      })
+      setNewAssignment({ title: '', subject: '', dueDate: '', priority: 'medium', timeEstimate: '' })
       setShowAddModal(false)
     } catch (error) {
-      console.error('Failed to create assignment:', error)
       toast.error('Failed to create assignment')
     }
   }
 
   const handleAiCreateAssignment = async () => {
     if (!aiInput.trim()) return
-
     setAiProcessing(true)
-    setAiError('')
-    setAiSuccess('')
-
     try {
-      console.log('🚀 Starting AI assignment creation:', aiInput)
-
-      // Parse assignment with AI
       const assignmentData = await assignmentParserService.parseAssignment(aiInput)
-      console.log('✅ Parsed assignment data:', assignmentData)
-
-      // Create assignment in database
-      console.log('💾 Creating assignment in database...')
-      const { data, error } = await assignmentsService.createAssignment({
+      await assignmentsService.createAssignment({
         title: assignmentData.title,
         subject: assignmentData.subject,
         dueDate: assignmentData.dueDate,
         priority: assignmentData.priority,
         timeEstimate: assignmentData.timeEstimate,
-        source: 'manual', // Database constraint only allows 'manual', 'scanner', 'canvas'
-        aiCaptured: true, // This flag indicates it was AI-generated
+        source: 'manual',
+        aiCaptured: true,
       })
-
-      if (error) {
-        console.error('❌ Database error:', error)
-        throw error
-      }
-
-      console.log('✅ Assignment created successfully:', data)
-
-      // Reload assignments
       await loadAssignments()
-
-      // Show success
-      setAiSuccess(`✅ Created: ${assignmentData.title}`)
+      toast.success(`Created: ${assignmentData.title}`)
       setAiInput('')
-      setTimeout(() => setAiSuccess(''), 3000)
     } catch (err) {
-      console.error('❌ Failed to create assignment:', err)
-      const errorMessage = err.message || 'Unknown error'
-      setAiError(`Failed: ${errorMessage}. Check console for details.`)
-      setTimeout(() => setAiError(''), 8000)
+      toast.error('Failed to parse assignment')
     } finally {
       setAiProcessing(false)
     }
   }
 
-  const handleDeleteAssignment = async (assignmentId, assignmentSource) => {
-    // Only allow deleting manual and scanned assignments (not Canvas)
-    if (assignmentSource === 'canvas') {
-      toast.warning('Canvas assignments cannot be deleted. Please delete them in Canvas.')
+  const handleDeleteAssignment = async (assignmentId, source) => {
+    if (source === 'canvas') {
+      toast.warning('Canvas assignments cannot be deleted here')
       return
     }
-
-    const confirmed = await confirmDialog(
-      'Delete Assignment',
-      'Are you sure you want to delete this assignment? This action cannot be undone.'
-    )
-    if (!confirmed) {
-      return
-    }
-
+    const confirmed = await confirmDialog('Delete Assignment', 'Are you sure?')
+    if (!confirmed) return
     try {
-      const { error } = await assignmentsService.deleteAssignment(assignmentId)
-
-      if (error) throw error
-
-      // Reload assignments
+      await assignmentsService.deleteAssignment(assignmentId)
       await loadAssignments()
     } catch (error) {
-      console.error('Failed to delete assignment:', error)
-      toast.error('Failed to delete assignment')
+      toast.error('Failed to delete')
     }
   }
 
   const handleToggleComplete = async (assignmentId, currentStatus) => {
     try {
       const newStatus = !currentStatus
+      const assignment = assignments.find(a => a.id === assignmentId)
 
-      // If marking as complete, trigger fly-away animation
-      if (newStatus) {
-        // Get assignment data for XP calculation
-        const assignment = assignments.find(a => a.id === assignmentId)
+      await assignmentsService.updateAssignment(assignmentId, {
+        completed: newStatus,
+        progress: newStatus ? 100 : 0
+      })
 
-        // Optimistically update the UI to show completed state
-        setAssignments(prev => prev.map(a =>
-          a.id === assignmentId ? { ...a, completed: true, progress: 100 } : a
-        ))
-
-        // Small delay to show the checkmark before flying away
-        setTimeout(() => {
-          setFlyingAwayItems(prev => new Set([...prev, assignmentId]))
-        }, 100)
-
-        // Wait for animation to complete, then remove from UI
-        setTimeout(async () => {
-          // Update in database
-          await assignmentsService.updateAssignment(assignmentId, {
-            completed: true,
-            progress: 100
-          })
-
-          // Track course stats with time estimate
-          if (assignment && assignment.subject) {
-              // Parse time estimate (e.g., "2h", "30m", "1h 30m")
-              let timeMinutes = 0
-              if (assignment.timeEstimate) {
-                const timeStr = assignment.timeEstimate.toLowerCase()
-                const hours = timeStr.match(/(\d+)\s*h/)
-                const mins = timeStr.match(/(\d+)\s*m/)
-                if (hours) timeMinutes += parseInt(hours[1]) * 60
-                if (mins) timeMinutes += parseInt(mins[1])
-              }
-              await courseStatsService.recordAssignmentCompleted(assignment.subject, null, timeMinutes)
-            }
-
-          // Remove from UI
-          setAssignments(prev => prev.filter(a => a.id !== assignmentId))
-          setFlyingAwayItems(prev => {
-            const next = new Set(prev)
-            next.delete(assignmentId)
-            return next
-          })
-        }, 1000) // Matched to new 0.85s animation + 150ms buffer
-      } else {
-        // If unchecking, update immediately without animation
-        const { error } = await assignmentsService.updateAssignment(assignmentId, {
-          completed: false,
-          progress: 0
-        })
-
-        if (error) throw error
-
-        // Update local state optimistically
-        setAssignments(prev => prev.map(a =>
-          a.id === assignmentId ? { ...a, completed: false, progress: 0 } : a
-        ))
+      if (newStatus && assignment?.subject) {
+        let timeMinutes = 0
+        if (assignment.timeEstimate) {
+          const timeStr = assignment.timeEstimate.toLowerCase()
+          const hours = timeStr.match(/(\d+)\s*h/)
+          const mins = timeStr.match(/(\d+)\s*m/)
+          if (hours) timeMinutes += parseInt(hours[1]) * 60
+          if (mins) timeMinutes += parseInt(mins[1])
+        }
+        await courseStatsService.recordAssignmentCompleted(assignment.subject, null, timeMinutes)
       }
+
+      setAssignments(prev => prev.map(a =>
+        a.id === assignmentId ? { ...a, completed: newStatus, progress: newStatus ? 100 : 0 } : a
+      ))
     } catch (error) {
-      console.error('Failed to toggle completion:', error)
-      toast.error('Failed to update assignment')
-      // Reload on error
+      toast.error('Failed to update')
       await loadAssignments()
     }
   }
@@ -321,11 +173,10 @@ const Dashboard = ({ onOpenScanner }) => {
   const handleGenerateBreakdown = async (assignment) => {
     try {
       setGeneratingBreakdown(true)
-      const aiSuggestions = await taskBreakdownService.generateSubtasks(assignment)
-      setBreakdownModal({ assignment, suggestions: aiSuggestions })
+      const suggestions = await taskBreakdownService.generateSubtasks(assignment)
+      setBreakdownModal({ assignment, suggestions })
     } catch (error) {
-      console.error('Failed to generate breakdown:', error)
-      toast.error(`Failed to generate AI breakdown: ${error.message}`)
+      toast.error('Failed to generate breakdown')
     } finally {
       setGeneratingBreakdown(false)
     }
@@ -333,40 +184,37 @@ const Dashboard = ({ onOpenScanner }) => {
 
   const handleAddAllSubtasks = async () => {
     if (!breakdownModal) return
-
     try {
-      const { assignment, suggestions } = breakdownModal
-      await subtasksService.createSubtasksBulk(assignment.id, suggestions)
-      await loadSubtasksForAssignment(assignment.id)
-      setExpandedAssignments(prev => new Set([...prev, assignment.id]))
+      await subtasksService.createSubtasksBulk(breakdownModal.assignment.id, breakdownModal.suggestions)
+      const subtasks = await subtasksService.getSubtasks(breakdownModal.assignment.id)
+      setSubtasksByAssignment(prev => ({ ...prev, [breakdownModal.assignment.id]: subtasks }))
+      setExpandedAssignments(prev => new Set([...prev, breakdownModal.assignment.id]))
       setBreakdownModal(null)
     } catch (error) {
-      console.error('Failed to add subtasks:', error)
       toast.error('Failed to add subtasks')
     }
   }
 
   const handleToggleSubtask = async (subtask) => {
-    try {
-      await subtasksService.toggleSubtask(subtask.id, !subtask.completed)
-      await loadSubtasksForAssignment(subtask.assignment_id)
-      // Also reload assignments to update progress
-      await loadAssignments()
-    } catch (error) {
-      console.error('Failed to toggle subtask:', error)
-    }
+    await subtasksService.toggleSubtask(subtask.id, !subtask.completed)
+    const subtasks = await subtasksService.getSubtasks(subtask.assignment_id)
+    setSubtasksByAssignment(prev => ({ ...prev, [subtask.assignment_id]: subtasks }))
+    await loadAssignments()
   }
 
-  const toggleAssignmentExpanded = (assignmentId) => {
-    setExpandedAssignments(prev => {
-      const next = new Set(prev)
-      if (next.has(assignmentId)) {
-        next.delete(assignmentId)
-      } else {
-        next.add(assignmentId)
+  const loadCanvasAssignments = async () => {
+    setIsLoadingCanvas(true)
+    try {
+      const result = await canvasService.syncToDatabase()
+      if (result.success) {
+        await loadAssignments()
+        toast.success(result.synced > 0 ? `Synced ${result.synced} assignments` : 'No new assignments')
       }
-      return next
-    })
+    } catch (error) {
+      toast.error('Failed to sync from Canvas')
+    } finally {
+      setIsLoadingCanvas(false)
+    }
   }
 
   const getTimeOfDayGreeting = () => {
@@ -376,615 +224,332 @@ const Dashboard = ({ onOpenScanner }) => {
     return 'Good evening'
   }
 
-  const loadCanvasAssignments = async () => {
-    setIsLoadingCanvas(true)
-    try {
-      // Sync Canvas assignments to database
-      const result = await canvasService.syncToDatabase()
-
-      if (result.success) {
-        // Reload assignments from database to show synced Canvas assignments
-        await loadAssignments()
-
-        // Show success message
-        if (result.synced > 0) {
-          toast.success(`Successfully synced ${result.synced} assignments from Canvas!`)
-        } else {
-          toast.info('No new assignments found in Canvas')
-        }
-      } else {
-        throw new Error(result.message || 'Sync failed')
-      }
-    } catch (error) {
-      console.error('Failed to sync Canvas assignments:', error)
-      toast.error(`Failed to sync from Canvas: ${error.message}`)
-    } finally {
-      setIsLoadingCanvas(false)
-    }
-  }
-
-  const determinePriority = (dueDate) => {
-    if (!dueDate) return 'medium'
-    const now = new Date()
-    const due = new Date(dueDate)
-    const daysUntil = Math.ceil((due - now) / (1000 * 60 * 60 * 24))
-
-    if (daysUntil <= 1) return 'high'
-    if (daysUntil <= 3) return 'medium'
-    return 'low'
-  }
-
-  const estimateTime = (points) => {
-    if (!points) return '1h'
-    if (points <= 10) return '30m'
-    if (points <= 50) return '1h 30m'
-    return '2h 30m'
-  }
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'from-red-900/30 to-orange-900/30 border-red-700/40'
-      case 'medium': return 'from-yellow-900/30 to-amber-900/30 border-yellow-700/40'
-      case 'low': return 'from-green-900/30 to-emerald-900/30 border-green-700/40'
-      default: return 'from-dark-bg-secondary to-dark-bg-tertiary border-dark-border-subtle'
-    }
-  }
-
-  const getSubjectColor = (subject) => {
-    const colors = {
-      'Chemistry': 'bg-purple-600',
-      'English': 'bg-amber-600',
-      'Math': 'bg-cyan-600',
-      'History': 'bg-orange-600',
-      'Physics': 'bg-green-600',
-    }
-    return colors[subject] || 'bg-neutral-600'
-  }
-
-  const getSubjectBgColor = (subject) => {
-    const colors = {
-      'Chemistry': 'bg-dark-subject-chemistry',
-      'English': 'bg-dark-subject-english',
-      'Math': 'bg-dark-subject-math',
-      'History': 'bg-dark-subject-history',
-      'Physics': 'bg-dark-subject-physics',
-    }
-    return colors[subject] || 'bg-dark-bg-secondary'
-  }
-
   const getDaysUntilDue = (dueDate) => {
-    const today = new Date()
-    const due = new Date(dueDate)
-    const diffTime = due - today
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
+    const diffDays = Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24))
     if (diffDays === 0) return 'Due today'
-    if (diffDays === 1) return 'Due tomorrow'
+    if (diffDays === 1) return 'Tomorrow'
     if (diffDays < 0) return 'Overdue'
     return `${diffDays} days`
   }
 
-  // Get emoji for specific hour
-  const getEmojiForHour = (hour) => {
-    if (hour < 12) return '☀️'
-    if (hour < 17) return '🌤️'
-    if (hour < 20) return '🌅'
-    return '🌙'
-  }
-
-  // Get current time emoji
-  const getCurrentEmoji = () => {
-    const currentHour = new Date().getHours()
-    return getEmojiForHour(currentHour)
-  }
+  const recentAssignments = filterRecentAssignments(assignments)
+  const completedCount = recentAssignments.filter(a => a.completed).length
+  const pendingCount = recentAssignments.filter(a => !a.completed).length
 
   return (
-    <div className="space-y-4 md:space-y-5 lg:space-y-5 pb-6 md:pb-8 lg:pb-8">
-      {/* Welcome Card - Glass Morphism */}
-      <div className="relative overflow-hidden rounded-2xl bg-dark-bg-secondary/30 backdrop-blur-2xl p-4 md:p-5 shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] border border-white/10 hover:border-primary-500/30 transition-all duration-300 animate-opal-card-enter">
-        {/* Glass shimmer overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-cyan/5 opacity-60"></div>
-
-        {/* Floating glow orbs */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/15 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-cyan/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }}></div>
+    <div className="p-4 md:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">
+            {getTimeOfDayGreeting()}, {userName}
+          </h1>
+          <p className="text-text-secondary mt-1">
+            <span className="text-success">{completedCount} done</span>
+            <span className="mx-2">·</span>
+            <span className="text-warning">{pendingCount} pending</span>
+          </p>
         </div>
-
-        {/* Sparkle particles */}
-        <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-accent-cyan/70 rounded-full animate-ping"></div>
-        <div className="absolute top-6 right-10 w-1 h-1 bg-primary-400/70 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
-
-        <div className="relative z-10">
-          {/* Greeting Header - Compact */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="relative text-3xl md:text-4xl">
-              {/* Old emoji fading out and moving */}
-              {emojiTransitioning && lastLoginHour !== null && (
-                <div className="absolute inset-0 animate-emoji-exit">
-                  {getEmojiForHour(lastLoginHour)}
-                </div>
-              )}
-              {/* New emoji fading in and moving */}
-              <div className={emojiTransitioning ? 'animate-emoji-enter' : 'animate-bounce-slow'}>
-                {getCurrentEmoji()}
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-black bg-gradient-to-r from-primary-300 via-accent-cyan to-primary-300 bg-clip-text text-transparent bg-[length:200%_auto] animate-opal-gradient truncate">
-                {getTimeOfDayGreeting()}, {userName}
-              </h1>
-
-              {/* Date & Time - Larger */}
-              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg font-bold flex items-center gap-2">
-                  <svg className="w-4 h-4 md:w-5 md:h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                </p>
-                <p className="text-accent-cyan text-sm md:text-base lg:text-lg font-bold flex items-center gap-2">
-                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                </p>
-              </div>
-
-              {/* Assignment Summary */}
-              <div className="mt-2 flex items-center gap-2 text-sm md:text-base">
-                <span className="text-green-400 font-semibold">
-                  {filterRecentAssignments(assignments).filter(a => a.completed).length} completed
-                </span>
-                <span className="text-dark-text-muted">•</span>
-                <span className="text-orange-400 font-semibold">
-                  {filterRecentAssignments(assignments).filter(a => !a.completed).length} to do
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <button
+          onClick={loadCanvasAssignments}
+          disabled={isLoadingCanvas}
+          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          {isLoadingCanvas ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          )}
+          Sync Canvas
+        </button>
       </div>
 
-      {/* AI Assignment Input - Glass Morphism */}
-      <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-primary-500/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
-        {/* Success/Error Messages */}
-        {aiSuccess && (
-          <div className="mb-3 md:mb-4 lg:mb-5 p-2.5 md:p-3 lg:p-4 rounded-xl md:rounded-2xl bg-green-500/10 border border-green-500/30 animate-fadeIn">
-            <p className="text-green-400 text-xs md:text-sm lg:text-base font-medium">{aiSuccess}</p>
-          </div>
-        )}
-        {aiError && (
-          <div className="mb-3 md:mb-4 lg:mb-5 p-2.5 md:p-3 lg:p-4 rounded-xl md:rounded-2xl bg-red-500/10 border border-red-500/30 animate-fadeIn">
-            <p className="text-red-400 text-xs md:text-sm lg:text-base font-medium">{aiError}</p>
-          </div>
-        )}
-
-        <div className="flex gap-2 md:gap-3 lg:gap-4">
+      {/* Quick Add */}
+      <div className="bg-surface-elevated rounded-xl p-4 border border-border">
+        <div className="flex gap-3">
           <input
             type="text"
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAiCreateAssignment()}
-            placeholder="Math homework due tomorrow..."
-            className="flex-1 px-3 md:px-4 lg:px-5 xl:px-6 py-2.5 md:py-3 lg:py-4 text-sm md:text-base lg:text-lg rounded-xl md:rounded-2xl bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-primary placeholder:text-dark-text-muted focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
+            placeholder="Add assignment... (e.g., Math homework due Friday)"
+            className="flex-1 px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
             disabled={aiProcessing}
           />
           <button
             onClick={handleAiCreateAssignment}
             disabled={aiProcessing || !aiInput.trim()}
-            className="group px-4 md:px-5 py-2.5 md:py-3 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base font-semibold rounded-lg hover:shadow-dark-soft-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 hover:scale-105 flex items-center gap-2 relative overflow-hidden"
+            className="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
           >
-            {/* Shimmer effect on hover */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-
             {aiProcessing ? (
-              <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <>
-                <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <span className="hidden sm:inline">Create</span>
-              </>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
             )}
           </button>
         </div>
+        <p className="text-xs text-text-muted mt-2">
+          AI will parse your text to create an assignment with due date, subject, and priority
+        </p>
+      </div>
 
-        {/* Pro Tip */}
-        <div className="mt-2.5 md:mt-3 lg:mt-4 flex items-start gap-1.5 md:gap-2 text-[9px] md:text-[10px] lg:text-xs text-dark-text-muted">
-          <svg className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 flex-shrink-0 mt-0.5 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-          <p>
-            <span className="font-semibold text-primary-500">AI Pro:</span> Describe your assignment naturally like "Math homework due Friday" or "Chemistry lab report due on the 20th"
-          </p>
-        </div>
-
-        {/* Collapsible Examples */}
+      {/* Quick Actions */}
+      <div className="flex gap-3">
         <button
-          onClick={() => setShowExamples(!showExamples)}
-          className="mt-2 md:mt-3 flex items-center gap-1.5 md:gap-2 text-xs md:text-sm lg:text-base text-dark-text-secondary hover:text-primary-500 transition-colors"
+          onClick={onOpenScanner}
+          className="flex-1 p-4 bg-surface-elevated rounded-xl border border-border hover:border-primary transition-colors flex items-center gap-3"
         >
-          <svg
-            className={`w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 transition-transform ${showExamples ? 'rotate-90' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-          <span className="font-medium">{showExamples ? 'Hide' : 'Show'} examples</span>
+          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div className="text-left">
+            <div className="font-medium text-text-primary">Scan</div>
+            <div className="text-sm text-text-muted">Homework</div>
+          </div>
         </button>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex-1 p-4 bg-surface-elevated rounded-xl border border-border hover:border-success transition-colors flex items-center gap-3"
+        >
+          <div className="w-10 h-10 rounded-lg bg-success flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <div className="text-left">
+            <div className="font-medium text-text-primary">Add</div>
+            <div className="text-sm text-text-muted">Manual</div>
+          </div>
+        </button>
+      </div>
 
-        {showExamples && (
-          <div className="mt-2 md:mt-3 lg:mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4 animate-fadeIn">
-            <button
-              onClick={() => { setAiInput("Math homework due tomorrow"); setShowExamples(false); }}
-              className="text-xs md:text-sm lg:text-base px-2.5 md:px-3 lg:px-4 py-2 md:py-2.5 lg:py-3 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 hover:scale-105 transition-all text-left"
-            >
-              Math homework tomorrow
-            </button>
-            <button
-              onClick={() => { setAiInput("English essay due Friday"); setShowExamples(false); }}
-              className="text-xs md:text-sm lg:text-base px-2.5 md:px-3 lg:px-4 py-2 md:py-2.5 lg:py-3 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 hover:scale-105 transition-all text-left"
-            >
-              Essay due Friday
-            </button>
-            <button
-              onClick={() => { setAiInput("Chemistry lab report due on the 20th"); setShowExamples(false); }}
-              className="text-xs md:text-sm lg:text-base px-2.5 md:px-3 lg:px-4 py-2 md:py-2.5 lg:py-3 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 hover:scale-105 transition-all text-left"
-            >
-              Lab report on 20th
-            </button>
-            <button
-              onClick={() => { setAiInput("Physics problem set due Monday"); setShowExamples(false); }}
-              className="text-xs md:text-sm lg:text-base px-2.5 md:px-3 lg:px-4 py-2 md:py-2.5 lg:py-3 rounded-lg md:rounded-xl bg-dark-bg-tertiary border border-dark-border-subtle text-dark-text-muted hover:text-primary-500 hover:border-primary-500/50 hover:scale-105 transition-all text-left"
-            >
-              Problem set Monday
-            </button>
+      {/* Assignments */}
+      <div>
+        <h2 className="text-lg font-semibold text-text-primary mb-4">Upcoming</h2>
+
+        {isLoadingAssignments ? (
+          <div className="flex justify-center py-8">
+            <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          </div>
+        ) : recentAssignments.length === 0 ? (
+          <div className="text-center py-8 text-text-muted">
+            No upcoming assignments
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {recentAssignments.filter(a => !a.completed).map((assignment) => (
+              <div
+                key={assignment.id}
+                className="bg-surface-elevated rounded-xl p-4 border border-border hover:border-border-active transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  {/* Checkbox */}
+                  <button
+                    onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
+                    className="mt-0.5 w-5 h-5 rounded border-2 border-border hover:border-primary transition-colors flex-shrink-0"
+                  />
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {assignment.subject && (
+                        <span className="text-xs font-medium text-text-muted">{assignment.subject}</span>
+                      )}
+                      {assignment.aiCaptured && (
+                        <span className="text-xs px-1.5 py-0.5 bg-accent/20 text-accent rounded">AI</span>
+                      )}
+                    </div>
+                    <h3 className="font-medium text-text-primary">{assignment.title}</h3>
+                    <div className="flex items-center gap-3 mt-2 text-sm text-text-secondary">
+                      {assignment.dueDate && (
+                        <span className={getDaysUntilDue(assignment.dueDate) === 'Overdue' ? 'text-error' : ''}>
+                          {getDaysUntilDue(assignment.dueDate)}
+                        </span>
+                      )}
+                      {assignment.timeEstimate && <span>{assignment.timeEstimate}</span>}
+                    </div>
+
+                    {/* Subtasks */}
+                    {subtasksByAssignment[assignment.id]?.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <button
+                          onClick={() => setExpandedAssignments(prev => {
+                            const next = new Set(prev)
+                            next.has(assignment.id) ? next.delete(assignment.id) : next.add(assignment.id)
+                            return next
+                          })}
+                          className="text-sm text-text-secondary hover:text-text-primary flex items-center gap-1"
+                        >
+                          <span>Subtasks ({subtasksByAssignment[assignment.id].filter(s => s.completed).length}/{subtasksByAssignment[assignment.id].length})</span>
+                          <svg className={`w-4 h-4 transition-transform ${expandedAssignments.has(assignment.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {expandedAssignments.has(assignment.id) && (
+                          <div className="mt-2 space-y-2">
+                            {subtasksByAssignment[assignment.id].map((subtask) => (
+                              <div key={subtask.id} className="flex items-center gap-2 pl-1">
+                                <button
+                                  onClick={() => handleToggleSubtask(subtask)}
+                                  className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${
+                                    subtask.completed ? 'bg-success border-success' : 'border-border'
+                                  }`}
+                                >
+                                  {subtask.completed && (
+                                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                </button>
+                                <span className={`text-sm ${subtask.completed ? 'text-text-muted line-through' : 'text-text-primary'}`}>
+                                  {subtask.title}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleGenerateBreakdown(assignment)}
+                      disabled={generatingBreakdown}
+                      className="p-2 text-text-muted hover:text-accent transition-colors"
+                      title="AI Breakdown"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </button>
+                    {assignment.source !== 'canvas' && (
+                      <button
+                        onClick={() => handleDeleteAssignment(assignment.id, assignment.source)}
+                        className="p-2 text-text-muted hover:text-error transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Completed Section */}
+        {recentAssignments.filter(a => a.completed).length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-medium text-text-muted mb-3">Completed</h3>
+            <div className="space-y-2">
+              {recentAssignments.filter(a => a.completed).map((assignment) => (
+                <div
+                  key={assignment.id}
+                  className="bg-surface-elevated/50 rounded-lg p-3 border border-border flex items-center gap-3"
+                >
+                  <button
+                    onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
+                    className="w-5 h-5 rounded bg-success flex items-center justify-center flex-shrink-0"
+                  >
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </button>
+                  <span className="text-text-muted line-through">{assignment.title}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* AI Smart Planning Suggestions */}
-      <AIPlanningSuggestions assignments={assignments} grades={grades} />
+      {/* Stats Toggle */}
+      <button
+        onClick={() => setShowStats(!showStats)}
+        className="w-full p-3 bg-surface-elevated rounded-xl border border-border text-text-secondary hover:text-text-primary flex items-center justify-center gap-2 transition-colors"
+      >
+        <span>{showStats ? 'Hide' : 'Show'} Stats</span>
+        <svg className={`w-4 h-4 transition-transform ${showStats ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
-        <button
-          onClick={onOpenScanner}
-          className="group relative overflow-hidden bg-dark-bg-secondary rounded-xl p-3 md:p-4 shadow-dark-soft border border-dark-border-glow hover:shadow-dark-soft-lg hover:border-primary-500/30 transition-all duration-300 active:scale-[0.96] hover:scale-[1.02]">
-          {/* Shimmer effect on hover */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-primary-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-
-          <div className="flex items-center gap-2 relative z-10">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <div className="font-semibold text-dark-text-primary text-sm md:text-base group-hover:text-primary-400 transition-colors">Scan</div>
-              <div className="text-xs md:text-sm text-dark-text-muted">Homework</div>
-            </div>
+      {showStats && (
+        <div className="grid grid-cols-2 gap-4 animate-fade-in">
+          <div className="bg-surface-elevated rounded-xl p-4 border border-border">
+            <div className="text-3xl font-bold text-primary">{completedCount}</div>
+            <div className="text-sm text-text-muted">Completed</div>
           </div>
-        </button>
-
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="group relative overflow-hidden bg-dark-bg-secondary rounded-xl p-3 md:p-4 shadow-dark-soft border border-dark-border-glow hover:shadow-dark-soft-lg hover:border-green-500/30 transition-all duration-300 active:scale-[0.96] hover:scale-[1.02]">
-          {/* Shimmer effect on hover */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-green-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-
-          <div className="flex items-center gap-2 relative z-10">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </div>
-            <div className="text-left">
-              <div className="font-semibold text-dark-text-primary text-sm md:text-base group-hover:text-green-400 transition-colors">Add</div>
-              <div className="text-xs md:text-sm text-dark-text-muted">Assignment</div>
-            </div>
-          </div>
-        </button>
-      </div>
-
-      {/* Assignments Section */}
-      <div>
-        <div className="flex items-center justify-between mb-3.5 md:mb-5 lg:mb-6">
-          <h3 className="text-lg md:text-2xl lg:text-3xl xl:text-4xl font-bold text-dark-text-primary tracking-tight">Upcoming</h3>
-          <div className="flex items-center gap-2 md:gap-3">
-            {isLoadingCanvas && (
-              <div className="flex items-center gap-2 text-xs md:text-sm text-primary-500">
-                <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                <span>Syncing...</span>
-              </div>
-            )}
-            {!isLoadingCanvas && (
-              <button
-                onClick={loadCanvasAssignments}
-                disabled={isLoadingCanvas}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 text-sm md:text-base bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover:shadow-dark-soft-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span>Sync from Canvas</span>
-              </button>
-            )}
+          <div className="bg-surface-elevated rounded-xl p-4 border border-border">
+            <div className="text-3xl font-bold text-warning">{pendingCount}</div>
+            <div className="text-sm text-text-muted">Pending</div>
           </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-2 gap-4 md:gap-5 lg:gap-6">
-          {filterRecentAssignments(assignments).map((assignment, index) => (
-            <div
-              key={assignment.id}
-              className={`relative overflow-hidden rounded-xl transition-all active:scale-[0.99] animate-stagger-fade-in hover:scale-[1.02] ${
-                assignment.aiCaptured
-                  ? 'bg-dark-bg-secondary border border-primary-500/40 p-4 md:p-6'
-                  : `${getSubjectBgColor(assignment.subject)} border border-dark-border-glow shadow-dark-soft hover:shadow-dark-soft-lg p-4 md:p-6`
-              } ${
-                flyingAwayItems.has(assignment.id)
-                  ? 'animate-fly-away'
-                  : assignment.completed
-                  ? 'duration-300 opacity-80'
-                  : 'duration-200'
-              }`}
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              {/* AI Badge - Top Left Position */}
-              {assignment.aiCaptured && (
-                <div className="absolute top-4 left-4 z-20">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary-500 via-accent-cyan to-accent-purple border border-white/20">
-                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span className="text-xs font-bold text-white">AI Generated</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Delete Button - Top Right Position */}
-              {assignment.source !== 'canvas' && (
-                <div className="absolute top-4 md:top-5 lg:top-6 right-4 md:right-5 lg:right-6 z-20">
-                  <button
-                    onClick={() => handleDeleteAssignment(assignment.id, assignment.source)}
-                    className="w-9 h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 rounded-xl md:rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-all active:scale-95 flex items-center justify-center backdrop-blur-sm"
-                    title="Delete assignment"
-                  >
-                    <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-5.5 lg:h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-
-              {/* Content Container */}
-              <div className={`relative ${assignment.aiCaptured ? 'mt-10' : ''}`}>
-                {/* Subject Badge */}
-                <div className="flex items-center gap-2 md:gap-3 mb-2.5 md:mb-3">
-                  <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${getSubjectColor(assignment.subject)} shadow-xs`}></div>
-                  <span className="text-xs md:text-sm lg:text-base font-semibold text-dark-text-secondary tracking-tight">{assignment.subject}</span>
-                </div>
-
-                {/* Title */}
-                <h4 className="text-base md:text-lg lg:text-xl font-semibold text-dark-text-primary mb-2.5 md:mb-3 lg:mb-4 pr-12 md:pr-14 lg:pr-16 tracking-tight leading-snug">
-                  {assignment.title}
-                </h4>
-
-                {/* Meta Info */}
-                <div className="flex items-center gap-4 md:gap-5 text-xs md:text-sm text-dark-text-secondary mb-3.5 md:mb-4 flex-wrap">
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="font-medium">{assignment.timeEstimate}</span>
-                </div>
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="font-semibold">{getDaysUntilDue(assignment.dueDate)}</span>
-                </div>
-                {/* Grade Display */}
-                {(assignment.gradeReceived || assignment.scoreReceived) && (
-                  <div className="flex items-center gap-1.5 md:gap-2 px-2 py-1 rounded-lg bg-green-500/20 border border-green-500/30">
-                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="font-bold text-green-400">
-                      {assignment.gradeReceived || `${assignment.scoreReceived}%`}
-                    </span>
-                  </div>
-                )}
-                </div>
-
-                {/* Mark as Done Checkbox */}
-                <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
-                  <button
-                    onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
-                    className={`w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-lg md:rounded-xl border-2 flex items-center justify-center transition-all ${
-                      assignment.completed
-                        ? 'bg-green-500 border-green-500'
-                        : 'border-dark-border-glow hover:border-primary-500'
-                    }`}
-                  >
-                    {assignment.completed && (
-                      <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <span className={`text-sm md:text-base font-medium ${
-                    assignment.completed
-                      ? 'text-green-400 line-through'
-                      : 'text-dark-text-primary'
-                  }`}>
-                    {assignment.completed ? 'Completed' : 'Mark as done'}
-                  </span>
-                </div>
-
-                {/* AI Breakdown Button */}
-                {!assignment.completed && (
-                  <button
-                    onClick={() => handleGenerateBreakdown(assignment)}
-                    disabled={generatingBreakdown}
-                    className="w-full bg-gradient-to-r from-primary-500/10 to-accent-purple/10 border border-primary-500/30 text-primary-400 hover:from-primary-500/20 hover:to-accent-purple/20 hover:border-primary-500/50 font-semibold py-2 md:py-2.5 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-3 md:mt-4"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span className="text-xs md:text-sm">
-                      {generatingBreakdown ? 'Generating...' : 'AI Breakdown'}
-                    </span>
-                  </button>
-                )}
-
-                {/* Subtasks Section */}
-                {subtasksByAssignment[assignment.id] && subtasksByAssignment[assignment.id].length > 0 && (
-                  <div className="mt-4 border-t border-dark-border-glow pt-4">
-                    <button
-                      onClick={() => toggleAssignmentExpanded(assignment.id)}
-                      className="w-full flex items-center justify-between text-xs md:text-sm font-semibold text-dark-text-secondary hover:text-dark-text-primary transition-colors mb-2"
-                    >
-                      <span>Subtasks ({subtasksByAssignment[assignment.id].filter(s => s.completed).length}/{subtasksByAssignment[assignment.id].length})</span>
-                      <svg className={`w-4 h-4 transition-transform ${expandedAssignments.has(assignment.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-
-                    {expandedAssignments.has(assignment.id) && (
-                      <div className="space-y-2">
-                        {subtasksByAssignment[assignment.id].map((subtask) => (
-                          <div key={subtask.id} className="flex items-start gap-2.5 bg-dark-bg-tertiary/50 rounded-lg p-2.5 hover:bg-dark-bg-tertiary/70 transition-all">
-                            <button
-                              onClick={() => handleToggleSubtask(subtask)}
-                              className={`mt-0.5 w-4.5 h-4.5 md:w-5 md:h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-all hover:scale-105 ${
-                                subtask.completed
-                                  ? 'bg-green-500 border-green-500 shadow-md'
-                                  : 'border-dark-border-glow hover:border-primary-500'
-                              }`}
-                            >
-                              {subtask.completed && (
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </button>
-                            <div className="flex-1 min-w-0">
-                              <div className={`text-xs md:text-sm font-medium ${subtask.completed ? 'text-dark-text-muted line-through' : 'text-dark-text-primary'}`}>
-                                {subtask.title}
-                              </div>
-                              {subtask.description && (
-                                <div className="text-xs text-dark-text-muted mt-1">
-                                  {subtask.description}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Add Assignment Modal */}
+      {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-6 lg:p-8 animate-fadeIn">
-          <div className="bg-dark-bg-secondary rounded-3xl p-6 md:p-8 lg:p-10 max-w-md md:max-w-xl lg:max-w-2xl w-full shadow-2xl border border-dark-border-glow animate-scaleIn">
-            <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-dark-text-primary mb-4 md:mb-6">Add Assignment</h3>
-
-            <div className="space-y-4 md:space-y-5 lg:space-y-6">
-              {/* Title */}
-              <div>
-                <label className="block text-sm md:text-base lg:text-lg font-medium text-dark-text-secondary mb-1.5 md:mb-2">Title *</label>
-                <input
-                  type="text"
-                  value={newAssignment.title}
-                  onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
-                  placeholder="e.g., Math Homework Ch. 5"
-                  className="w-full px-4 md:px-5 lg:px-6 py-2.5 md:py-3 lg:py-4 bg-dark-bg-tertiary border border-dark-border-subtle rounded-xl md:rounded-2xl text-sm md:text-base lg:text-lg text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Subject */}
-              <div>
-                <label className="block text-sm md:text-base lg:text-lg font-medium text-dark-text-secondary mb-1.5 md:mb-2">Subject</label>
-                <input
-                  type="text"
-                  value={newAssignment.subject}
-                  onChange={(e) => setNewAssignment({ ...newAssignment, subject: e.target.value })}
-                  placeholder="e.g., Math, Chemistry"
-                  className="w-full px-4 md:px-5 lg:px-6 py-2.5 md:py-3 lg:py-4 bg-dark-bg-tertiary border border-dark-border-subtle rounded-xl md:rounded-2xl text-sm md:text-base lg:text-lg text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Due Date */}
-              <div>
-                <label className="block text-sm md:text-base lg:text-lg font-medium text-dark-text-secondary mb-1.5 md:mb-2">Due Date</label>
-                <input
-                  type="date"
-                  value={newAssignment.dueDate}
-                  onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
-                  className="w-full px-4 md:px-5 lg:px-6 py-2.5 md:py-3 lg:py-4 bg-dark-bg-tertiary border border-dark-border-subtle rounded-xl md:rounded-2xl text-sm md:text-base lg:text-lg text-dark-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Priority */}
-              <div>
-                <label className="block text-sm md:text-base lg:text-lg font-medium text-dark-text-secondary mb-1.5 md:mb-2">Priority</label>
-                <select
-                  value={newAssignment.priority}
-                  onChange={(e) => setNewAssignment({ ...newAssignment, priority: e.target.value })}
-                  className="w-full px-4 md:px-5 lg:px-6 py-2.5 md:py-3 lg:py-4 bg-dark-bg-tertiary border border-dark-border-subtle rounded-xl md:rounded-2xl text-sm md:text-base lg:text-lg text-dark-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-
-              {/* Time Estimate */}
-              <div>
-                <label className="block text-sm md:text-base lg:text-lg font-medium text-dark-text-secondary mb-1.5 md:mb-2">Time Estimate</label>
-                <input
-                  type="text"
-                  value={newAssignment.timeEstimate}
-                  onChange={(e) => setNewAssignment({ ...newAssignment, timeEstimate: e.target.value })}
-                  placeholder="e.g., 1h 30m"
-                  className="w-full px-4 md:px-5 lg:px-6 py-2.5 md:py-3 lg:py-4 bg-dark-bg-tertiary border border-dark-border-subtle rounded-xl md:rounded-2xl text-sm md:text-base lg:text-lg text-dark-text-primary placeholder-dark-text-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-surface-elevated rounded-xl p-6 max-w-md w-full border border-border animate-scale-in">
+            <h3 className="text-xl font-bold text-text-primary mb-4">Add Assignment</h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newAssignment.title}
+                onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
+                placeholder="Title"
+                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+              />
+              <input
+                type="text"
+                value={newAssignment.subject}
+                onChange={(e) => setNewAssignment({ ...newAssignment, subject: e.target.value })}
+                placeholder="Subject"
+                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+              />
+              <input
+                type="date"
+                value={newAssignment.dueDate}
+                onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
+                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary focus:outline-none focus:border-primary"
+              />
+              <select
+                value={newAssignment.priority}
+                onChange={(e) => setNewAssignment({ ...newAssignment, priority: e.target.value })}
+                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary focus:outline-none focus:border-primary"
+              >
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+              </select>
+              <input
+                type="text"
+                value={newAssignment.timeEstimate}
+                onChange={(e) => setNewAssignment({ ...newAssignment, timeEstimate: e.target.value })}
+                placeholder="Time estimate (e.g., 1h 30m)"
+                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+              />
             </div>
-
-            {/* Buttons */}
-            <div className="flex gap-1.5 md:gap-2 mt-6 md:mt-8">
+            <div className="flex gap-3 mt-6">
               <button
-                onClick={() => {
-                  setShowAddModal(false)
-                  setNewAssignment({
-                    title: '',
-                    subject: '',
-                    dueDate: '',
-                    priority: 'medium',
-                    timeEstimate: '',
-                  })
-                }}
-                className="flex-1 py-2.5 md:py-3 lg:py-4 px-4 md:px-6 bg-dark-bg-tertiary text-dark-text-primary text-sm md:text-base lg:text-lg font-semibold rounded-xl md:rounded-2xl hover:bg-dark-bg-surface transition-colors"
+                onClick={() => setShowAddModal(false)}
+                className="flex-1 py-2.5 bg-surface-base border border-border text-text-primary rounded-lg hover:bg-surface-overlay transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateAssignment}
-                className="flex-1 py-2.5 md:py-3 lg:py-4 px-4 md:px-6 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm md:text-base lg:text-lg font-semibold rounded-xl md:rounded-2xl hover:shadow-glow-cyan transition-all active:scale-95"
+                className="flex-1 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Add
               </button>
@@ -993,122 +558,45 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
       )}
 
-      {/* AI Breakdown Modal */}
+      {/* Breakdown Modal */}
       {breakdownModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-dark-bg-secondary rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl border border-primary-500/30 animate-scaleIn max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between mb-6">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-surface-elevated rounded-xl p-6 max-w-lg w-full border border-border animate-scale-in max-h-[80vh] overflow-y-auto">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-2xl font-bold text-dark-text-primary mb-2">AI Task Breakdown</h3>
-                <p className="text-sm text-dark-text-secondary">{breakdownModal.assignment.title}</p>
+                <h3 className="text-xl font-bold text-text-primary">AI Breakdown</h3>
+                <p className="text-sm text-text-muted">{breakdownModal.assignment.title}</p>
               </div>
-              <button
-                onClick={() => setBreakdownModal(null)}
-                className="w-10 h-10 rounded-xl bg-dark-bg-tertiary hover:bg-dark-bg-surface border border-dark-border-glow text-dark-text-muted hover:text-dark-text-primary transition-all flex items-center justify-center"
-              >
+              <button onClick={() => setBreakdownModal(null)} className="p-2 text-text-muted hover:text-text-primary">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-
             <div className="space-y-3 mb-6">
-              <p className="text-sm text-dark-text-muted mb-4">
-                AI suggests breaking this assignment into {breakdownModal.suggestions.length} actionable subtasks:
-              </p>
-
-              {breakdownModal.suggestions.map((suggestion, index) => (
-                <div key={index} className="bg-dark-bg-tertiary rounded-xl p-4 border border-dark-border-subtle hover:border-primary-500/30 transition-colors">
+              {breakdownModal.suggestions.map((s, i) => (
+                <div key={i} className="p-3 bg-surface-base rounded-lg border border-border">
                   <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-lg bg-primary-500/10 border border-primary-500/30 flex items-center justify-center flex-shrink-0 text-primary-400 font-bold text-sm">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-base font-semibold text-dark-text-primary mb-1">
-                        {suggestion.title}
-                      </h4>
-                      {suggestion.description && (
-                        <p className="text-sm text-dark-text-muted">
-                          {suggestion.description}
-                        </p>
-                      )}
-                      {suggestion.confidence && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="h-1.5 bg-dark-bg-surface rounded-full flex-1">
-                            <div
-                              className="h-full bg-gradient-to-r from-primary-500 to-accent-cyan rounded-full"
-                              style={{ width: `${suggestion.confidence * 100}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-dark-text-muted">
-                            {Math.round(suggestion.confidence * 100)}%
-                          </span>
-                        </div>
-                      )}
+                    <span className="w-6 h-6 rounded bg-primary/20 text-primary text-sm font-medium flex items-center justify-center">{i + 1}</span>
+                    <div>
+                      <div className="font-medium text-text-primary">{s.title}</div>
+                      {s.description && <div className="text-sm text-text-muted mt-1">{s.description}</div>}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
             <div className="flex gap-3">
-              <button
-                onClick={handleAddAllSubtasks}
-                className="flex-1 bg-gradient-to-r from-primary-600 to-accent-cyan text-white font-semibold py-3 rounded-xl hover:shadow-glow-cyan-lg transition-all"
-              >
-                Add All Subtasks
-              </button>
-              <button
-                onClick={() => setBreakdownModal(null)}
-                className="px-6 bg-dark-bg-tertiary border border-dark-border-glow text-dark-text-secondary font-semibold py-3 rounded-xl hover:bg-dark-bg-surface transition-all"
-              >
+              <button onClick={() => setBreakdownModal(null)} className="flex-1 py-2.5 bg-surface-base border border-border text-text-primary rounded-lg">
                 Cancel
+              </button>
+              <button onClick={handleAddAllSubtasks} className="flex-1 py-2.5 bg-primary text-white rounded-lg">
+                Add All
               </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Data Visualization Section - Glass Morphism */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Grade Trends Chart */}
-        <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-primary-500/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] animate-slide-in-right hover:scale-[1.02]">
-          {/* Floating glow orb */}
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl animate-float"></div>
-
-          <div className="flex items-center gap-2 mb-4 relative z-10">
-            <div className="p-2 rounded-lg bg-primary-500/20 group-hover:scale-110 transition-transform">
-              <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-dark-text-primary">Grade Trends</h3>
-              <p className="text-xs text-dark-text-muted">Your current grades across courses</p>
-            </div>
-          </div>
-          <GradeChart grades={grades} />
-        </div>
-
-        {/* Assignment Completion Chart */}
-        <div className="relative overflow-hidden bg-dark-bg-secondary/30 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-white/10 hover:border-accent-cyan/30 transition-all duration-300 shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] animate-slide-in-left hover:scale-[1.02]">
-          {/* Floating glow orb */}
-          <div className="absolute -top-20 -left-20 w-40 h-40 bg-accent-cyan/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-
-          <div className="flex items-center gap-2 mb-4 relative z-10">
-            <div className="p-2 rounded-lg bg-accent-cyan/20 group-hover:scale-110 transition-transform">
-              <svg className="w-5 h-5 text-accent-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0h2a2 2 0 012-2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 00-2 2z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-dark-text-primary">Assignment Progress</h3>
-              <p className="text-xs text-dark-text-muted">Completion status breakdown</p>
-            </div>
-          </div>
-          <AssignmentChart assignments={assignments} />
-        </div>
-      </div>
     </div>
   )
 }

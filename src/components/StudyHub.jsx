@@ -1,1291 +1,325 @@
-/**
- * StudyHub Component
- * Central hub for Notes and Flashcards features
- */
-
 import { useState, useEffect } from 'react'
 import { useStudy } from '../contexts/StudyContext'
 import StudySession from './StudySession'
-import DeckPreview from './DeckPreview'
-import FileUploadSection from './FileUploadSection'
 import QuizSession from './QuizSession'
-import UnifiedSearch from './UnifiedSearch'
 import { confirmDialog } from './ConfirmDialog'
+import { toast } from './Toast'
 
 const StudyHub = () => {
   const {
-    notes,
-    notesLoading,
-    decks,
-    flashcardsLoading,
-    quizzes,
-    quizzesLoading,
-    getDueCards,
-    getCardsByDeck,
-    getNotesStats,
-    getFlashcardsStats,
-    refreshNotes,
-    updateNote,
-    deleteNote: deleteNoteContext,
-    updateDeck,
-    deleteDeck,
-    loadFlashcards,
-    getQuizById,
-    loadNotes,
-    loadQuizzes
+    notes, notesLoading, decks, flashcardsLoading, quizzes, quizzesLoading,
+    getDueCards, getCardsByDeck, getNotesStats, getFlashcardsStats,
+    refreshNotes, deleteNote: deleteNoteContext, deleteDeck, loadFlashcards,
+    getQuizById, loadQuizzes
   } = useStudy()
 
-  const [activeSection, setActiveSection] = useState('overview') // overview, allNotes, allFlashcards, allQuizzes, upload, search
+  const [activeTab, setActiveTab] = useState('notes') // notes, flashcards
   const [studySession, setStudySession] = useState(null)
-  const [deckPreview, setDeckPreview] = useState(null)
-  const [selectedNote, setSelectedNote] = useState(null)
-  const [selectedQuiz, setSelectedQuiz] = useState(null)
   const [activeQuizSession, setActiveQuizSession] = useState(null)
-  const [isEditingTitle, setIsEditingTitle] = useState(false)
-  const [editedTitle, setEditedTitle] = useState('')
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [notesStats, setNotesStats] = useState({ totalNotes: 0 })
-  const [flashcardsStats, setFlashcardsStats] = useState({ totalDecks: 0, dueToday: 0 })
+  const [selectedNote, setSelectedNote] = useState(null)
   const [dueCards, setDueCards] = useState([])
+  const [stats, setStats] = useState({ notes: 0, decks: 0, due: 0 })
 
-  // Load stats on mount and when notes/decks change
   useEffect(() => {
     const loadStats = async () => {
       const nStats = await getNotesStats()
       const fStats = await getFlashcardsStats()
       const due = await getDueCards()
-      setNotesStats(nStats)
-      setFlashcardsStats(fStats)
+      setStats({ notes: nStats.totalNotes, decks: fStats.totalDecks, due: due.length })
       setDueCards(due)
     }
     loadStats()
-  }, [notes, decks, getNotesStats, getFlashcardsStats, getDueCards])
-
-  const startDailyReview = () => {
-    if (dueCards.length > 0) {
-      setStudySession({
-        cards: dueCards,
-        title: 'Daily Review'
-      })
-    }
-  }
+  }, [notes, decks])
 
   const startDeckStudy = async (deckId) => {
     const deck = decks.find(d => d.id === deckId)
     if (!deck) return
-
     const cards = await getCardsByDeck(deckId)
-    const dueCardsForDeck = cards.filter(card =>
-      new Date(card.nextReviewDate) <= new Date()
-    )
+    setStudySession({ deckId, cards, title: deck.title })
+  }
 
-    if (dueCardsForDeck.length > 0) {
-      setStudySession({
-        deckId,
-        cards: dueCardsForDeck,
-        title: deck.title
-      })
-    } else {
-      // Study all cards if none are due
-      setStudySession({
-        deckId,
-        cards: cards,
-        title: deck.title
-      })
+  const startDailyReview = () => {
+    if (dueCards.length > 0) {
+      setStudySession({ cards: dueCards, title: 'Daily Review' })
     }
   }
 
-  const handleSessionComplete = () => {
-    setStudySession(null)
-  }
-
-  const startEditingTitle = () => {
-    setEditedTitle(selectedNote.title)
-    setIsEditingTitle(true)
-  }
-
-  const saveTitle = async () => {
-    if (editedTitle.trim() && editedTitle !== selectedNote.title) {
-      const updated = await updateNote(selectedNote.id, { title: editedTitle.trim() })
-      if (updated) {
-        setSelectedNote(updated)
-        await refreshNotes()
-      }
-    }
-    setIsEditingTitle(false)
-  }
-
-  const cancelEditTitle = () => {
-    setIsEditingTitle(false)
-    setEditedTitle('')
-  }
-
-  const handleDeleteNote = async () => {
-    const success = await deleteNoteContext(selectedNote.id)
-    if (success) {
+  const handleDeleteNote = async (noteId) => {
+    const confirmed = await confirmDialog('Delete Note', 'Are you sure?')
+    if (confirmed) {
+      await deleteNoteContext(noteId)
       setSelectedNote(null)
-      setShowDeleteConfirm(false)
       await refreshNotes()
     }
   }
 
-  const exportNote = (note) => {
-    // Create clean text content
-    const cleanContent = note.content
-      .replace(/\.\.\./g, '')
-      .replace(/\/\/\//g, '')
-      .replace(/---/g, '')
-      .replace(/\*\*/g, '')
-      .replace(/##/g, '')
-      .replace(/#/g, '')
-      .replace(/\*/g, '')
-      .replace(/_/g, '')
-      .replace(/~/g, '')
-      .replace(/`/g, '')
-      .trim()
-      .split('\n')
-      .filter(line => line.trim())
-      .join('\n\n')
-
-    // Create export content
-    const exportContent = `${note.title}\nSubject: ${note.subject}\n\n${cleanContent}`
-
-    // Create blob and download
-    const blob = new Blob([exportContent], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${note.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  // Deck Preview Handlers
-  const openDeckPreview = (deckId) => {
-    const deck = decks.find(d => d.id === deckId)
-    if (deck) {
-      setDeckPreview(deck)
-    }
-  }
-
-  const handleEditDeck = () => {
-    // TODO: Implement deck title edit modal (Phase 7)
-    console.log('Edit deck:', deckPreview.title)
-  }
-
-  const handleDeleteDeck = async () => {
-    if (!deckPreview) return
-
-    const confirmed = await confirmDialog(
-      'Delete Deck',
-      `Are you sure you want to delete "${deckPreview.title}"? This will delete all ${deckPreview.cardIds.length} cards in this deck.`
-    )
+  const handleDeleteDeck = async (deck) => {
+    const confirmed = await confirmDialog('Delete Deck', `Delete "${deck.title}" and all its cards?`)
     if (confirmed) {
-      const success = await deleteDeck(deckPreview.id)
-      if (success) {
-        setDeckPreview(null)
-        await loadFlashcards()
-      }
+      await deleteDeck(deck.id)
+      await loadFlashcards()
     }
   }
 
-  const handleStartStudyFromPreview = async () => {
-    if (!deckPreview) return
-
-    const cards = await getCardsByDeck(deckPreview.id)
-    const dueCardsForDeck = cards.filter(card =>
-      new Date(card.nextReviewDate) <= new Date()
-    )
-
-    if (dueCardsForDeck.length > 0) {
-      setStudySession({
-        deckId: deckPreview.id,
-        cards: dueCardsForDeck,
-        title: deckPreview.title
-      })
-    } else {
-      // Study all cards if none are due
-      setStudySession({
-        deckId: deckPreview.id,
-        cards: cards,
-        title: deckPreview.title
-      })
-    }
-    setDeckPreview(null)
+  const startQuiz = async (quiz) => {
+    const fullQuiz = await getQuizById(quiz.id)
+    setActiveQuizSession(fullQuiz)
   }
 
-  // Render deck preview if active
-  if (deckPreview) {
-    return (
-      <DeckPreview
-        deck={deckPreview}
-        onClose={() => setDeckPreview(null)}
-        onStartStudy={handleStartStudyFromPreview}
-        onEditDeck={handleEditDeck}
-        onDeleteDeck={handleDeleteDeck}
-      />
-    )
-  }
-
-  // Render study session if active
+  // Study session view
   if (studySession) {
     return (
       <StudySession
         deckId={studySession.deckId}
         cards={studySession.cards}
-        onComplete={handleSessionComplete}
-        onExit={handleSessionComplete}
+        onComplete={() => setStudySession(null)}
+        onExit={() => setStudySession(null)}
       />
     )
   }
 
-  // Render quiz session if active
+  // Quiz session view
   if (activeQuizSession) {
     return (
       <QuizSession
         quiz={activeQuizSession}
-        onComplete={() => {
-          setActiveQuizSession(null)
-          setActiveSection('allQuizzes')
-          loadQuizzes()
-        }}
-        onExit={() => {
-          setActiveQuizSession(null)
-          setActiveSection('allQuizzes')
-        }}
+        onComplete={() => { setActiveQuizSession(null); loadQuizzes() }}
+        onExit={() => setActiveQuizSession(null)}
       />
     )
   }
 
-  // Render file upload section
-  if (activeSection === 'upload') {
+  // Note detail view
+  if (selectedNote) {
     return (
-      <FileUploadSection
-        onComplete={() => setActiveSection('overview')}
-        onBack={() => setActiveSection('overview')}
-      />
-    )
-  }
+      <div className="p-4 md:p-6 space-y-4">
+        <button
+          onClick={() => setSelectedNote(null)}
+          className="flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
 
-  // Render unified search
-  if (activeSection === 'search') {
-    return (
-      <UnifiedSearch
-        onSelect={(item, type) => {
-          if (type === 'note') {
-            setSelectedNote(item)
-            setActiveSection('allNotes')
-          } else if (type === 'quiz') {
-            setSelectedQuiz(item)
-            setActiveSection('allQuizzes')
-          } else if (type === 'deck') {
-            openDeckPreview(item.id)
-          }
-        }}
-        onBack={() => setActiveSection('overview')}
-      />
-    )
-  }
-
-  // Render "View All Quizzes" section
-  if (activeSection === 'allQuizzes') {
-    return (
-      <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
-        {/* Header with Back Button */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setActiveSection('overview')}
-            className="w-10 h-10 md:w-11 md:h-11 rounded-lg bg-dark-bg-secondary border border-dark-border-subtle flex items-center justify-center hover:bg-dark-bg-tertiary transition-colors"
-          >
-            <svg className="w-5 h-5 md:w-6 md:h-6 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-dark-text-primary">All Quizzes</h2>
-            <p className="text-sm md:text-base text-dark-text-secondary">{quizzes.length} {quizzes.length === 1 ? 'quiz' : 'quizzes'}</p>
-          </div>
-        </div>
-
-        {/* Quizzes List */}
-        {quizzesLoading ? (
-          <div className="text-center py-8 md:py-10">
-            <div className="w-12 h-12 md:w-14 md:h-14 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin mx-auto"></div>
-          </div>
-        ) : quizzes.length === 0 ? (
-          <div className="text-center py-16 md:py-20">
-            <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-              <svg className="w-8 h-8 md:w-10 md:h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
+        <div className="bg-surface-elevated rounded-xl p-6 border border-border">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <span className="text-xs font-medium text-accent bg-accent/20 px-2 py-1 rounded">
+                {selectedNote.subject}
+              </span>
+              <h1 className="text-2xl font-bold text-text-primary mt-2">{selectedNote.title}</h1>
             </div>
-            <h3 className="text-xl md:text-2xl font-bold text-dark-text-primary mb-2">No quizzes yet</h3>
-            <p className="text-dark-text-secondary mb-6">Upload a file to generate your first quiz</p>
             <button
-              onClick={() => setActiveSection('upload')}
-              className="px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover:scale-[1.02] transition-all"
+              onClick={() => handleDeleteNote(selectedNote.id)}
+              className="p-2 text-text-muted hover:text-error transition-colors"
             >
-              Upload File
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
             </button>
           </div>
-        ) : (
-          <div className="grid gap-4">
-            {quizzes.map(quiz => (
-              <div
-                key={quiz.id}
-                className="group p-4 md:p-5 bg-dark-bg-secondary rounded-xl border border-dark-border-subtle hover:border-green-500/50 transition-all cursor-pointer"
-                onClick={async () => {
-                  const fullQuiz = await getQuizById(quiz.id)
-                  setActiveQuizSession(fullQuiz)
-                }}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 md:w-7 md:h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg md:text-xl text-dark-text-primary mb-1 truncate">{quiz.title}</h3>
-                    {quiz.description && (
-                      <p className="text-sm text-dark-text-secondary mb-2 line-clamp-1">{quiz.description}</p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">
-                        {quiz.subject}
-                      </span>
-                      <span className="text-xs text-dark-text-muted">
-                        {quiz.questionCount} questions
-                      </span>
-                      {quiz.bestScore && (
-                        <span className="text-xs text-dark-text-muted">
-                          Best: {Math.round(quiz.bestScore)}%
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <button className="w-10 h-10 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="prose prose-invert max-w-none">
+            <div className="text-text-primary whitespace-pre-wrap">{selectedNote.content}</div>
           </div>
-        )}
+        </div>
       </div>
     )
   }
 
-  // Render "View All Notes" section
-  if (activeSection === 'allNotes') {
-    return (
-      <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
-        {/* Header with Back Button */}
-        <div className="flex items-center gap-3">
+  return (
+    <div className="p-4 md:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-text-primary">Study</h1>
+        {dueCards.length > 0 && (
           <button
-            onClick={() => setActiveSection('overview')}
-            className="w-10 h-10 rounded-full bg-dark-bg-secondary border border-dark-border-subtle flex items-center justify-center hover:bg-dark-bg-tertiary transition-all active:scale-95"
+            onClick={startDailyReview}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors flex items-center gap-2"
           >
-            <svg className="w-5 h-5 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <span className="w-5 h-5 rounded-full bg-white/20 text-xs flex items-center justify-center">
+              {dueCards.length}
+            </span>
+            Review Due
           </button>
-          <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">All Notes</h1>
-            <p className="text-dark-text-secondary">{notes.length} total notes</p>
-          </div>
-        </div>
+        )}
+      </div>
 
-        {/* All Notes List */}
-        <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle">
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-surface-elevated rounded-xl p-4 border border-border">
+          <div className="text-2xl font-bold text-primary">{stats.notes}</div>
+          <div className="text-sm text-text-muted">Notes</div>
+        </div>
+        <div className="bg-surface-elevated rounded-xl p-4 border border-border">
+          <div className="text-2xl font-bold text-accent">{stats.decks}</div>
+          <div className="text-sm text-text-muted">Decks</div>
+        </div>
+        <div className="bg-surface-elevated rounded-xl p-4 border border-border">
+          <div className="text-2xl font-bold text-warning">{stats.due}</div>
+          <div className="text-sm text-text-muted">Due Today</div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 bg-surface-elevated rounded-lg p-1 border border-border">
+        <button
+          onClick={() => setActiveTab('notes')}
+          className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+            activeTab === 'notes' ? 'bg-primary text-white' : 'text-text-muted hover:text-text-primary'
+          }`}
+        >
+          Notes
+        </button>
+        <button
+          onClick={() => setActiveTab('flashcards')}
+          className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+            activeTab === 'flashcards' ? 'bg-primary text-white' : 'text-text-muted hover:text-text-primary'
+          }`}
+        >
+          Flashcards
+        </button>
+      </div>
+
+      {/* Notes Tab */}
+      {activeTab === 'notes' && (
+        <div>
           {notesLoading ? (
-            <div className="text-center py-12">
-              <div className="inline-block w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
+            <div className="flex justify-center py-12">
+              <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
           ) : notes.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-dark-bg-tertiary flex items-center justify-center border border-dark-border-subtle">
-                <svg className="w-10 h-10 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </div>
-              <p className="text-dark-text-secondary text-base mb-2">No notes yet</p>
-              <p className="text-dark-text-muted text-sm">Use the scanner to convert handwritten notes</p>
+            <div className="text-center py-12 text-text-muted">
+              <p>No notes yet</p>
+              <p className="text-sm mt-1">Scan documents to create notes</p>
             </div>
           ) : (
-            <div className="grid gap-3">
+            <div className="space-y-3">
               {notes.map((note) => (
-                <div
+                <button
                   key={note.id}
                   onClick={() => setSelectedNote(note)}
-                  className="flex items-start gap-3 p-4 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all cursor-pointer"
+                  className="w-full text-left bg-surface-elevated rounded-xl p-4 border border-border hover:border-border-active transition-colors"
                 >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent-purple/20 flex items-center justify-center border border-accent-purple/30">
-                    <svg className="w-5 h-5 text-accent-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-dark-text-primary text-base mb-1">{note.title}</div>
-                    <div className="text-dark-text-secondary text-sm mb-2">{note.subject}</div>
-                    <div className="text-dark-text-muted text-xs">
-                      {new Date(note.updatedAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </div>
-                  </div>
-                  <div className="text-dark-text-muted flex items-center">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Note Viewer Modal (reuse existing one) */}
-        {selectedNote && (
-          <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-6 lg:p-8 animate-fadeIn"
-            onClick={() => setSelectedNote(null)}
-          >
-            <div
-              className="bg-dark-bg-secondary rounded-2xl  border border-dark-border-subtle max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl w-full flex flex-col animate-fadeInUp"
-              style={{ maxHeight: '85vh' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="p-6 md:p-8 lg:p-10 border-b border-dark-border-subtle flex-shrink-0">
-                <div className="flex items-start justify-between gap-4 md:gap-6">
-                  <div className="flex items-start gap-4 md:gap-5 flex-1 min-w-0">
-                    <div className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex-shrink-0 rounded-xl bg-accent-purple/20 flex items-center justify-center border border-accent-purple/30">
-                      <svg className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-accent-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      {isEditingTitle ? (
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <input
-                            type="text"
-                            value={editedTitle}
-                            onChange={(e) => setEditedTitle(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') saveTitle()
-                              if (e.key === 'Escape') cancelEditTitle()
-                            }}
-                            className="flex-1 px-4 py-2 md:py-2.5 text-lg md:text-xl lg:text-2xl font-bold text-dark-text-primary bg-dark-bg-tertiary border-2 border-accent-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-purple/20"
-                            autoFocus
-                          />
-                          <button
-                            onClick={saveTitle}
-                            className="p-2.5 md:p-3 rounded-lg bg-accent-purple text-white hover:bg-accent-purple-dark transition-all active:scale-95"
-                          >
-                            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={cancelEditTitle}
-                            className="p-2.5 md:p-3 rounded-lg bg-dark-bg-tertiary text-dark-text-secondary hover:bg-dark-navy-dark transition-all active:scale-95"
-                          >
-                            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-dark-text-primary truncate">{selectedNote.title}</h3>
-                          <button
-                            onClick={startEditingTitle}
-                            className="p-2 md:p-2.5 rounded-lg hover:bg-dark-bg-tertiary transition-all active:scale-95 flex-shrink-0"
-                            title="Rename note"
-                          >
-                            <svg className="w-5 h-5 md:w-6 md:h-6 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                      <p className="text-base md:text-lg lg:text-xl text-dark-text-secondary mt-2 md:mt-3">{selectedNote.subject}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full hover:bg-red-900/20 flex items-center justify-center transition-all active:scale-95"
-                      title="Delete note"
-                    >
-                      <svg className="w-6 h-6 md:w-7 md:h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => setSelectedNote(null)}
-                      className="w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full hover:bg-dark-bg-tertiary flex items-center justify-center transition-all active:scale-95"
-                    >
-                      <svg className="w-6 h-6 md:w-7 md:h-7 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Content - Scrollable */}
-              <div className="p-6 md:p-8 lg:p-12 overflow-y-auto flex-1 scrollbar-thin scroll-smooth">
-                {/* Note Content with Enhanced Typography */}
-                <div className="mb-8 md:mb-10 lg:mb-12">
-                  <div
-                    className="text-white leading-relaxed text-base md:text-lg lg:text-xl prose prose-invert max-w-none"
-                    style={{
-                      whiteSpace: 'pre-wrap',
-                      wordWrap: 'break-word',
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                      lineHeight: '1.8',
-                      letterSpacing: '0.015em'
-                    }}
-                  >
-                    {selectedNote.content
-                      .trim()
-                      .split('\n')
-                      .map((line, index) => {
-                        const trimmedLine = line.trim()
-
-                        // Skip empty lines
-                        if (!trimmedLine) return null
-
-                        // Remove unwanted artifacts and stray characters
-                        let cleanLine = trimmedLine
-                          .replace(/\.\.\./g, '')
-                          .replace(/\/\/\//g, '')
-                          .replace(/^---+$/g, '')
-                          .replace(/\*(?!\*)/g, '') // Remove single * but keep **
-                          .replace(/_{1,2}/g, '') // Remove underscores
-                          .replace(/~/g, '') // Remove tildes
-                          .replace(/`/g, '') // Remove backticks
-                          .replace(/₀|₁|₂|₃|₄|₅|₆|₇|₈|₉/g, (match) => {
-                            // Convert subscripts to regular numbers
-                            const subs = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '₇', '₈': '8', '₉': '9' }
-                            return subs[match] || match
-                          })
-
-                        // Handle headers (## or #)
-                        if (cleanLine.startsWith('## ')) {
-                          const headerText = cleanLine.replace(/^## /, '').replace(/\*\*/g, '')
-                          return (
-                            <div key={index} className="relative mt-8 md:mt-10 lg:mt-12 mb-4 md:mb-5 lg:mb-6 first:mt-0">
-                              <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-accent-cyan">
-                                {headerText}
-                              </h3>
-                              <div className="h-0.5 md:h-1 w-16 md:w-20 lg:w-24 bg-gradient-to-r from-primary-500 to-transparent mt-2 md:mt-3 rounded-full"></div>
-                            </div>
-                          )
-                        }
-                        if (cleanLine.startsWith('# ')) {
-                          const headerText = cleanLine.replace(/^# /, '').replace(/\*\*/g, '')
-                          return (
-                            <div key={index} className="relative mt-10 md:mt-12 lg:mt-16 mb-6 md:mb-8 lg:mb-10 first:mt-0">
-                              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-300 to-accent-cyan tracking-tight">
-                                {headerText}
-                              </h2>
-                              <div className="h-1 md:h-1.5 w-24 md:w-28 lg:w-32 bg-gradient-to-r from-primary-500 via-accent-cyan to-transparent mt-3 md:mt-4 rounded-full"></div>
-                            </div>
-                          )
-                        }
-
-                        // Handle bullet points
-                        if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
-                          const bulletText = cleanLine.replace(/^[*-] /, '').replace(/\*\*/g, '')
-
-                          // Check if it has a colon (for key terms)
-                          const hasColon = bulletText.includes(':')
-                          if (hasColon) {
-                            const [term, ...rest] = bulletText.split(':')
-                            return (
-                              <div key={index} className="flex items-start gap-3 mb-3 ml-2">
-                                <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan mt-2 "></div>
-                                <p className="flex-1">
-                                  <span className="font-bold text-primary-400">{term}:</span>
-                                  <span className="text-white/90 ml-1">{rest.join(':')}</span>
-                                </p>
-                              </div>
-                            )
-                          }
-
-                          return (
-                            <div key={index} className="flex items-start gap-3 mb-2 ml-2">
-                              <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan mt-2 "></div>
-                              <p className="flex-1 text-white/90">{bulletText}</p>
-                            </div>
-                          )
-                        }
-
-                        // Handle bold text (**text**)
-                        const parts = cleanLine.split(/(\*\*.*?\*\*)/)
-                        const formattedLine = parts.map((part, i) => {
-                          if (part.startsWith('**') && part.endsWith('**')) {
-                            const boldText = part.slice(2, -2)
-                            return (
-                              <span key={i} className="font-bold text-primary-400 px-0.5">
-                                {boldText}
-                              </span>
-                            )
-                          }
-                          return part
-                        })
-
-                        // Regular paragraph
-                        return (
-                          <p key={index} className="mb-4 last:mb-0 text-white/95 leading-relaxed">
-                            {formattedLine}
-                          </p>
-                        )
-                      })
-                      .filter(Boolean)
-                    }
-                  </div>
-                </div>
-
-                {/* Note Metadata */}
-                <div className="pt-6 border-t border-dark-border-subtle">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
-                    <div>
-                      <div className="text-dark-text-secondary font-medium mb-1">Created</div>
-                      <div className="text-dark-text-primary">
-                        {new Date(selectedNote.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                      <h3 className="font-medium text-text-primary truncate">{note.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-accent">{note.subject}</span>
+                        <span className="text-xs text-text-muted">
+                          {new Date(note.updatedAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
-                    <div>
-                      <div className="text-dark-text-secondary font-medium mb-1">Last Updated</div>
-                      <div className="text-dark-text-primary">
-                        {new Date(selectedNote.updatedAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </div>
-                    </div>
+                    <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="p-6 border-t border-dark-border-subtle flex gap-3 flex-shrink-0">
-                <button
-                  onClick={() => exportNote(selectedNote)}
-                  className="flex-1 py-3 px-4 bg-gradient-to-r from-accent-purple to-accent-purple-dark hover:from-accent-purple-dark hover:to-accent-purple-dark text-white font-semibold rounded-xl transition-all active:scale-95  flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Export
                 </button>
-                <button
-                  onClick={() => setSelectedNote(null)}
-                  className="flex-1 py-3 px-4 bg-dark-bg-tertiary hover:bg-dark-navy-dark text-dark-text-primary font-semibold rounded-xl transition-all active:scale-95 border border-dark-border-subtle"
-                >
-                  Close
-                </button>
-              </div>
-
-              {/* Delete Confirmation Overlay */}
-              {showDeleteConfirm && (
-                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 rounded-2xl animate-fadeIn">
-                  <div className="bg-dark-bg-secondary rounded-2xl p-6 max-w-sm w-full  border border-dark-border-subtle animate-scaleIn">
-                    <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-900/20 flex items-center justify-center border border-red-700/40">
-                      <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-dark-text-primary text-center mb-2">Delete Note?</h3>
-                    <p className="text-dark-text-secondary text-center mb-6">
-                      Are you sure you want to delete "{selectedNote.title}"? This action cannot be undone.
-                    </p>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => setShowDeleteConfirm(false)}
-                        className="flex-1 py-3 px-4 bg-dark-bg-tertiary hover:bg-dark-navy-dark text-dark-text-primary font-semibold rounded-xl transition-all active:scale-95 border border-dark-border-subtle"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleDeleteNote}
-                        className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all active:scale-95 "
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // Render "View All Flashcards" section
-  if (activeSection === 'allFlashcards') {
-    return (
-      <div className="space-y-4 md:space-y-5 lg:space-y-6 pb-6 md:pb-8">
-        {/* Header with Back Button */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setActiveSection('overview')}
-            className="w-10 h-10 rounded-full bg-dark-bg-secondary border border-dark-border-subtle flex items-center justify-center hover:bg-dark-bg-tertiary transition-all active:scale-95"
-          >
-            <svg className="w-5 h-5 text-dark-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary mb-1">All Flashcard Decks</h1>
-            <p className="text-dark-text-secondary">{decks.length} total decks</p>
-          </div>
+          )}
         </div>
+      )}
 
-        {/* All Decks List */}
-        <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5  border border-dark-border-subtle">
+      {/* Flashcards Tab */}
+      {activeTab === 'flashcards' && (
+        <div>
           {flashcardsLoading ? (
-            <div className="text-center py-12">
-              <div className="inline-block w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
+            <div className="flex justify-center py-12">
+              <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
           ) : decks.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-dark-bg-tertiary flex items-center justify-center border border-dark-border-subtle">
-                <svg className="w-10 h-10 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <p className="text-dark-text-secondary text-base mb-2">No decks yet</p>
-              <p className="text-dark-text-muted text-sm">Use the scanner to create flashcards from textbooks</p>
+            <div className="text-center py-12 text-text-muted">
+              <p>No flashcard decks yet</p>
+              <p className="text-sm mt-1">Scan documents to create flashcards</p>
             </div>
           ) : (
-            <div className="grid gap-3">
+            <div className="space-y-3">
               {decks.map((deck) => (
                 <div
                   key={deck.id}
-                  onClick={() => openDeckPreview(deck.id)}
-                  className="flex items-center gap-3 p-4 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all cursor-pointer"
+                  className="bg-surface-elevated rounded-xl p-4 border border-border hover:border-border-active transition-colors"
                 >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center border border-primary-500/30">
-                    <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-dark-text-primary text-base mb-1">{deck.title}</div>
-                    <div className="text-dark-text-secondary text-sm mb-1">{deck.subject}</div>
-                    <div className="text-dark-text-muted text-xs">
-                      {deck.cardIds.length} cards
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
                     </div>
-                  </div>
-                  <div className="text-dark-text-muted flex items-center">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-text-primary">{deck.title}</h3>
+                      <p className="text-sm text-text-muted mt-1">
+                        {deck.cardIds?.length || 0} cards
+                        {deck.dueCount > 0 && (
+                          <span className="text-warning ml-2">({deck.dueCount} due)</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => startDeckStudy(deck.id)}
+                        className="px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-hover transition-colors"
+                      >
+                        Study
+                      </button>
+                      <button
+                        onClick={() => handleDeleteDeck(deck)}
+                        className="p-2 text-text-muted hover:text-error transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </div>
-      </div>
-    )
-  }
 
-  // Render overview (default view)
-  return (
-    <div className="space-y-4 md:space-y-5 pb-6 md:pb-8">
-      {/* Simplified Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-dark-text-primary">Study Hub</h1>
-          <p className="text-sm text-dark-text-muted mt-0.5">
-            {notesLoading || flashcardsLoading ? 'Loading...' : `${notesStats.totalNotes} notes • ${flashcardsStats.totalDecks} decks${dueCards.length > 0 ? ` • ${dueCards.length} due` : ''}`}
-          </p>
-        </div>
-        {dueCards.length > 0 && (
-          <button
-            onClick={startDailyReview}
-            className="px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
-          >
-            Review ({dueCards.length})
-          </button>
-        )}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <button
-          onClick={() => setActiveSection('upload')}
-          className="group p-4 bg-gradient-to-br from-primary-500/10 to-accent-cyan/10 hover:from-primary-500/20 hover:to-accent-cyan/20 rounded-xl border border-primary-500/30 hover:border-primary-500/50 transition-all"
-        >
-          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan flex items-center justify-center group-hover:scale-110 transition-transform">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-          </div>
-          <div className="text-center">
-            <p className="font-semibold text-dark-text-primary text-sm">Upload File</p>
-            <p className="text-xs text-dark-text-muted mt-1">PDF, DOCX, TXT, Images</p>
-          </div>
-        </button>
-
-        <button
-          onClick={() => setActiveSection('search')}
-          className="group p-4 bg-gradient-to-br from-accent-purple/10 to-accent-pink/10 hover:from-accent-purple/20 hover:to-accent-pink/20 rounded-xl border border-accent-purple/30 hover:border-accent-purple/50 transition-all"
-        >
-          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-accent-purple to-accent-pink flex items-center justify-center group-hover:scale-110 transition-transform">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <div className="text-center">
-            <p className="font-semibold text-dark-text-primary text-sm">Search All</p>
-            <p className="text-xs text-dark-text-muted mt-1">Notes, Cards, Quizzes</p>
-          </div>
-        </button>
-
-        <button
-          onClick={() => setActiveSection('allQuizzes')}
-          className="group p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 hover:from-green-500/20 hover:to-emerald-500/20 rounded-xl border border-green-500/30 hover:border-green-500/50 transition-all"
-        >
-          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-          </div>
-          <div className="text-center">
-            <p className="font-semibold text-dark-text-primary text-sm">Take Quiz</p>
-            <p className="text-xs text-dark-text-muted mt-1">{quizzes.length} available</p>
-          </div>
-        </button>
-
-        <button
-          onClick={startDailyReview}
-          className="group p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20 rounded-xl border border-amber-500/30 hover:border-amber-500/50 transition-all"
-        >
-          <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-          <div className="text-center">
-            <p className="font-semibold text-dark-text-primary text-sm">Study Cards</p>
-            <p className="text-xs text-dark-text-muted mt-1">{dueCards.length} due today</p>
-          </div>
-        </button>
-      </div>
-
-      {/* Recent Notes Section */}
-      <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5 border border-dark-border-subtle">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base md:text-lg font-bold text-dark-text-primary">Recent Notes</h3>
-          <button
-            onClick={() => setActiveSection('allNotes')}
-            className="text-primary-500 text-sm font-semibold hover:text-primary-400 transition-colors"
-          >
-            View All
-          </button>
-        </div>
-
-        {notesLoading ? (
-          <div className="text-center py-8">
-            <div className="inline-block w-8 h-8 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
-          </div>
-        ) : notes.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-dark-bg-tertiary flex items-center justify-center border border-dark-border-subtle">
-              <svg className="w-8 h-8 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </div>
-            <p className="text-dark-text-secondary text-sm mb-1">No notes yet</p>
-            <p className="text-dark-text-muted text-xs">Use the scanner to convert handwritten notes</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {notes.slice(0, 3).map((note) => (
-              <div
-                key={note.id}
-                onClick={() => setSelectedNote(note)}
-                className="flex items-start gap-3 p-3 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all cursor-pointer"
-              >
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent-purple/20 flex items-center justify-center border border-accent-purple/30">
-                  <svg className="w-4 h-4 text-accent-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-dark-text-primary text-sm truncate">{note.title}</div>
-                  <div className="text-dark-text-secondary text-xs">{note.subject}</div>
-                </div>
-                <div className="text-dark-text-muted text-xs flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Flashcard Decks Section */}
-      <div className="bg-dark-bg-secondary rounded-xl p-4 md:p-5 border border-dark-border-subtle">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base md:text-lg font-bold text-dark-text-primary">Flashcard Decks</h3>
-          <button
-            onClick={() => setActiveSection('allFlashcards')}
-            className="text-primary-500 text-sm font-semibold hover:text-primary-400 transition-colors"
-          >
-            View All
-          </button>
-        </div>
-
-        {flashcardsLoading ? (
-          <div className="text-center py-8">
-            <div className="inline-block w-8 h-8 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
-          </div>
-        ) : decks.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-dark-bg-tertiary flex items-center justify-center border border-dark-border-subtle">
-              <svg className="w-8 h-8 text-dark-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <p className="text-dark-text-secondary text-sm mb-1">No decks yet</p>
-            <p className="text-dark-text-muted text-xs">Use the scanner to create flashcards from textbooks</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {decks.slice(0, 3).map((deck) => (
-              <div
-                key={deck.id}
-                onClick={() => openDeckPreview(deck.id)}
-                className="flex items-center gap-3 p-3 rounded-lg bg-dark-bg-tertiary/50 hover:bg-dark-bg-tertiary border border-dark-border-subtle hover:border-dark-border-subtle/80 transition-all cursor-pointer"
-              >
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-500/30">
-                  <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-dark-text-primary text-sm truncate">{deck.title}</div>
-                  <div className="text-dark-text-secondary text-xs">
-                    {deck.cardIds.length} cards • {deck.subject}
-                  </div>
-                </div>
-                <div className="text-dark-text-muted text-xs flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Note Viewer Modal */}
-      {selectedNote && (
-        <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 md:p-6 lg:p-8 animate-fadeIn"
-          onClick={() => setSelectedNote(null)}
-        >
-          <div
-            className="bg-dark-bg-secondary rounded-2xl  border border-dark-border-subtle max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl w-full flex flex-col animate-fadeInUp"
-            style={{ maxHeight: '85vh' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-6 md:p-8 lg:p-10 border-b border-dark-border-subtle flex-shrink-0">
-              <div className="flex items-start justify-between gap-4 md:gap-6">
-                <div className="flex items-start gap-4 md:gap-5 flex-1 min-w-0">
-                  <div className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex-shrink-0 rounded-xl bg-accent-purple/20 flex items-center justify-center border border-accent-purple/30">
-                    <svg className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-accent-purple-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {isEditingTitle ? (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <input
-                          type="text"
-                          value={editedTitle}
-                          onChange={(e) => setEditedTitle(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') saveTitle()
-                            if (e.key === 'Escape') cancelEditTitle()
-                          }}
-                          className="flex-1 px-4 py-2 md:py-2.5 text-lg md:text-xl lg:text-2xl font-bold text-dark-text-primary bg-dark-bg-tertiary border-2 border-accent-purple rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-purple/20"
-                          autoFocus
-                        />
-                        <button
-                          onClick={saveTitle}
-                          className="p-2.5 md:p-3 rounded-lg bg-accent-purple text-white hover:bg-accent-purple-dark transition-all active:scale-95"
-                        >
-                          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={cancelEditTitle}
-                          className="p-2.5 md:p-3 rounded-lg bg-dark-bg-tertiary text-dark-text-secondary hover:bg-dark-navy-dark transition-all active:scale-95"
-                        >
-                          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-dark-text-primary truncate">{selectedNote.title}</h3>
-                        <button
-                          onClick={startEditingTitle}
-                          className="p-2 md:p-2.5 rounded-lg hover:bg-dark-bg-tertiary transition-all active:scale-95 flex-shrink-0"
-                          title="Rename note"
-                        >
-                          <svg className="w-5 h-5 md:w-6 md:h-6 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
-                    <p className="text-base md:text-lg lg:text-xl text-dark-text-secondary mt-2 md:mt-3">{selectedNote.subject}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+          {/* Quizzes Section */}
+          {quizzes.length > 0 && (
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold text-text-primary mb-3">Quizzes</h2>
+              <div className="space-y-3">
+                {quizzes.map((quiz) => (
                   <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full hover:bg-red-900/20 flex items-center justify-center transition-all active:scale-95"
-                    title="Delete note"
+                    key={quiz.id}
+                    onClick={() => startQuiz(quiz)}
+                    className="w-full text-left bg-surface-elevated rounded-xl p-4 border border-border hover:border-success transition-colors"
                   >
-                    <svg className="w-6 h-6 md:w-7 md:h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => setSelectedNote(null)}
-                    className="w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-full hover:bg-dark-bg-tertiary flex items-center justify-center transition-all active:scale-95"
-                  >
-                    <svg className="w-6 h-6 md:w-7 md:h-7 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Content - Scrollable */}
-            <div className="p-6 md:p-8 lg:p-12 overflow-y-auto flex-1 scrollbar-thin scroll-smooth">
-              {/* Note Content with Enhanced Typography */}
-              <div className="mb-8 md:mb-10 lg:mb-12">
-                <div
-                  className="text-white leading-relaxed text-base md:text-lg lg:text-xl prose prose-invert max-w-none"
-                  style={{
-                    whiteSpace: 'pre-wrap',
-                    wordWrap: 'break-word',
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                    lineHeight: '1.8',
-                    letterSpacing: '0.015em'
-                  }}
-                >
-                  {selectedNote.content
-                    .trim()
-                    .split('\n')
-                    .map((line, index) => {
-                      const trimmedLine = line.trim()
-
-                      // Skip empty lines
-                      if (!trimmedLine) return null
-
-                      // Remove unwanted artifacts and stray characters
-                      let cleanLine = trimmedLine
-                        .replace(/\.\.\./g, '')
-                        .replace(/\/\/\//g, '')
-                        .replace(/^---+$/g, '')
-                        .replace(/\*(?!\*)/g, '') // Remove single * but keep **
-                        .replace(/_{1,2}/g, '') // Remove underscores
-                        .replace(/~/g, '') // Remove tildes
-                        .replace(/`/g, '') // Remove backticks
-                        .replace(/₀|₁|₂|₃|₄|₅|₆|₇|₈|₉/g, (match) => {
-                          // Convert subscripts to regular numbers
-                          const subs = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '₇', '₈': '8', '₉': '9' }
-                          return subs[match] || match
-                        })
-
-                      // Handle headers (## or #)
-                      if (cleanLine.startsWith('## ')) {
-                        const headerText = cleanLine.replace(/^## /, '').replace(/\*\*/g, '')
-                        return (
-                          <div key={index} className="relative mt-8 mb-4 first:mt-0">
-                            <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-accent-cyan">
-                              {headerText}
-                            </h3>
-                            <div className="h-0.5 w-16 bg-gradient-to-r from-primary-500 to-transparent mt-2 rounded-full"></div>
-                          </div>
-                        )
-                      }
-                      if (cleanLine.startsWith('# ')) {
-                        const headerText = cleanLine.replace(/^# /, '').replace(/\*\*/g, '')
-                        return (
-                          <div key={index} className="relative mt-10 mb-6 first:mt-0">
-                            <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-primary-300 to-accent-cyan tracking-tight">
-                              {headerText}
-                            </h2>
-                            <div className="h-1 w-24 bg-gradient-to-r from-primary-500 via-accent-cyan to-transparent mt-3 rounded-full"></div>
-                          </div>
-                        )
-                      }
-
-                      // Handle bullet points
-                      if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
-                        const bulletText = cleanLine.replace(/^[*-] /, '').replace(/\*\*/g, '')
-
-                        // Check if it has a colon (for key terms)
-                        const hasColon = bulletText.includes(':')
-                        if (hasColon) {
-                          const [term, ...rest] = bulletText.split(':')
-                          return (
-                            <div key={index} className="flex items-start gap-3 mb-3 ml-2">
-                              <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan mt-2 "></div>
-                              <p className="flex-1">
-                                <span className="font-bold text-primary-400">{term}:</span>
-                                <span className="text-white/90 ml-1">{rest.join(':')}</span>
-                              </p>
-                            </div>
-                          )
-                        }
-
-                        return (
-                          <div key={index} className="flex items-start gap-3 mb-2 ml-2">
-                            <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-primary-500 to-accent-cyan mt-2 "></div>
-                            <p className="flex-1 text-white/90">{bulletText}</p>
-                          </div>
-                        )
-                      }
-
-                      // Handle bold text (**text**)
-                      const parts = cleanLine.split(/(\*\*.*?\*\*)/)
-                      const formattedLine = parts.map((part, i) => {
-                        if (part.startsWith('**') && part.endsWith('**')) {
-                          const boldText = part.slice(2, -2)
-                          return (
-                            <span key={i} className="font-bold text-primary-400 px-0.5">
-                              {boldText}
-                            </span>
-                          )
-                        }
-                        return part
-                      })
-
-                      // Regular paragraph
-                      return (
-                        <p key={index} className="mb-4 last:mb-0 text-white/95 leading-relaxed">
-                          {formattedLine}
-                        </p>
-                      )
-                    })
-                    .filter(Boolean)
-                  }
-                </div>
-              </div>
-
-              {/* Note Metadata */}
-              <div className="pt-6 border-t border-dark-border-subtle">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
-                  <div>
-                    <div className="text-dark-text-secondary font-medium mb-1">Created</div>
-                    <div className="text-dark-text-primary">
-                      {new Date(selectedNote.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-text-primary">{quiz.title}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-success">{quiz.subject}</span>
+                          <span className="text-xs text-text-muted">{quiz.questionCount} questions</span>
+                          {quiz.bestScore && (
+                            <span className="text-xs text-text-muted">Best: {Math.round(quiz.bestScore)}%</span>
+                          )}
+                        </div>
+                      </div>
+                      <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      </svg>
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-dark-text-secondary font-medium mb-1">Last Updated</div>
-                    <div className="text-dark-text-primary">
-                      {new Date(selectedNote.updatedAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </div>
-                  </div>
-                </div>
+                  </button>
+                ))}
               </div>
             </div>
-
-            {/* Modal Footer */}
-            <div className="p-6 border-t border-dark-border-subtle flex gap-3 flex-shrink-0">
-              <button
-                onClick={() => exportNote(selectedNote)}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-accent-purple to-accent-purple-dark hover:from-accent-purple-dark hover:to-accent-purple-dark text-white font-semibold rounded-xl transition-all active:scale-95  flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Export
-              </button>
-              <button
-                onClick={() => setSelectedNote(null)}
-                className="flex-1 py-3 px-4 bg-dark-bg-tertiary hover:bg-dark-navy-dark text-dark-text-primary font-semibold rounded-xl transition-all active:scale-95 border border-dark-border-subtle"
-              >
-                Close
-              </button>
-            </div>
-
-            {/* Delete Confirmation Overlay */}
-            {showDeleteConfirm && (
-              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 rounded-2xl animate-fadeIn">
-                <div className="bg-dark-bg-secondary rounded-2xl p-6 max-w-sm w-full  border border-dark-border-subtle animate-scaleIn">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-900/20 flex items-center justify-center border border-red-700/40">
-                    <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-dark-text-primary text-center mb-2">Delete Note?</h3>
-                  <p className="text-dark-text-secondary text-center mb-6">
-                    Are you sure you want to delete "{selectedNote.title}"? This action cannot be undone.
-                  </p>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setShowDeleteConfirm(false)}
-                      className="flex-1 py-3 px-4 bg-dark-bg-tertiary hover:bg-dark-navy-dark text-dark-text-primary font-semibold rounded-xl transition-all active:scale-95 border border-dark-border-subtle"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleDeleteNote}
-                      className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all active:scale-95 "
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       )}
     </div>

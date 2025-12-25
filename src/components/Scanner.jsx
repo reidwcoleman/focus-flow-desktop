@@ -6,26 +6,17 @@ import { toast } from './Toast'
 
 const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
   const { addNote, addDeckWithCards } = useStudy()
-  // Scan mode: homework, notes, flashcards
   const [scanMode, setScanMode] = useState(initialScanMode)
-
-  // UI mode: camera, upload, processing, result
   const [mode, setMode] = useState('camera')
-
-  // Captured data
   const [capturedImage, setCapturedImage] = useState(null)
-  const [extractedText, setExtractedText] = useState('')
   const [assignmentData, setAssignmentData] = useState(null)
   const [notesData, setNotesData] = useState(null)
   const [flashcardsData, setFlashcardsData] = useState(null)
-
-  // Processing state
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
   const [error, setError] = useState(null)
   const [isSaving, setIsSaving] = useState(false)
 
-  // Refs
   const videoRef = useRef(null)
   const streamRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -60,7 +51,6 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
       canvas.height = videoRef.current.videoHeight
       const ctx = canvas.getContext('2d')
       ctx.drawImage(videoRef.current, 0, 0)
-
       const imageData = canvas.toDataURL('image/jpeg')
       setCapturedImage(imageData)
       setMode('processing')
@@ -89,28 +79,18 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
 
     try {
       if (scanMode === 'homework') {
-        // Process homework with AI vision
-        setProcessingStep('Analyzing assignment with AI vision...')
+        setProcessingStep('Analyzing assignment...')
         const result = await visionService.processHomeworkAssignment(imageData)
-
         setAssignmentData(result)
-        setExtractedText(`📝 Assignment detected!\n\nTitle: ${result.title}\nDue: ${result.dueDate ? new Date(result.dueDate).toLocaleDateString() : 'Not specified'}\nSubject: ${result.subject}\n\nDescription: ${result.description}`)
       } else if (scanMode === 'notes') {
-        // Process handwritten notes
         setProcessingStep('Reading handwriting...')
         const result = await visionService.processHandwrittenNotes(imageData)
-
         setNotesData(result)
-        setExtractedText(`📝 Notes Extracted!\n\n${result.title}\n\n${result.rawText}`)
       } else if (scanMode === 'flashcards') {
-        // Process textbook to flashcards
         setProcessingStep('Generating flashcards...')
         const result = await visionService.processTextbookToFlashcards(imageData)
-
         setFlashcardsData(result)
-        setExtractedText(`🎴 ${result.flashcards.length} Flashcards Created!\n\nDeck: ${result.title}\nSubject: ${result.subject}`)
       }
-
       setMode('result')
     } catch (err) {
       console.error('Processing error:', err)
@@ -123,13 +103,11 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
 
   const saveAssignment = async () => {
     if (!assignmentData) return
-
     setIsSaving(true)
     setError(null)
 
     try {
-      // Save assignment to Supabase
-      const { data, error } = await assignmentsService.createAssignment({
+      const { error } = await assignmentsService.createAssignment({
         title: assignmentData.title,
         subject: assignmentData.subject,
         dueDate: assignmentData.dueDate,
@@ -139,19 +117,11 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
         aiCaptured: true,
         source: 'scanner',
       })
-
       if (error) throw error
-
-      console.log(`✅ Successfully saved assignment "${assignmentData.title}"`)
-
-      // Also call onCapture if provided (for backwards compatibility)
-      if (onCapture) {
-        onCapture(assignmentData)
-      }
-
+      if (onCapture) onCapture(assignmentData)
       onClose()
     } catch (err) {
-      console.error('❌ Failed to save assignment:', err)
+      console.error('Failed to save assignment:', err)
       setError('Failed to save assignment. Please try again.')
     } finally {
       setIsSaving(false)
@@ -159,77 +129,66 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
   }
 
   const saveNotes = async () => {
-    if (notesData) {
-      setIsSaving(true)
-      setError(null)
+    if (!notesData) return
+    setIsSaving(true)
+    setError(null)
 
-      try {
-        // Save note to StudyContext with clean text content (not JSON)
-        const noteContent = typeof notesData.formattedContent === 'string' && notesData.formattedContent.includes('{')
-          ? notesData.rawText  // If formattedContent looks like JSON, use rawText instead
-          : (notesData.formattedContent || notesData.rawText)
+    try {
+      const noteContent = typeof notesData.formattedContent === 'string' && notesData.formattedContent.includes('{')
+        ? notesData.rawText
+        : (notesData.formattedContent || notesData.rawText)
 
-        const result = await addNote({
-          title: notesData.customTitle || notesData.title,
-          content: noteContent,
-          rawText: notesData.rawText,
-          sourceImage: capturedImage,
-          subject: notesData.subject,
-          tags: notesData.tags
-        })
+      const result = await addNote({
+        title: notesData.customTitle || notesData.title,
+        content: noteContent,
+        rawText: notesData.rawText,
+        sourceImage: capturedImage,
+        subject: notesData.subject,
+        tags: notesData.tags
+      })
 
-        if (result) {
-          console.log(`✅ Successfully saved note "${result.title}"`)
-          onClose()
-        } else {
-          console.error('❌ Failed to save note')
-          setError('Failed to save note. Please try again.')
-        }
-      } catch (err) {
-        console.error('❌ Error saving note:', err)
-        setError(err.message || 'Failed to save note. Please try again.')
-      } finally {
-        setIsSaving(false)
+      if (result) {
+        onClose()
+      } else {
+        setError('Failed to save note. Please try again.')
       }
+    } catch (err) {
+      setError(err.message || 'Failed to save note. Please try again.')
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const saveFlashcards = async () => {
-    if (flashcardsData) {
-      setIsSaving(true)
-      setError(null)
+    if (!flashcardsData) return
+    setIsSaving(true)
+    setError(null)
 
-      try {
-        // Save deck with cards to StudyContext
-        const result = await addDeckWithCards(
-          {
-            title: flashcardsData.title,
-            description: `Generated from scanned image`,
-            subject: flashcardsData.subject,
-            sourceImage: capturedImage
-          },
-          flashcardsData.flashcards
-        )
+    try {
+      const result = await addDeckWithCards(
+        {
+          title: flashcardsData.title,
+          description: 'Generated from scanned image',
+          subject: flashcardsData.subject,
+          sourceImage: capturedImage
+        },
+        flashcardsData.flashcards
+      )
 
-        if (result) {
-          console.log(`✅ Successfully saved deck "${result.deck.title}" with ${result.cards.length} cards`)
-          onClose()
-        } else {
-          console.error('❌ Failed to save flashcards')
-          setError('Failed to save flashcards. Please try again.')
-        }
-      } catch (err) {
-        console.error('❌ Error saving flashcards:', err)
-        setError(err.message || 'Failed to save flashcards. Please try again.')
-      } finally {
-        setIsSaving(false)
+      if (result) {
+        onClose()
+      } else {
+        setError('Failed to save flashcards. Please try again.')
       }
+    } catch (err) {
+      setError(err.message || 'Failed to save flashcards. Please try again.')
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const retake = () => {
     setCapturedImage(null)
-    setExtractedText('')
     setAssignmentData(null)
     setNotesData(null)
     setFlashcardsData(null)
@@ -238,443 +197,310 @@ const Scanner = ({ onClose, onCapture, initialScanMode = 'homework' }) => {
     startCamera()
   }
 
-  // Start camera on mount
   useEffect(() => {
-    if (mode === 'camera') {
-      startCamera()
-    }
+    if (mode === 'camera') startCamera()
     return () => stopCamera()
   }, [mode])
 
   return (
-    <div className="fixed inset-0 z-50 bg-dark-bg-primary flex items-center justify-center">
-      {/* Responsive container - mobile to desktop */}
-      <div className="w-full h-full max-w-[28rem] md:max-w-4xl lg:max-w-7xl xl:max-w-[90rem] mx-auto bg-dark-bg-primary relative">
+    <div className="fixed inset-0 z-50 bg-surface-base flex items-center justify-center">
+      <div className="w-full h-full max-w-4xl mx-auto relative">
         {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-dark-bg-primary to-transparent p-4 md:p-6 lg:p-8">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
+        <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-surface-base to-transparent">
+          <div className="flex items-center justify-between">
             <button
               onClick={onClose}
-              className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg bg-dark-bg-secondary border border-dark-border-subtle flex items-center justify-center text-dark-text-primary hover:bg-dark-bg-tertiary transition-all"
+              className="w-10 h-10 rounded-lg bg-surface-elevated border border-border flex items-center justify-center text-text-primary hover:bg-surface-overlay transition-colors"
             >
-              <svg className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <h2 className="text-dark-text-primary font-bold text-base md:text-xl lg:text-2xl">
+            <h2 className="text-text-primary font-bold text-lg">
               {scanMode === 'homework' && 'Scan Homework'}
               {scanMode === 'notes' && 'Scan Notes'}
               {scanMode === 'flashcards' && 'Scan Textbook'}
             </h2>
-            <div className="w-10 md:w-12 lg:w-14"></div>
+            <div className="w-10" />
           </div>
-      </div>
-
-      {/* Camera View */}
-      {mode === 'camera' && (
-        <div className="relative w-full h-full">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-          />
-
-          {/* Mode Selector - Inside Camera View */}
-          <div className="absolute top-20 md:top-24 lg:top-28 left-1/2 -translate-x-1/2 z-20 w-[90%] md:w-auto">
-            <div className="flex gap-2 md:gap-3 bg-dark-bg-primary/80 backdrop-blur-md p-2 rounded-lg border border-dark-border-subtle">
-              <button
-                onClick={() => setScanMode('homework')}
-                className={`flex-1 md:flex-none py-2 md:py-2.5 lg:py-3 px-4 md:px-6 lg:px-8 rounded-lg text-xs md:text-sm lg:text-base font-semibold transition-all ${
-                  scanMode === 'homework'
-                    ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
-                    : 'bg-dark-bg-secondary/50 border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
-                }`}
-              >
-                Homework
-              </button>
-              <button
-                onClick={() => setScanMode('notes')}
-                className={`flex-1 md:flex-none py-2 md:py-2.5 lg:py-3 px-4 md:px-6 lg:px-8 rounded-lg text-xs md:text-sm lg:text-base font-semibold transition-all ${
-                  scanMode === 'notes'
-                    ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
-                    : 'bg-dark-bg-secondary/50 border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
-                }`}
-              >
-                Notes
-              </button>
-              <button
-                onClick={() => setScanMode('flashcards')}
-                className={`flex-1 md:flex-none py-2 md:py-2.5 lg:py-3 px-4 md:px-6 lg:px-8 rounded-lg text-xs md:text-sm lg:text-base font-semibold transition-all ${
-                  scanMode === 'flashcards'
-                    ? 'bg-gradient-to-r from-primary-500 to-accent-cyan text-white'
-                    : 'bg-dark-bg-secondary/50 border border-dark-border-subtle text-dark-text-secondary hover:bg-dark-bg-tertiary'
-                }`}
-              >
-                Flashcards
-              </button>
-            </div>
-          </div>
-
-          {/* Camera Frame Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[90%] md:w-[80%] lg:w-[70%] h-[70%] md:h-[75%] lg:h-[80%] border-4 md:border-[6px] border-primary-500/50 rounded-2xl"></div>
-          </div>
-
-          {/* Bottom Controls */}
-          <div className="absolute bottom-0 left-0 right-0 pb-8 md:pb-12 lg:pb-16 bg-gradient-to-t from-dark-bg-primary to-transparent">
-            <div className="flex items-center justify-center gap-6 md:gap-8 lg:gap-12">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-lg bg-dark-bg-secondary border-2 border-dark-border-subtle flex items-center justify-center text-dark-text-primary hover:bg-dark-bg-tertiary hover:border-primary-500/50 transition-all"
-              >
-                <svg className="w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </button>
-
-              <button
-                onClick={captureImage}
-                className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-r from-primary-500 to-accent-cyan flex items-center justify-center hover:scale-105 transition-all"
-              >
-                <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full bg-white flex items-center justify-center">
-                  <svg className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-              </button>
-
-              <div className="w-14 h-14 md:w-16 md:h-16 lg:w-20 lg:h-20"></div>
-            </div>
-
-            <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg text-center mt-4 md:mt-6">
-              {scanMode === 'homework' && 'Align your homework within the frame'}
-              {scanMode === 'notes' && 'Capture your handwritten notes clearly'}
-              {scanMode === 'flashcards' && 'Point at the textbook page or notes'}
-            </p>
-          </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
         </div>
-      )}
 
-      {/* Processing/Result View */}
-      {(mode === 'processing' || mode === 'result') && (
-        <div className="w-full h-full flex flex-col md:flex-row md:gap-6 lg:gap-10 p-6 md:p-8 lg:p-12">
-          {/* Preview Image */}
-          <div className="flex-shrink-0 mb-6 md:mb-0 md:w-1/2 lg:w-2/5">
-            <img
-              src={capturedImage}
-              alt="Captured"
-              className="w-full h-64 md:h-full md:max-h-[600px] lg:max-h-[800px] object-cover rounded-lg border border-dark-border-subtle"
+        {/* Camera View */}
+        {mode === 'camera' && (
+          <div className="relative w-full h-full">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full h-full object-cover"
             />
-          </div>
 
-          {/* Processing State */}
-          {isProcessing ? (
-            <div className="flex-1 flex flex-col items-center justify-center md:w-1/2 lg:w-3/5">
-              <div className="relative w-20 h-20 md:w-28 md:h-28 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 md:border-6 border-primary-500/30"></div>
-                <div className="absolute inset-0 rounded-full border-4 md:border-6 border-primary-500 border-t-transparent animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg className="w-10 h-10 md:w-14 md:h-14 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
+            {/* Mode Selector */}
+            <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20">
+              <div className="flex gap-2 bg-surface-base/90 backdrop-blur-sm p-1.5 rounded-lg border border-border">
+                {['homework', 'notes', 'flashcards'].map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setScanMode(m)}
+                    className={`py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                      scanMode === m
+                        ? 'bg-primary text-white'
+                        : 'text-text-secondary hover:text-text-primary'
+                    }`}
+                  >
+                    {m.charAt(0).toUpperCase() + m.slice(1)}
+                  </button>
+                ))}
               </div>
-              <h3 className="text-dark-text-primary font-bold text-lg md:text-2xl lg:text-3xl mb-2">AI Processing...</h3>
-              <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg text-center max-w-md">
-                {processingStep || (
-                  scanMode === 'homework' ? 'Extracting assignment details from your homework' :
-                  scanMode === 'notes' ? 'Reading and organizing your handwritten notes' :
-                  'Generating flashcards from your textbook'
-                )}
+            </div>
+
+            {/* Camera Frame */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-[85%] h-[70%] border-2 border-primary/50 rounded-xl" />
+            </div>
+
+            {/* Bottom Controls */}
+            <div className="absolute bottom-0 left-0 right-0 pb-8 bg-gradient-to-t from-surface-base to-transparent">
+              <div className="flex items-center justify-center gap-6">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-14 h-14 rounded-lg bg-surface-elevated border border-border flex items-center justify-center text-text-primary hover:bg-surface-overlay transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </button>
+
+                <button
+                  onClick={captureImage}
+                  className="w-20 h-20 rounded-full bg-primary flex items-center justify-center hover:bg-primary-hover transition-colors"
+                >
+                  <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
+                    <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                </button>
+
+                <div className="w-14 h-14" />
+              </div>
+
+              <p className="text-text-muted text-sm text-center mt-4">
+                {scanMode === 'homework' && 'Align your homework within the frame'}
+                {scanMode === 'notes' && 'Capture your handwritten notes'}
+                {scanMode === 'flashcards' && 'Point at the textbook page'}
               </p>
             </div>
-          ) : error ? (
-            <div className="flex-1 flex flex-col items-center justify-center md:w-1/2 lg:w-3/5 px-6">
-              <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 md:w-12 md:h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-dark-text-primary font-bold text-lg md:text-2xl lg:text-3xl mb-2">Processing Failed</h3>
-              <p className="text-dark-text-secondary text-sm md:text-base lg:text-lg text-center mb-6 max-w-md">{error}</p>
-              <button
-                onClick={retake}
-                className="px-6 md:px-8 lg:px-10 py-3 md:py-4 lg:py-5 bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-primary font-semibold text-sm md:text-base lg:text-lg rounded-lg hover:bg-dark-bg-tertiary hover:border-primary-500/50 transition-all"
-              >
-                Try Again
-              </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </div>
+        )}
+
+        {/* Processing/Result View */}
+        {(mode === 'processing' || mode === 'result') && (
+          <div className="w-full h-full flex flex-col md:flex-row gap-6 p-6 pt-20">
+            {/* Preview Image */}
+            <div className="flex-shrink-0 md:w-1/2">
+              <img
+                src={capturedImage}
+                alt="Captured"
+                className="w-full h-64 md:h-full max-h-[500px] object-cover rounded-xl border border-border"
+              />
             </div>
-          ) : (
-            <div className="flex-1 overflow-y-auto space-y-4 md:space-y-5 md:w-1/2 lg:w-3/5">
-              {/* HOMEWORK MODE RESULT */}
-              {assignmentData && (
-                <>
-                  {/* Confidence Badge */}
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="px-4 py-2 rounded-full bg-green-500/20 border border-green-500/50">
-                      <span className="text-green-400 text-sm font-semibold">
+
+            {/* Processing State */}
+            {isProcessing ? (
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <div className="w-16 h-16 mb-4">
+                  <div className="w-full h-full rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+                </div>
+                <h3 className="text-text-primary font-bold text-xl mb-2">Processing...</h3>
+                <p className="text-text-muted text-sm text-center">{processingStep}</p>
+              </div>
+            ) : error ? (
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-error/20 flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-text-primary font-bold text-xl mb-2">Processing Failed</h3>
+                <p className="text-text-muted text-sm text-center mb-6 max-w-sm">{error}</p>
+                <button
+                  onClick={retake}
+                  className="px-6 py-3 bg-surface-elevated border border-border text-text-primary font-medium rounded-lg hover:bg-surface-overlay transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-4">
+                {/* Assignment Result */}
+                {assignmentData && (
+                  <>
+                    <div className="flex justify-center">
+                      <span className="px-3 py-1 rounded-full bg-success/20 text-success text-sm font-medium">
                         {Math.round(assignmentData.confidence * 100)}% Confidence
                       </span>
                     </div>
-                  </div>
 
-                  {/* Assignment Card */}
-                  <div className="bg-dark-bg-tertiary/50 rounded-lg p-4 md:p-5 border border-dark-border-subtle">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-accent-purple flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                    <div className="bg-surface-elevated rounded-xl p-4 border border-border">
+                      <h3 className="text-text-primary font-bold text-lg mb-2">{assignmentData.title}</h3>
+                      <div className="flex items-center gap-3 text-sm text-text-muted mb-3">
+                        <span>{assignmentData.subject}</span>
+                        <span>•</span>
+                        <span>Due {new Date(assignmentData.dueDate).toLocaleDateString()}</span>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-white font-bold text-lg mb-1">{assignmentData.title}</h3>
-                        <div className="flex items-center gap-3 text-sm text-white/70">
-                          <span>{assignmentData.subject}</span>
-                          <span>•</span>
-                          <span>Due {new Date(assignmentData.dueDate).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-white/80 text-sm mb-4">{assignmentData.description}</p>
-
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-2 text-white/70">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{assignmentData.estimatedTime}</span>
-                      </div>
-                      <div className={`px-2 py-1 rounded-lg ${
-                        assignmentData.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                        assignmentData.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-green-500/20 text-green-400'
-                      }`}>
-                        <span className="text-xs font-semibold capitalize">{assignmentData.priority}</span>
+                      <p className="text-text-secondary text-sm mb-3">{assignmentData.description}</p>
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="text-text-muted">{assignmentData.estimatedTime}</span>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          assignmentData.priority === 'high' ? 'bg-error/20 text-error' :
+                          assignmentData.priority === 'medium' ? 'bg-warning/20 text-warning' :
+                          'bg-success/20 text-success'
+                        }`}>
+                          {assignmentData.priority}
+                        </span>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Action Buttons */}
-                  <div className="space-y-3">
-                    <button
-                      onClick={saveAssignment}
-                      disabled={isSaving}
-                      className="w-full py-4 md:py-5 lg:py-6 px-6 md:px-8 lg:px-10 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold text-sm md:text-base lg:text-lg rounded-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSaving ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          <span>Saving assignment...</span>
-                        </div>
-                      ) : (
-                        'Add to My Assignments'
-                      )}
-                    </button>
-                    <button
-                      onClick={retake}
-                      disabled={isSaving}
-                      className="w-full py-3 md:py-4 lg:py-5 px-6 md:px-8 lg:px-10 bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-primary font-semibold text-sm md:text-base lg:text-lg rounded-lg hover:bg-dark-bg-tertiary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Retake Photo
-                    </button>
-                  </div>
-                </>
-              )}
+                    <div className="space-y-2">
+                      <button
+                        onClick={saveAssignment}
+                        disabled={isSaving}
+                        className="w-full py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+                      >
+                        {isSaving ? 'Saving...' : 'Add to Assignments'}
+                      </button>
+                      <button
+                        onClick={retake}
+                        disabled={isSaving}
+                        className="w-full py-3 bg-surface-elevated border border-border text-text-primary font-medium rounded-lg hover:bg-surface-overlay transition-colors disabled:opacity-50"
+                      >
+                        Retake Photo
+                      </button>
+                    </div>
+                  </>
+                )}
 
-              {/* NOTES MODE RESULT */}
-              {notesData && (
-                <>
-                  {/* Confidence Badge */}
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="px-4 py-2 rounded-full bg-green-500/20 border border-green-500/50">
-                      <span className="text-green-400 text-sm font-semibold">
+                {/* Notes Result */}
+                {notesData && (
+                  <>
+                    <div className="flex justify-center">
+                      <span className="px-3 py-1 rounded-full bg-success/20 text-success text-sm font-medium">
                         {Math.round(notesData.confidence * 100)}% Confidence
                       </span>
                     </div>
-                  </div>
 
-                  {/* Notes Card */}
-                  <div className="bg-dark-bg-tertiary/50 rounded-lg p-4 md:p-5 border border-dark-border-subtle">
-                    {/* Editable Title Input */}
-                    <div className="mb-4">
-                      <label className="block text-white/70 text-sm font-medium mb-2">Note Title</label>
-                      <input
-                        type="text"
-                        defaultValue={notesData.title}
-                        onChange={(e) => { notesData.customTitle = e.target.value }}
-                        placeholder="Enter a name for your note..."
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-accent-purple/50 transition-all"
-                      />
-                    </div>
-
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-accent-purple to-accent-pink flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                    <div className="bg-surface-elevated rounded-xl p-4 border border-border">
+                      <div className="mb-3">
+                        <label className="block text-text-muted text-sm mb-1">Note Title</label>
+                        <input
+                          type="text"
+                          defaultValue={notesData.title}
+                          onChange={(e) => { notesData.customTitle = e.target.value }}
+                          placeholder="Enter a name..."
+                          className="w-full px-3 py-2 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+                        />
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 text-sm text-white/70">
-                          <span>{notesData.subject}</span>
-                          {notesData.tags && notesData.tags.length > 0 && (
-                            <>
-                              <span>•</span>
-                              <span>{notesData.tags.slice(0, 2).join(', ')}</span>
-                            </>
-                          )}
+                      <div className="flex items-center gap-2 text-sm text-text-muted mb-3">
+                        <span>{notesData.subject}</span>
+                      </div>
+                      <div className="bg-surface-base rounded-lg p-3 max-h-48 overflow-y-auto">
+                        <p className="text-text-secondary text-sm whitespace-pre-wrap">
+                          {(typeof notesData.formattedContent === 'string' && notesData.formattedContent.includes('{'))
+                            ? notesData.rawText
+                            : (notesData.formattedContent || notesData.rawText)
+                          }
+                        </p>
+                      </div>
+                      {notesData.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {notesData.tags.map((tag, i) => (
+                            <span key={i} className="px-2 py-0.5 rounded bg-accent/20 text-accent text-xs">
+                              {tag}
+                            </span>
+                          ))}
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Formatted Content Preview */}
-                    <div className="bg-dark-bg-secondary rounded-lg p-4 mb-4 max-h-60 overflow-y-auto scrollbar-thin">
-                      <div className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap">
-                        {(typeof notesData.formattedContent === 'string' && notesData.formattedContent.includes('{'))
-                          ? notesData.rawText
-                          : (notesData.formattedContent || notesData.rawText)
-                        }
-                      </div>
-                    </div>
-
-                    {/* Tags */}
-                    {notesData.tags && notesData.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {notesData.tags.map((tag, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 rounded-lg bg-accent-purple/20 text-accent-purple-light text-xs font-medium"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="space-y-3">
-                    <button
-                      onClick={saveNotes}
-                      disabled={isSaving}
-                      className="w-full py-4 md:py-5 lg:py-6 px-6 md:px-8 lg:px-10 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold text-sm md:text-base lg:text-lg rounded-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSaving ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          <span>Saving note...</span>
-                        </div>
-                      ) : (
-                        'Save to My Notes'
                       )}
-                    </button>
-                    <button
-                      onClick={retake}
-                      disabled={isSaving}
-                      className="w-full py-3 md:py-4 lg:py-5 px-6 md:px-8 lg:px-10 bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-primary font-semibold text-sm md:text-base lg:text-lg rounded-lg hover:bg-dark-bg-tertiary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Retake Photo
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* FLASHCARDS MODE RESULT */}
-              {flashcardsData && (
-                <>
-                  {/* Deck Header */}
-                  <div className="bg-gradient-to-br from-accent-cyan to-primary-500 rounded-lg p-4 md:p-5">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-white font-bold text-lg mb-1">{flashcardsData.title}</h3>
-                        <div className="flex items-center gap-3 text-sm text-white/90">
-                          <span>{flashcardsData.subject}</span>
-                          <span>•</span>
-                          <span>{flashcardsData.flashcards.length} cards created</span>
-                        </div>
-                      </div>
                     </div>
-                  </div>
 
-                  {/* Flashcards Preview */}
-                  <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin">
-                    {flashcardsData.flashcards.map((card, index) => (
-                      <div
-                        key={index}
-                        className="bg-dark-bg-tertiary/50 rounded-lg p-3 md:p-4 border border-dark-border-subtle"
+                    <div className="space-y-2">
+                      <button
+                        onClick={saveNotes}
+                        disabled={isSaving}
+                        className="w-full py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                       >
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-accent-cyan/30 flex items-center justify-center">
-                            <span className="text-accent-cyan-light text-xs font-bold">{index + 1}</span>
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-white/70 text-xs font-semibold mb-1">QUESTION</div>
-                            <div className="text-white font-medium text-sm mb-3">{card.front}</div>
-                            <div className="text-white/70 text-xs font-semibold mb-1">ANSWER</div>
-                            <div className="text-white/90 text-sm">{card.back}</div>
-                            {card.hint && (
-                              <div className="mt-2 px-2 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                                <span className="text-yellow-400 text-xs">💡 Hint: {card.hint}</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className={`px-2 py-1 rounded-lg text-xs font-semibold ${
-                            card.difficulty === 'hard' ? 'bg-red-500/20 text-red-400' :
-                            card.difficulty === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-green-500/20 text-green-400'
-                          }`}>
-                            {card.difficulty}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        {isSaving ? 'Saving...' : 'Save to Notes'}
+                      </button>
+                      <button
+                        onClick={retake}
+                        disabled={isSaving}
+                        className="w-full py-3 bg-surface-elevated border border-border text-text-primary font-medium rounded-lg hover:bg-surface-overlay transition-colors disabled:opacity-50"
+                      >
+                        Retake Photo
+                      </button>
+                    </div>
+                  </>
+                )}
 
-                  {/* Action Buttons */}
-                  <div className="space-y-3">
-                    <button
-                      onClick={saveFlashcards}
-                      disabled={isSaving}
-                      className="w-full py-4 md:py-5 lg:py-6 px-6 md:px-8 lg:px-10 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold text-sm md:text-base lg:text-lg rounded-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSaving ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          <span>Saving {flashcardsData.flashcards.length} cards...</span>
+                {/* Flashcards Result */}
+                {flashcardsData && (
+                  <>
+                    <div className="bg-primary rounded-xl p-4">
+                      <h3 className="text-white font-bold text-lg">{flashcardsData.title}</h3>
+                      <div className="flex items-center gap-2 text-sm text-white/80 mt-1">
+                        <span>{flashcardsData.subject}</span>
+                        <span>•</span>
+                        <span>{flashcardsData.flashcards.length} cards</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {flashcardsData.flashcards.map((card, i) => (
+                        <div key={i} className="bg-surface-elevated rounded-lg p-3 border border-border">
+                          <div className="flex items-start gap-2">
+                            <span className="w-6 h-6 rounded bg-accent/20 text-accent text-xs flex items-center justify-center font-bold flex-shrink-0">
+                              {i + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-text-primary text-sm font-medium mb-1">{card.front}</p>
+                              <p className="text-text-muted text-sm">{card.back}</p>
+                            </div>
+                          </div>
                         </div>
-                      ) : (
-                        `Save Deck (${flashcardsData.flashcards.length} cards)`
-                      )}
-                    </button>
-                    <button
-                      onClick={retake}
-                      disabled={isSaving}
-                      className="w-full py-3 md:py-4 lg:py-5 px-6 md:px-8 lg:px-10 bg-dark-bg-secondary border border-dark-border-subtle text-dark-text-primary font-semibold text-sm md:text-base lg:text-lg rounded-lg hover:bg-dark-bg-tertiary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Retake Photo
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+                      ))}
+                    </div>
+
+                    <div className="space-y-2">
+                      <button
+                        onClick={saveFlashcards}
+                        disabled={isSaving}
+                        className="w-full py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+                      >
+                        {isSaving ? 'Saving...' : `Save Deck (${flashcardsData.flashcards.length} cards)`}
+                      </button>
+                      <button
+                        onClick={retake}
+                        disabled={isSaving}
+                        className="w-full py-3 bg-surface-elevated border border-border text-text-primary font-medium rounded-lg hover:bg-surface-overlay transition-colors disabled:opacity-50"
+                      >
+                        Retake Photo
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

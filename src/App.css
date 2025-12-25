@@ -3,257 +3,59 @@
   min-height: 100vh;
 }
 
-/* Fly-away animation for completed items - Simplified fade out */
-@keyframes fly-away {
-  0% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(30px) scale(0.95);
-  }
-}
-
-/* Slow bounce animation for NEW feature badge */
-@keyframes bounce-slow {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-/* Slow pulse animation for calendar days with activities */
-@keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.85;
-  }
-}
-
-.animate-fly-away {
-  animation: fly-away 0.5s ease-out forwards;
-  will-change: transform, opacity;
-  z-index: 100;
-  position: relative;
-}
-
-.animate-bounce-slow {
-  animation: bounce-slow 2s ease-in-out infinite;
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* =============================================
-   FLASHCARD ANIMATIONS - Tinder-style swipes
-   ============================================= */
-
-/* Card fly-out right (mastered) - follows natural swipe momentum */
+/* Flashcard swipe animations */
 @keyframes card-exit-right {
-  0% {
-    transform: translateX(0) rotate(0deg) scale(1);
-    opacity: 1;
-  }
-  25% {
-    transform: translateX(40px) rotate(6deg) scale(1.02);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(120%) rotate(22deg) scale(0.85);
-    opacity: 0;
-  }
+  0% { transform: translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateX(120%) rotate(15deg); opacity: 0; }
 }
 
-/* Card fly-out left (needs work) - mirrors right animation */
 @keyframes card-exit-left {
-  0% {
-    transform: translateX(0) rotate(0deg) scale(1);
-    opacity: 1;
-  }
-  25% {
-    transform: translateX(-40px) rotate(-6deg) scale(1.02);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(-120%) rotate(-22deg) scale(0.85);
-    opacity: 0;
-  }
+  0% { transform: translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateX(-120%) rotate(-15deg); opacity: 0; }
 }
 
-/* New card entrance - spring-like bounce from below */
-@keyframes card-enter-spring {
-  0% {
-    transform: translateY(60px) scale(0.88);
-    opacity: 0;
-  }
-  50% {
-    transform: translateY(-8px) scale(1.02);
-    opacity: 1;
-  }
-  75% {
-    transform: translateY(3px) scale(0.99);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
+@keyframes card-enter {
+  0% { transform: translateY(40px) scale(0.95); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 .animate-card-exit-right {
-  animation: card-exit-right 0.38s cubic-bezier(0.32, 0, 0.67, 0) forwards;
+  animation: card-exit-right 0.3s ease-out forwards;
   pointer-events: none;
 }
 
 .animate-card-exit-left {
-  animation: card-exit-left 0.38s cubic-bezier(0.32, 0, 0.67, 0) forwards;
+  animation: card-exit-left 0.3s ease-out forwards;
   pointer-events: none;
 }
 
-.animate-card-enter-spring {
-  animation: card-enter-spring 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+.animate-card-enter {
+  animation: card-enter 0.3s ease-out forwards;
 }
 
-/* =============================================
-   OPAL-STYLE ANIMATIONS - Focus Mode
-   ============================================= */
-
-/* 1. Timer Pulse Glow - Breathing animation for active timer */
-@keyframes timer-pulse-glow {
-  0%, 100% {
-    box-shadow:
-      0 0 20px rgba(78, 48, 189, 0.3),
-      0 0 40px rgba(78, 48, 189, 0.15);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow:
-      0 0 35px rgba(124, 92, 255, 0.5),
-      0 0 60px rgba(124, 92, 255, 0.25);
-    transform: scale(1.02);
-  }
-}
-
-/* 2. Progress Ring Glow - Pulsing glow behind the SVG ring */
-@keyframes ring-glow-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(78, 48, 189, 0.5));
-  }
-  50% {
-    filter: drop-shadow(0 0 20px rgba(124, 92, 255, 0.7));
-  }
-}
-
-/* 3. Card Entrance - Fade up with scale */
-@keyframes opal-card-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* 4. Checkmark Pop - When app is selected */
-@keyframes opal-checkmark-pop {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.3);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* 5. Gradient Text Animation - Moving gradient for headers */
-@keyframes opal-gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* Animation Utility Classes */
-.animate-timer-pulse {
-  animation: timer-pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.animate-ring-glow {
-  animation: ring-glow-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.animate-opal-card-enter {
-  animation: opal-card-enter 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-  opacity: 0;
-}
-
-.animate-opal-checkmark {
-  animation: opal-checkmark-pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-}
-
-.animate-opal-gradient {
-  background-size: 200% 200%;
-  animation: opal-gradient-shift 4s ease infinite;
-}
-
-/* =============================================
-   TOAST NOTIFICATION ANIMATIONS
-   ============================================= */
-
+/* Toast animations */
 @keyframes slideInRight {
-  0% {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes scaleIn {
-  0% {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .animate-slideInRight {
-  animation: slideInRight 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation: slideInRight 0.3s ease-out forwards;
 }
 
 .animate-scaleIn {
-  animation: scaleIn 0.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation: scaleIn 0.2s ease-out forwards;
 }
 
-/* =============================================
-   SCROLLBAR STYLES
-   ============================================= */
-
-/* Webkit browsers (Chrome, Safari, Edge) */
+/* Scrollbar styles */
 .scrollbar-thin::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
@@ -262,111 +64,14 @@
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.scrollbar-thumb-dark-border-subtle::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.scrollbar-thumb-white\/20::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Firefox */
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-}
-
-/* =============================================
-   SHIMMER ANIMATION
-   ============================================= */
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
-
-/* =============================================
-   TIME-OF-DAY EMOJI TRANSITION ANIMATIONS
-   ============================================= */
-
-/* Old emoji rises/sets with dramatic movement and fade */
-@keyframes emoji-exit {
-  0% {
-    opacity: 1;
-    transform: translateY(0) scale(1) rotate(0deg);
-    filter: brightness(1) blur(0px);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translateY(-40px) scale(0.9) rotate(-15deg);
-    filter: brightness(1.2) blur(1px);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-120px) scale(0.3) rotate(-30deg);
-    filter: brightness(0.5) blur(3px);
-  }
-}
-
-/* New emoji rises/dawns with dramatic entrance */
-@keyframes emoji-enter {
-  0% {
-    opacity: 0;
-    transform: translateY(120px) scale(0.3) rotate(30deg);
-    filter: brightness(0.5) blur(3px);
-  }
-  30% {
-    opacity: 0.3;
-    transform: translateY(60px) scale(0.6) rotate(15deg);
-    filter: brightness(0.8) blur(2px);
-  }
-  60% {
-    opacity: 0.7;
-    transform: translateY(20px) scale(0.85) rotate(5deg);
-    filter: brightness(1.1) blur(1px);
-  }
-  80% {
-    opacity: 0.95;
-    transform: translateY(-5px) scale(1.05) rotate(-2deg);
-    filter: brightness(1.2) blur(0px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1) rotate(0deg);
-    filter: brightness(1) blur(0px);
-  }
-}
-
-/* Pulsing glow effect during transition */
-@keyframes emoji-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(255, 200, 100, 0.6));
-  }
-  50% {
-    filter: drop-shadow(0 0 20px rgba(255, 200, 100, 0.9));
-  }
-}
-
-.animate-emoji-exit {
-  animation: emoji-exit 3.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-emoji-enter {
-  animation: emoji-enter 3.5s cubic-bezier(0.4, 0, 0.2, 1) forwards,
-             emoji-glow 1.5s ease-in-out 2s 2;
 }
