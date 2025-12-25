@@ -5,6 +5,7 @@ import Planner from './components/Planner'
 import Scanner from './components/Scanner'
 import StudyHub from './components/StudyHub'
 import Account from './components/Account'
+import CanvasHub from './components/CanvasHub'
 import AuthScreen from './components/AuthScreen'
 import ToastContainer from './components/Toast'
 import ConfirmDialogContainer from './components/ConfirmDialog'
@@ -69,6 +70,7 @@ function App() {
   const tabs = [
     { id: 'dashboard', label: 'Home', icon: 'home' },
     { id: 'planner', label: 'Plan', icon: 'calendar' },
+    { id: 'canvas', label: 'Canvas', icon: 'graduation' },
     { id: 'study', label: 'Study', icon: 'book' },
     { id: 'tutor', label: 'AI', icon: 'sparkles' },
     { id: 'account', label: 'Account', icon: 'user' },
@@ -108,6 +110,11 @@ function App() {
         <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+      graduation: (
+        <svg className={className} fill={isActive ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
         </svg>
       ),
     }
@@ -263,6 +270,11 @@ function App() {
             {activeTab === 'planner' && (
               <div key="planner" className="animate-fade-in">
                 <Planner />
+              </div>
+            )}
+            {activeTab === 'canvas' && (
+              <div key="canvas" className="animate-fade-in">
+                <CanvasHub />
               </div>
             )}
             {activeTab === 'study' && (

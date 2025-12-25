@@ -6,6 +6,7 @@ import assignmentParserService from '../services/assignmentParserService'
 import subtasksService from '../services/subtasksService'
 import taskBreakdownService from '../services/taskBreakdownService'
 import courseStatsService from '../services/courseStatsService'
+import calendarService from '../services/calendarService'
 import { toast } from './Toast'
 import { confirmDialog } from './ConfirmDialog'
 
@@ -28,6 +29,13 @@ const Dashboard = ({ onOpenScanner }) => {
   const [expandedAssignments, setExpandedAssignments] = useState(new Set())
   const [breakdownModal, setBreakdownModal] = useState(null)
   const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
+  const [dailyGoal, setDailyGoal] = useState(() => {
+    const saved = localStorage.getItem('dailyStudyGoal')
+    return saved ? parseInt(saved) : 120 // Default 2 hours
+  })
+  const [todayMinutes, setTodayMinutes] = useState(0)
+  const [studyStreak, setStudyStreak] = useState(0)
+  const [weeklyStats, setWeeklyStats] = useState({ completed: 0, total: 0 })
 
   const filterRecentAssignments = (assignmentsList) => {
     const twoWeeksAgo = new Date()
@@ -41,7 +49,52 @@ const Dashboard = ({ onOpenScanner }) => {
   useEffect(() => {
     loadUserName()
     loadAssignments()
+    loadProductivityStats()
   }, [])
+
+  const loadProductivityStats = async () => {
+    try {
+      // Load today's study minutes from activities
+      const today = new Date()
+      const activities = await calendarService.getActivitiesForMonth(today.getFullYear(), today.getMonth())
+      const todayStr = today.toISOString().split('T')[0]
+      const todayActivities = activities.filter(a => a.activity_date === todayStr && a.is_completed)
+      const minutes = todayActivities.reduce((sum, a) => sum + (a.duration_minutes || 0), 0)
+      setTodayMinutes(minutes)
+
+      // Calculate study streak
+      let streak = 0
+      const checkDate = new Date()
+      for (let i = 0; i < 30; i++) {
+        const dateStr = checkDate.toISOString().split('T')[0]
+        const dayActivities = activities.filter(a => a.activity_date === dateStr && a.is_completed)
+        if (dayActivities.length > 0) {
+          streak++
+          checkDate.setDate(checkDate.getDate() - 1)
+        } else if (i > 0) {
+          break
+        } else {
+          checkDate.setDate(checkDate.getDate() - 1)
+        }
+      }
+      setStudyStreak(streak)
+
+      // Calculate weekly completion stats
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
+      const { data: allAssignments } = await assignmentsService.getUpcomingAssignments()
+      const weekAssignments = allAssignments?.filter(a => {
+        const created = new Date(a.created_at)
+        return created >= weekAgo
+      }) || []
+      setWeeklyStats({
+        completed: weekAssignments.filter(a => a.completed).length,
+        total: weekAssignments.length
+      })
+    } catch (err) {
+      console.error('Failed to load productivity stats:', err)
+    }
+  }
 
   const loadUserName = async () => {
     const { user } = await authService.getCurrentUser()
@@ -230,6 +283,69 @@ const Dashboard = ({ onOpenScanner }) => {
     return `${diffDays}d`
   }
 
+  // Calculate deadline risk based on time remaining vs estimated work
+  const getDeadlineRisk = (assignment) => {
+    if (!assignment.dueDate) return { level: 'none', color: 'text-text-muted', bg: 'bg-surface-base' }
+
+    const daysUntil = Math.ceil((new Date(assignment.dueDate) - new Date()) / (1000 * 60 * 60 * 24))
+
+    // Parse time estimate to hours
+    let estimatedHours = 1 // Default 1 hour
+    if (assignment.timeEstimate) {
+      const timeStr = assignment.timeEstimate.toLowerCase()
+      const hours = timeStr.match(/(\d+)\s*h/)
+      const mins = timeStr.match(/(\d+)\s*m/)
+      if (hours) estimatedHours = parseInt(hours[1])
+      if (mins) estimatedHours += parseInt(mins[1]) / 60
+    }
+
+    // Risk calculation: days needed = estimated hours / 2 (assuming 2 productive hours/day)
+    const daysNeeded = Math.ceil(estimatedHours / 2)
+
+    if (daysUntil < 0) {
+      return { level: 'overdue', color: 'text-error', bg: 'bg-error/10', icon: 'alert' }
+    } else if (daysUntil === 0) {
+      return { level: 'critical', color: 'text-error', bg: 'bg-error/10', icon: 'fire' }
+    } else if (daysUntil <= daysNeeded) {
+      return { level: 'high', color: 'text-accent-warm', bg: 'bg-accent-warm/10', icon: 'warning' }
+    } else if (daysUntil <= daysNeeded * 2) {
+      return { level: 'medium', color: 'text-primary', bg: 'bg-primary/10', icon: 'clock' }
+    }
+    return { level: 'low', color: 'text-success', bg: 'bg-success/10', icon: 'check' }
+  }
+
+  // Get smart recommendation for what to focus on
+  const getTopPriority = () => {
+    const pending = recentAssignments.filter(a => !a.completed)
+    if (pending.length === 0) return null
+
+    // Score each assignment by urgency
+    const scored = pending.map(a => {
+      let score = 0
+      if (a.dueDate) {
+        const days = Math.ceil((new Date(a.dueDate) - new Date()) / (1000 * 60 * 60 * 24))
+        if (days < 0) score += 100 // Overdue
+        else if (days === 0) score += 80 // Today
+        else if (days === 1) score += 60 // Tomorrow
+        else score += Math.max(0, 40 - days * 2)
+      }
+      if (a.priority === 'high') score += 30
+      else if (a.priority === 'medium') score += 15
+      return { ...a, score }
+    })
+
+    return scored.sort((a, b) => b.score - a.score)[0]
+  }
+
+  const formatMinutes = (mins) => {
+    if (mins < 60) return `${mins}m`
+    const hours = Math.floor(mins / 60)
+    const remaining = mins % 60
+    return remaining > 0 ? `${hours}h ${remaining}m` : `${hours}h`
+  }
+
+  const dailyProgress = Math.min(100, Math.round((todayMinutes / dailyGoal) * 100))
+
   const recentAssignments = filterRecentAssignments(assignments)
   const completedCount = recentAssignments.filter(a => a.completed).length
   const pendingCount = recentAssignments.filter(a => !a.completed).length
@@ -273,8 +389,98 @@ const Dashboard = ({ onOpenScanner }) => {
         </div>
       </header>
 
+      {/* Productivity Stats */}
+      <div className="grid grid-cols-3 gap-3 mb-6 animate-fade-up stagger-1">
+        {/* Daily Progress */}
+        <div className="bg-surface-elevated rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Today</span>
+            <button
+              onClick={() => {
+                const newGoal = prompt('Set daily study goal (minutes):', dailyGoal)
+                if (newGoal && !isNaN(newGoal)) {
+                  setDailyGoal(parseInt(newGoal))
+                  localStorage.setItem('dailyStudyGoal', newGoal)
+                }
+              }}
+              className="text-xs text-text-muted hover:text-text-secondary"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="flex items-end gap-2 mb-2">
+            <span className="text-2xl font-semibold text-text-primary">{formatMinutes(todayMinutes)}</span>
+            <span className="text-sm text-text-muted mb-0.5">/ {formatMinutes(dailyGoal)}</span>
+          </div>
+          <div className="h-1.5 bg-surface-base rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500"
+              style={{ width: `${dailyProgress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Study Streak */}
+        <div className="bg-surface-elevated rounded-2xl p-4">
+          <span className="text-xs font-medium text-text-muted uppercase tracking-wider">Streak</span>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-2xl font-semibold text-accent-warm">{studyStreak}</span>
+            <span className="text-sm text-text-muted">day{studyStreak !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="flex gap-0.5 mt-2">
+            {[...Array(7)].map((_, i) => (
+              <div
+                key={i}
+                className={`flex-1 h-1.5 rounded-full ${i < Math.min(studyStreak, 7) ? 'bg-accent-warm' : 'bg-surface-base'}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Weekly Completion */}
+        <div className="bg-surface-elevated rounded-2xl p-4">
+          <span className="text-xs font-medium text-text-muted uppercase tracking-wider">This Week</span>
+          <div className="flex items-end gap-2 mt-3">
+            <span className="text-2xl font-semibold text-success">{weeklyStats.completed}</span>
+            <span className="text-sm text-text-muted mb-0.5">/ {weeklyStats.total} done</span>
+          </div>
+          <div className="h-1.5 bg-surface-base rounded-full overflow-hidden mt-2">
+            <div
+              className="h-full bg-success rounded-full transition-all duration-500"
+              style={{ width: `${weeklyStats.total > 0 ? (weeklyStats.completed / weeklyStats.total) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Focus Recommendation */}
+      {getTopPriority() && (
+        <div className="mb-6 animate-fade-up stagger-1">
+          <div className={`p-4 rounded-2xl ${getDeadlineRisk(getTopPriority()).bg} border border-${getDeadlineRisk(getTopPriority()).color.replace('text-', '')}/20`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl ${getDeadlineRisk(getTopPriority()).bg} flex items-center justify-center`}>
+                <svg className={`w-5 h-5 ${getDeadlineRisk(getTopPriority()).color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className={`text-xs font-medium ${getDeadlineRisk(getTopPriority()).color} uppercase tracking-wider`}>
+                  Focus Now
+                </span>
+                <h3 className="font-medium text-text-primary truncate">{getTopPriority().title}</h3>
+              </div>
+              {getTopPriority().dueDate && (
+                <span className={`text-sm font-medium ${getDeadlineRisk(getTopPriority()).color}`}>
+                  {getDaysUntilDue(getTopPriority().dueDate)}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Quick Add Input */}
-      <div className="mb-8 animate-fade-up stagger-1">
+      <div className="mb-8 animate-fade-up stagger-2">
         <div className="relative group">
           <input
             type="text"
@@ -366,18 +572,25 @@ const Dashboard = ({ onOpenScanner }) => {
           </div>
         ) : (
           <div className="space-y-3">
-            {pendingAssignments.map((assignment, index) => (
+            {pendingAssignments.map((assignment, index) => {
+              const risk = getDeadlineRisk(assignment)
+              return (
               <div
                 key={assignment.id}
-                className="group bg-surface-elevated hover:bg-surface-overlay rounded-2xl p-5 transition-all duration-300"
+                className="group bg-surface-elevated hover:bg-surface-overlay rounded-2xl overflow-hidden transition-all duration-300"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="flex items-start gap-4">
-                  {/* Checkbox */}
-                  <button
-                    onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
-                    className="mt-0.5 w-5 h-5 rounded-full border-2 border-text-muted/30 hover:border-primary hover:bg-primary/10 transition-all flex-shrink-0"
-                  />
+                <div className="flex">
+                  {/* Risk indicator bar */}
+                  <div className={`w-1 ${risk.level === 'overdue' || risk.level === 'critical' ? 'bg-error' : risk.level === 'high' ? 'bg-accent-warm' : risk.level === 'medium' ? 'bg-primary' : risk.level === 'low' ? 'bg-success' : 'bg-transparent'}`} />
+
+                  <div className="flex-1 p-5">
+                    <div className="flex items-start gap-4">
+                      {/* Checkbox */}
+                      <button
+                        onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
+                        className={`mt-0.5 w-5 h-5 rounded-full border-2 transition-all flex-shrink-0 ${risk.level === 'overdue' || risk.level === 'critical' ? 'border-error/50 hover:border-error hover:bg-error/10' : 'border-text-muted/30 hover:border-primary hover:bg-primary/10'}`}
+                      />
 
                   <div className="flex-1 min-w-0">
                     {/* Title & Subject */}
@@ -482,9 +695,11 @@ const Dashboard = ({ onOpenScanner }) => {
                       </button>
                     )}
                   </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         )}
 
