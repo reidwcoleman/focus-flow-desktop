@@ -3,6 +3,35 @@
   min-height: 100vh;
 }
 
+/* Page transitions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Modal animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out forwards;
+}
+
 /* Flashcard swipe animations */
 @keyframes card-exit-right {
   0% { transform: translateX(0) rotate(0deg); opacity: 1; }
@@ -39,17 +68,12 @@
   100% { transform: translateX(0); opacity: 1; }
 }
 
-@keyframes scaleIn {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
 .animate-slideInRight {
   animation: slideInRight 0.3s ease-out forwards;
 }
 
 .animate-scaleIn {
-  animation: scaleIn 0.2s ease-out forwards;
+  animation: scale-in 0.2s ease-out forwards;
 }
 
 /* Scrollbar styles */
@@ -74,4 +98,9 @@
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Safe area for mobile devices with notch/home indicator */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }

@@ -144,9 +144,9 @@ function App() {
         {/* Sidebar - Desktop */}
         <aside className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'w-16' : 'w-56'} bg-surface-elevated border-r border-border fixed left-0 top-0 bottom-0 z-40 transition-all duration-200`}>
           {/* Logo */}
-          <div className="p-4 border-b border-border">
+          <div className="h-16 flex items-center justify-center border-b border-border">
             {sidebarCollapsed ? (
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mx-auto">
+              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
                 <span className="text-white font-bold text-sm">FF</span>
               </div>
             ) : (
@@ -158,7 +158,7 @@ function App() {
           {user && (
             <div className="p-3 border-b border-border">
               <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm flex-shrink-0">
                   {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                 </div>
                 {!sidebarCollapsed && (
@@ -173,18 +173,18 @@ function App() {
           )}
 
           {/* Nav Items */}
-          <nav className="flex-1 p-2 space-y-1">
+          <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
             {/* Scan Button */}
             <button
               onClick={() => setShowScanner(true)}
-              className={`w-full ${sidebarCollapsed ? 'p-2 justify-center' : 'px-3 py-2'} rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center gap-3 transition-colors`}
+              className={`w-full ${sidebarCollapsed ? 'p-2.5 justify-center' : 'px-3 py-2.5'} rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center gap-3 transition-all font-medium`}
               title="Scan"
             >
               {getIcon('camera', true)}
-              {!sidebarCollapsed && <span className="text-sm font-medium">Scan</span>}
+              {!sidebarCollapsed && <span className="text-sm">Scan</span>}
             </button>
 
-            <div className="h-2" />
+            <div className="h-3" />
 
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id
@@ -192,15 +192,15 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full ${sidebarCollapsed ? 'p-2 justify-center' : 'px-3 py-2'} rounded-lg flex items-center gap-3 transition-colors ${
+                  className={`w-full ${sidebarCollapsed ? 'p-2.5 justify-center' : 'px-3 py-2.5'} rounded-lg flex items-center gap-3 transition-all ${
                     isActive
-                      ? 'bg-surface-overlay text-primary'
+                      ? 'bg-primary/10 text-primary font-medium'
                       : 'text-text-secondary hover:bg-surface-overlay hover:text-text-primary'
                   }`}
                   title={sidebarCollapsed ? tab.label : undefined}
                 >
                   {getIcon(tab.icon, isActive)}
-                  {!sidebarCollapsed && <span className="text-sm font-medium">{tab.label}</span>}
+                  {!sidebarCollapsed && <span className="text-sm">{tab.label}</span>}
                 </button>
               )
             })}
@@ -210,9 +210,9 @@ function App() {
           <div className="p-2 border-t border-border">
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`w-full ${sidebarCollapsed ? 'p-2 justify-center' : 'px-3 py-2'} rounded-lg flex items-center gap-3 text-text-muted hover:text-text-secondary hover:bg-surface-overlay transition-colors`}
+              className={`w-full ${sidebarCollapsed ? 'p-2.5 justify-center' : 'px-3 py-2.5'} rounded-lg flex items-center gap-3 text-text-muted hover:text-text-secondary hover:bg-surface-overlay transition-all`}
             >
-              <svg className={`w-5 h-5 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 transition-transform duration-200 ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               {!sidebarCollapsed && <span className="text-sm">Collapse</span>}
@@ -221,48 +221,80 @@ function App() {
         </aside>
 
         {/* Main Content */}
-        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-56'} pb-20 md:pb-6 transition-all duration-200`}>
-          <div className={`transition-opacity duration-150 ${activeTab === 'dashboard' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
-            <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
-          </div>
-          <div className={`transition-opacity duration-150 ${activeTab === 'planner' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
-            <Planner />
-          </div>
-          <div className={`transition-opacity duration-150 ${activeTab === 'study' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
-            <StudyHub />
-          </div>
-          <div className={`transition-opacity duration-150 ${activeTab === 'tutor' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
-            <AITutor />
-          </div>
-          <div className={`transition-opacity duration-150 ${activeTab === 'account' ? 'opacity-100' : 'opacity-0 absolute pointer-events-none'}`}>
-            <Account />
+        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-56'} transition-all duration-200`}>
+          {/* Content wrapper with proper padding for mobile bottom nav */}
+          <div className="min-h-screen pb-20 md:pb-0">
+            {activeTab === 'dashboard' && (
+              <div className="animate-fadeIn">
+                <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
+              </div>
+            )}
+            {activeTab === 'planner' && (
+              <div className="animate-fadeIn">
+                <Planner />
+              </div>
+            )}
+            {activeTab === 'study' && (
+              <div className="animate-fadeIn">
+                <StudyHub />
+              </div>
+            )}
+            {activeTab === 'tutor' && (
+              <div className="animate-fadeIn h-[calc(100vh-5rem)] md:h-screen">
+                <AITutor />
+              </div>
+            )}
+            {activeTab === 'account' && (
+              <div className="animate-fadeIn">
+                <Account />
+              </div>
+            )}
           </div>
         </main>
 
         {/* Bottom Nav - Mobile */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border">
-          <div className="flex justify-around items-center px-2 py-2">
-            {/* Scan Button - Center */}
-            <button
-              onClick={() => setShowScanner(true)}
-              className="w-12 h-12 -mt-6 rounded-xl bg-primary flex items-center justify-center text-white shadow-elevated"
-            >
-              {getIcon('camera', true)}
-            </button>
-          </div>
-          <div className="flex justify-around items-center px-2 pb-2 -mt-4">
-            {tabs.map((tab) => {
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border z-50 safe-area-pb">
+          <div className="grid grid-cols-6 h-16">
+            {/* First 2 tabs */}
+            {tabs.slice(0, 2).map((tab) => {
               const isActive = activeTab === tab.id
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 py-2 flex flex-col items-center gap-1 ${
+                  className={`flex flex-col items-center justify-center gap-1 transition-colors ${
                     isActive ? 'text-primary' : 'text-text-muted'
                   }`}
                 >
                   {getIcon(tab.icon, isActive)}
-                  <span className="text-xs font-medium">{tab.label}</span>
+                  <span className="text-[10px] font-medium">{tab.label}</span>
+                </button>
+              )
+            })}
+
+            {/* Center Scan Button */}
+            <button
+              onClick={() => setShowScanner(true)}
+              className="col-span-2 flex items-center justify-center"
+            >
+              <div className="w-14 h-14 -mt-4 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 active:scale-95 transition-transform">
+                {getIcon('camera', true)}
+              </div>
+            </button>
+
+            {/* Last 2 tabs */}
+            {tabs.slice(3, 5).map((tab) => {
+              const isActive = activeTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center justify-center gap-1 transition-colors ${
+                    isActive ? 'text-primary' : 'text-text-muted'
+                  }`}
+                >
+                  {getIcon(tab.icon, isActive)}
+                  <span className="text-[10px] font-medium">{tab.label}</span>
                 </button>
               )
             })}
