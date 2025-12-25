@@ -42,6 +42,7 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
   const [expandedAssignments, setExpandedAssignments] = useState(new Set())
   const [breakdownModal, setBreakdownModal] = useState(null)
   const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
+  const [showFocusPicker, setShowFocusPicker] = useState(false)
   const [dailyGoal, setDailyGoal] = useState(() => {
     const saved = localStorage.getItem('dailyStudyGoal')
     return saved ? parseInt(saved) : 120 // Default 2 hours
@@ -660,7 +661,39 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 mb-6 animate-fade-up stagger-2">
+      <div className="grid grid-cols-3 gap-3 mb-6 animate-fade-up stagger-2">
+        {/* Start Focus Button */}
+        <button
+          onClick={() => {
+            if (pendingAssignments.length > 0) {
+              setShowFocusPicker(true)
+            } else {
+              toast.info('No tasks to focus on')
+            }
+          }}
+          disabled={focusTask !== null}
+          className={`group p-5 rounded-2xl transition-all duration-300 hover:-translate-y-0.5 ${
+            focusTask
+              ? 'bg-primary/10 border-2 border-primary/30'
+              : 'bg-surface-elevated hover:bg-surface-overlay'
+          }`}
+        >
+          <div className="flex items-center gap-4">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+              focusTask ? 'bg-primary/20' : 'bg-success/10 group-hover:bg-success/15'
+            }`}>
+              <svg className={`w-5 h-5 ${focusTask ? 'text-primary' : 'text-success'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <div className="font-medium text-text-primary">{focusTask ? 'Focusing' : 'Focus'}</div>
+              <div className="text-sm text-text-muted">{focusTask ? formatFocusTime(focusTime) : 'Start session'}</div>
+            </div>
+          </div>
+        </button>
+
         <button
           onClick={onOpenScanner}
           className="group p-5 bg-surface-elevated hover:bg-surface-overlay rounded-2xl transition-all duration-300 hover:-translate-y-0.5"
@@ -674,7 +707,7 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
             </div>
             <div className="text-left">
               <div className="font-medium text-text-primary">Scan</div>
-              <div className="text-sm text-text-muted">Capture homework</div>
+              <div className="text-sm text-text-muted">Capture</div>
             </div>
           </div>
         </button>
@@ -691,7 +724,7 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
             </div>
             <div className="text-left">
               <div className="font-medium text-text-primary">Add</div>
-              <div className="text-sm text-text-muted">Manual entry</div>
+              <div className="text-sm text-text-muted">New task</div>
             </div>
           </div>
         </button>
@@ -1117,6 +1150,76 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
                 Add All
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Focus Picker Modal */}
+      {showFocusPicker && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-surface-elevated rounded-3xl p-6 md:p-8 max-w-lg w-full animate-scale-in max-h-[80vh] overflow-y-auto">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-text-primary">Start Focus Session</h3>
+                <p className="text-sm text-text-muted mt-1">Choose a task to focus on</p>
+              </div>
+              <button
+                onClick={() => setShowFocusPicker(false)}
+                className="p-2 text-text-muted hover:text-text-primary hover:bg-surface-overlay rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-2 mb-6">
+              {pendingAssignments.slice(0, 8).map((assignment) => {
+                const risk = getDeadlineRisk(assignment)
+                return (
+                  <button
+                    key={assignment.id}
+                    onClick={() => {
+                      startFocus(assignment)
+                      setShowFocusPicker(false)
+                    }}
+                    className="w-full p-4 bg-surface-base hover:bg-surface-overlay rounded-xl text-left transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl ${risk.bg} flex items-center justify-center flex-shrink-0`}>
+                        <svg className={`w-5 h-5 ${risk.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-text-primary truncate">{assignment.title}</div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {assignment.subject && (
+                            <span className="text-xs text-text-muted">{assignment.subject}</span>
+                          )}
+                          {assignment.dueDate && (
+                            <span className={`text-xs font-medium ${risk.color}`}>
+                              {getDaysUntilDue(assignment.dueDate)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <svg className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              onClick={() => setShowFocusPicker(false)}
+              className="w-full py-3 bg-surface-overlay text-text-secondary rounded-xl hover:bg-surface-overlay/80 transition-colors font-medium"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
