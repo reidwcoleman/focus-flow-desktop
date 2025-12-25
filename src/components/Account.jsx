@@ -87,138 +87,148 @@ export default function Account() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-text-primary">Account</h1>
+    <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-2xl mx-auto">
+      {/* Header */}
+      <header className="mb-10 animate-fade-up">
+        <h1 className="text-3xl font-semibold text-text-primary tracking-tight">Account</h1>
+        <p className="text-text-secondary mt-1">Manage your profile and settings</p>
+      </header>
 
-      {/* Profile Section */}
-      <div className="bg-surface-elevated rounded-xl p-4 border border-border">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Profile</h2>
+      <div className="space-y-6 animate-fade-up stagger-1">
+        {/* Profile Section */}
+        <div className="bg-surface-elevated rounded-2xl p-6">
+          <h2 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-5">Profile</h2>
 
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
-            {(profile?.full_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+          <div className="flex items-center gap-5 mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-accent-warm/15 flex items-center justify-center text-accent-warm text-xl font-semibold">
+              {(profile?.full_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+            </div>
+            <div>
+              <p className="font-medium text-text-primary text-lg">{profile?.full_name || 'No name set'}</p>
+              <p className="text-sm text-text-muted">{user?.email}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium text-text-primary">{profile?.full_name || 'No name set'}</p>
-            <p className="text-sm text-text-muted">{user?.email}</p>
-          </div>
+
+          {isEditingName ? (
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="input"
+                placeholder="Your name"
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsEditingName(false)}
+                  className="flex-1 py-3 bg-surface-overlay text-text-secondary rounded-xl hover:bg-surface-overlay/80 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveName}
+                  disabled={saving}
+                  className="flex-1 py-3 bg-primary text-text-inverse rounded-xl hover:bg-primary-hover transition-colors font-medium disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsEditingName(true)}
+              className="w-full py-3 bg-surface-base text-text-secondary rounded-xl hover:bg-surface-overlay hover:text-text-primary transition-all font-medium"
+            >
+              Edit Name
+            </button>
+          )}
         </div>
 
-        {isEditingName ? (
-          <div className="space-y-3">
-            <input
-              type="text"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary focus:outline-none focus:border-primary"
-              placeholder="Your name"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsEditingName(false)}
-                className="flex-1 py-2 bg-surface-base border border-border text-text-primary rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveName}
-                disabled={saving}
-                className="flex-1 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={() => setIsEditingName(true)}
-            className="w-full py-2 bg-surface-base border border-border text-text-primary rounded-lg hover:bg-surface-overlay transition-colors"
-          >
-            Edit Name
-          </button>
-        )}
-      </div>
+        {/* Canvas Integration */}
+        <div className="bg-surface-elevated rounded-2xl p-6 animate-fade-up stagger-2">
+          <h2 className="text-sm font-medium text-text-muted uppercase tracking-wider mb-5">Canvas Integration</h2>
 
-      {/* Canvas Integration */}
-      <div className="bg-surface-elevated rounded-xl p-4 border border-border">
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Canvas Integration</h2>
-
-        {isEditingCanvas ? (
-          <div className="space-y-3">
-            <div>
-              <label className="text-sm text-text-muted mb-1 block">Canvas URL</label>
-              <input
-                type="url"
-                value={canvasUrl}
-                onChange={(e) => setCanvasUrl(e.target.value)}
-                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary focus:outline-none focus:border-primary"
-                placeholder="https://school.instructure.com"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-text-muted mb-1 block">API Token</label>
-              <input
-                type="password"
-                value={canvasToken}
-                onChange={(e) => setCanvasToken(e.target.value)}
-                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary focus:outline-none focus:border-primary"
-                placeholder="Your Canvas API token"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsEditingCanvas(false)}
-                className="flex-1 py-2 bg-surface-base border border-border text-text-primary rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveCanvas}
-                disabled={saving}
-                className="flex-1 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {profile?.canvas_url ? (
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-success" />
-                <span className="text-sm text-text-secondary">Connected to {profile.canvas_url}</span>
+          {isEditingCanvas ? (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-text-secondary mb-2 block">Canvas URL</label>
+                <input
+                  type="url"
+                  value={canvasUrl}
+                  onChange={(e) => setCanvasUrl(e.target.value)}
+                  className="input"
+                  placeholder="https://school.instructure.com"
+                />
               </div>
-            ) : (
-              <p className="text-sm text-text-muted">Not configured</p>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsEditingCanvas(true)}
-                className="flex-1 py-2 bg-surface-base border border-border text-text-primary rounded-lg hover:bg-surface-overlay transition-colors"
-              >
-                {profile?.canvas_url ? 'Edit' : 'Set Up'}
-              </button>
-              {profile?.canvas_url && (
+              <div>
+                <label className="text-sm text-text-secondary mb-2 block">API Token</label>
+                <input
+                  type="password"
+                  value={canvasToken}
+                  onChange={(e) => setCanvasToken(e.target.value)}
+                  className="input"
+                  placeholder="Your Canvas API token"
+                />
+              </div>
+              <div className="flex gap-3">
                 <button
-                  onClick={handleTestConnection}
-                  disabled={testing}
-                  className="flex-1 py-2 bg-primary text-white rounded-lg disabled:opacity-50"
+                  onClick={() => setIsEditingCanvas(false)}
+                  className="flex-1 py-3 bg-surface-overlay text-text-secondary rounded-xl hover:bg-surface-overlay/80 transition-colors font-medium"
                 >
-                  {testing ? 'Testing...' : 'Test Connection'}
+                  Cancel
                 </button>
-              )}
+                <button
+                  onClick={handleSaveCanvas}
+                  disabled={saving}
+                  className="flex-1 py-3 bg-primary text-text-inverse rounded-xl hover:bg-primary-hover transition-colors font-medium disabled:opacity-50"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="space-y-4">
+              {profile?.canvas_url ? (
+                <div className="flex items-center gap-3 p-4 bg-surface-base rounded-xl">
+                  <div className="w-2 h-2 rounded-full bg-success" />
+                  <span className="text-sm text-text-secondary">Connected to Canvas</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 p-4 bg-surface-base rounded-xl">
+                  <div className="w-2 h-2 rounded-full bg-text-muted" />
+                  <span className="text-sm text-text-muted">Not configured</span>
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsEditingCanvas(true)}
+                  className="flex-1 py-3 bg-surface-base text-text-secondary rounded-xl hover:bg-surface-overlay hover:text-text-primary transition-all font-medium"
+                >
+                  {profile?.canvas_url ? 'Edit Settings' : 'Set Up'}
+                </button>
+                {profile?.canvas_url && (
+                  <button
+                    onClick={handleTestConnection}
+                    disabled={testing}
+                    className="flex-1 py-3 bg-primary/10 text-primary rounded-xl hover:bg-primary/15 transition-colors font-medium disabled:opacity-50"
+                  >
+                    {testing ? 'Testing...' : 'Test Connection'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
-        className="w-full py-3 bg-error/10 border border-error/30 text-error rounded-xl hover:bg-error/20 transition-colors"
-      >
-        Sign Out
-      </button>
+        {/* Sign Out */}
+        <button
+          onClick={handleLogout}
+          className="w-full py-3.5 bg-error/10 text-error rounded-2xl hover:bg-error/15 transition-colors font-medium animate-fade-up stagger-3"
+        >
+          Sign Out
+        </button>
+      </div>
     </div>
   )
 }

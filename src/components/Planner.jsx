@@ -146,49 +146,41 @@ const Planner = () => {
   const getActivityColor = (type) => {
     const colors = {
       study: 'bg-primary',
-      homework: 'bg-warning',
+      homework: 'bg-accent-warm',
       class: 'bg-success',
       exam: 'bg-error',
-      break: 'bg-accent',
+      break: 'bg-accent-cool',
     }
     return colors[type] || 'bg-text-muted'
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-text-primary">Planner</h1>
-        <button
-          onClick={syncCanvas}
-          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors flex items-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Sync Canvas
-        </button>
-      </div>
+      <header className="mb-8 animate-fade-up">
+        <h1 className="text-3xl font-semibold text-text-primary tracking-tight">Planner</h1>
+        <p className="text-text-secondary mt-1">Schedule your study sessions</p>
+      </header>
 
-      {/* AI Input */}
-      <div className="bg-surface-elevated rounded-xl p-4 border border-border">
-        <div className="flex gap-3">
+      {/* Quick Add */}
+      <div className="mb-8 animate-fade-up stagger-1">
+        <div className="relative">
           <input
             type="text"
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAiCreate()}
             placeholder="Add activity... (e.g., Study Math 3-5pm tomorrow)"
-            className="flex-1 px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+            className="input pr-14 py-4"
             disabled={aiProcessing}
           />
           <button
             onClick={handleAiCreate}
             disabled={aiProcessing || !aiInput.trim()}
-            className="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-all disabled:opacity-30"
           >
             {aiProcessing ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             ) : (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -198,30 +190,30 @@ const Planner = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-up stagger-2">
         {/* Calendar */}
-        <div className="lg:col-span-2 bg-surface-elevated rounded-xl p-4 border border-border">
+        <div className="lg:col-span-2 bg-surface-elevated rounded-2xl p-6">
           {/* Month Navigation */}
-          <div className="flex items-center justify-between mb-4">
-            <button onClick={prevMonth} className="p-2 text-text-muted hover:text-text-primary transition-colors">
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={prevMonth} className="p-2 text-text-muted hover:text-text-primary hover:bg-surface-overlay rounded-lg transition-all">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h2 className="text-lg font-semibold text-text-primary">
+            <h2 className="text-xl font-semibold text-text-primary">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
-            <button onClick={nextMonth} className="p-2 text-text-muted hover:text-text-primary transition-colors">
+            <button onClick={nextMonth} className="p-2 text-text-muted hover:text-text-primary hover:bg-surface-overlay rounded-lg transition-all">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
 
           {/* Day Headers */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
+          <div className="grid grid-cols-7 gap-1 mb-3">
             {dayNames.map(day => (
-              <div key={day} className="text-center text-xs font-medium text-text-muted py-2">
+              <div key={day} className="text-center text-xs font-medium text-text-muted py-2 uppercase tracking-wider">
                 {day}
               </div>
             ))}
@@ -229,8 +221,8 @@ const Planner = () => {
 
           {/* Calendar Grid */}
           {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+            <div className="flex justify-center py-16">
+              <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
             </div>
           ) : (
             <div className="grid grid-cols-7 gap-1">
@@ -244,18 +236,19 @@ const Planner = () => {
                     key={index}
                     onClick={() => selectDay(day)}
                     disabled={!day}
-                    className={`aspect-square p-1 rounded-lg text-sm transition-colors relative ${
+                    className={`aspect-square p-2 rounded-xl text-sm transition-all relative ${
                       !day ? 'cursor-default' :
-                      isSelected(day) ? 'bg-primary text-white' :
-                      isToday(day) ? 'bg-primary/20 text-primary' :
+                      isSelected(day) ? 'bg-primary text-white font-medium' :
+                      isToday(day) ? 'bg-primary/15 text-primary font-medium' :
                       'hover:bg-surface-overlay text-text-primary'
                     }`}
                   >
                     {day && (
                       <>
-                        <span className="font-medium">{day}</span>
+                        <span>{day}</span>
                         {activityCount > 0 && (
-                          <div className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
+                          <div className={`absolute bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${
+                            isSelected(day) ? 'bg-white' :
                             hasIncomplete ? 'bg-primary' : 'bg-success'
                           }`} />
                         )}
@@ -269,48 +262,58 @@ const Planner = () => {
         </div>
 
         {/* Day Activities */}
-        <div className="bg-surface-elevated rounded-xl p-4 border border-border">
-          <h3 className="font-semibold text-text-primary mb-4">
-            {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+        <div className="bg-surface-elevated rounded-2xl p-6">
+          <h3 className="text-lg font-semibold text-text-primary mb-1">
+            {selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}
           </h3>
+          <p className="text-sm text-text-muted mb-6">
+            {selectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+          </p>
 
           {dayActivities.length === 0 ? (
-            <p className="text-text-muted text-center py-8">No activities</p>
+            <div className="text-center py-12">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-surface-base flex items-center justify-center">
+                <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="text-text-muted text-sm">No activities</p>
+            </div>
           ) : (
             <div className="space-y-3">
               {dayActivities.map((activity) => (
                 <div
                   key={activity.id}
-                  className={`p-3 rounded-lg border transition-colors ${
+                  className={`p-4 rounded-xl transition-all ${
                     activity.is_completed
-                      ? 'bg-surface-base/50 border-border'
-                      : 'bg-surface-base border-border hover:border-border-active'
+                      ? 'bg-surface-base/50'
+                      : 'bg-surface-base hover:bg-surface-overlay'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <button
                       onClick={() => handleToggleComplete(activity.id, activity.is_completed)}
-                      className={`mt-0.5 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center ${
+                      className={`mt-0.5 w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all ${
                         activity.is_completed
-                          ? 'bg-success'
-                          : 'border-2 border-border hover:border-primary'
+                          ? 'bg-success/20'
+                          : 'border-2 border-text-muted/30 hover:border-primary'
                       }`}
                     >
                       {activity.is_completed && (
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </button>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-2 h-2 rounded-full ${getActivityColor(activity.activity_type)}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full ${getActivityColor(activity.activity_type)}`} />
                         {activity.start_time && (
                           <span className="text-xs text-text-muted">{formatTime(activity.start_time)}</span>
                         )}
                       </div>
-                      <h4 className={`font-medium ${activity.is_completed ? 'text-text-muted line-through' : 'text-text-primary'}`}>
+                      <h4 className={`font-medium text-sm ${activity.is_completed ? 'text-text-muted line-through' : 'text-text-primary'}`}>
                         {activity.title}
                       </h4>
                       {activity.duration_minutes && (
@@ -320,10 +323,10 @@ const Planner = () => {
 
                     <button
                       onClick={() => handleDelete(activity.id)}
-                      className="p-1.5 text-text-muted hover:text-error transition-colors"
+                      className="p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>

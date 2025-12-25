@@ -9,13 +9,17 @@ const courseStatsService = {
       const { user } = await authService.getCurrentUser()
       if (!user) throw new Error('Not authenticated')
 
-      // Check if record exists
-      const { data: existing } = await supabase
+      // Check if record exists (use maybeSingle to avoid 406 error when no rows found)
+      const { data: existing, error: fetchError } = await supabase
         .from('course_stats')
         .select('*')
         .eq('user_id', user.id)
         .eq('course_name', courseName)
-        .single()
+        .maybeSingle()
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError
+      }
 
       if (existing) {
         // Update existing record
@@ -60,13 +64,17 @@ const courseStatsService = {
       const { user } = await authService.getCurrentUser()
       if (!user) throw new Error('Not authenticated')
 
-      // Check if record exists
-      const { data: existing } = await supabase
+      // Check if record exists (use maybeSingle to avoid 406 error when no rows found)
+      const { data: existing, error: fetchError } = await supabase
         .from('course_stats')
         .select('*')
         .eq('user_id', user.id)
         .eq('course_name', courseName)
-        .single()
+        .maybeSingle()
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError
+      }
 
       if (existing) {
         // Update existing record

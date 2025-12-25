@@ -5,7 +5,6 @@ import assignmentsService from '../services/assignmentsService'
 import assignmentParserService from '../services/assignmentParserService'
 import subtasksService from '../services/subtasksService'
 import taskBreakdownService from '../services/taskBreakdownService'
-import infiniteCampusService from '../services/infiniteCampusService'
 import courseStatsService from '../services/courseStatsService'
 import { toast } from './Toast'
 import { confirmDialog } from './ConfirmDialog'
@@ -29,7 +28,6 @@ const Dashboard = ({ onOpenScanner }) => {
   const [expandedAssignments, setExpandedAssignments] = useState(new Set())
   const [breakdownModal, setBreakdownModal] = useState(null)
   const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
-  const [showStats, setShowStats] = useState(false)
 
   const filterRecentAssignments = (assignmentsList) => {
     const twoWeeksAgo = new Date()
@@ -49,7 +47,7 @@ const Dashboard = ({ onOpenScanner }) => {
     const { user } = await authService.getCurrentUser()
     await authService.refreshUserProfile()
     const profile = authService.getUserProfile()
-    setUserName(profile?.full_name || user?.email?.split('@')[0] || 'there')
+    setUserName(profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there')
   }
 
   const loadAssignments = async () => {
@@ -208,7 +206,7 @@ const Dashboard = ({ onOpenScanner }) => {
       const result = await canvasService.syncToDatabase()
       if (result.success) {
         await loadAssignments()
-        toast.success(result.synced > 0 ? `Synced ${result.synced} assignments` : 'No new assignments')
+        toast.success(result.synced > 0 ? `Synced ${result.synced} assignments` : 'All up to date')
       }
     } catch (error) {
       toast.error('Failed to sync from Canvas')
@@ -226,65 +224,74 @@ const Dashboard = ({ onOpenScanner }) => {
 
   const getDaysUntilDue = (dueDate) => {
     const diffDays = Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24))
-    if (diffDays === 0) return 'Due today'
+    if (diffDays === 0) return 'Today'
     if (diffDays === 1) return 'Tomorrow'
     if (diffDays < 0) return 'Overdue'
-    return `${diffDays} days`
+    return `${diffDays}d`
   }
 
   const recentAssignments = filterRecentAssignments(assignments)
   const completedCount = recentAssignments.filter(a => a.completed).length
   const pendingCount = recentAssignments.filter(a => !a.completed).length
+  const pendingAssignments = recentAssignments.filter(a => !a.completed)
+  const completedAssignments = recentAssignments.filter(a => a.completed)
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">
-            {getTimeOfDayGreeting()}, {userName}
-          </h1>
-          <p className="text-text-secondary mt-1">
-            <span className="text-success">{completedCount} done</span>
-            <span className="mx-2">·</span>
-            <span className="text-warning">{pendingCount} pending</span>
-          </p>
+      <header className="mb-10 animate-fade-up">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-semibold text-text-primary tracking-tight">
+              {getTimeOfDayGreeting()}, {userName}
+            </h1>
+            <p className="text-text-secondary mt-2 text-lg">
+              {pendingCount === 0 ? (
+                <span className="text-primary">All caught up</span>
+              ) : (
+                <>
+                  <span className="text-accent-warm">{pendingCount}</span>
+                  <span className="text-text-muted"> task{pendingCount !== 1 ? 's' : ''} ahead</span>
+                </>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={loadCanvasAssignments}
+            disabled={isLoadingCanvas}
+            className="px-4 py-2.5 bg-surface-elevated hover:bg-surface-overlay text-text-secondary hover:text-text-primary rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium"
+          >
+            {isLoadingCanvas ? (
+              <div className="w-4 h-4 border-2 border-text-muted/30 border-t-text-secondary rounded-full animate-spin" />
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            )}
+            <span className="hidden sm:inline">Sync</span>
+          </button>
         </div>
-        <button
-          onClick={loadCanvasAssignments}
-          disabled={isLoadingCanvas}
-          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
-        >
-          {isLoadingCanvas ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          )}
-          Sync Canvas
-        </button>
-      </div>
+      </header>
 
-      {/* Quick Add */}
-      <div className="bg-surface-elevated rounded-xl p-4 border border-border">
-        <div className="flex gap-3">
+      {/* Quick Add Input */}
+      <div className="mb-8 animate-fade-up stagger-1">
+        <div className="relative group">
           <input
             type="text"
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAiCreateAssignment()}
-            placeholder="Add assignment... (e.g., Math homework due Friday)"
-            className="flex-1 px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+            placeholder="Add a task... (e.g., Math homework due Friday)"
+            className="input pr-14 py-4 text-base"
             disabled={aiProcessing}
           />
           <button
             onClick={handleAiCreateAssignment}
             disabled={aiProcessing || !aiInput.trim()}
-            className="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-all disabled:opacity-30 disabled:hover:bg-primary/10"
           >
             {aiProcessing ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             ) : (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -292,122 +299,156 @@ const Dashboard = ({ onOpenScanner }) => {
             )}
           </button>
         </div>
-        <p className="text-xs text-text-muted mt-2">
-          AI will parse your text to create an assignment with due date, subject, and priority
-        </p>
       </div>
 
       {/* Quick Actions */}
-      <div className="flex gap-3">
+      <div className="grid grid-cols-2 gap-3 mb-10 animate-fade-up stagger-2">
         <button
           onClick={onOpenScanner}
-          className="flex-1 p-4 bg-surface-elevated rounded-xl border border-border hover:border-primary transition-colors flex items-center gap-3"
+          className="group p-5 bg-surface-elevated hover:bg-surface-overlay rounded-2xl transition-all duration-300 hover:-translate-y-0.5"
         >
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </div>
-          <div className="text-left">
-            <div className="font-medium text-text-primary">Scan</div>
-            <div className="text-sm text-text-muted">Homework</div>
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 group-hover:bg-primary/15 flex items-center justify-center transition-colors">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <div className="font-medium text-text-primary">Scan</div>
+              <div className="text-sm text-text-muted">Capture homework</div>
+            </div>
           </div>
         </button>
+
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex-1 p-4 bg-surface-elevated rounded-xl border border-border hover:border-success transition-colors flex items-center gap-3"
+          className="group p-5 bg-surface-elevated hover:bg-surface-overlay rounded-2xl transition-all duration-300 hover:-translate-y-0.5"
         >
-          <div className="w-10 h-10 rounded-lg bg-success flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </div>
-          <div className="text-left">
-            <div className="font-medium text-text-primary">Add</div>
-            <div className="text-sm text-text-muted">Manual</div>
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-accent-warm/10 group-hover:bg-accent-warm/15 flex items-center justify-center transition-colors">
+              <svg className="w-5 h-5 text-accent-warm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <div className="font-medium text-text-primary">Add</div>
+              <div className="text-sm text-text-muted">Manual entry</div>
+            </div>
           </div>
         </button>
       </div>
 
-      {/* Assignments */}
-      <div>
-        <h2 className="text-lg font-semibold text-text-primary mb-4">Upcoming</h2>
+      {/* Tasks Section */}
+      <section className="animate-fade-up stagger-3">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-sm font-medium text-text-muted uppercase tracking-wider">Tasks</h2>
+          {completedCount > 0 && (
+            <span className="text-xs text-text-muted">
+              {completedCount} completed
+            </span>
+          )}
+        </div>
 
         {isLoadingAssignments ? (
-          <div className="flex justify-center py-8">
-            <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <div className="flex justify-center py-16">
+            <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
           </div>
-        ) : recentAssignments.length === 0 ? (
-          <div className="text-center py-8 text-text-muted">
-            No upcoming assignments
+        ) : pendingAssignments.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-surface-elevated flex items-center justify-center">
+              <svg className="w-7 h-7 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-text-secondary">You're all caught up</p>
+            <p className="text-sm text-text-muted mt-1">Enjoy your focus time</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {recentAssignments.filter(a => !a.completed).map((assignment) => (
+            {pendingAssignments.map((assignment, index) => (
               <div
                 key={assignment.id}
-                className="bg-surface-elevated rounded-xl p-4 border border-border hover:border-border-active transition-colors"
+                className="group bg-surface-elevated hover:bg-surface-overlay rounded-2xl p-5 transition-all duration-300"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-4">
                   {/* Checkbox */}
                   <button
                     onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
-                    className="mt-0.5 w-5 h-5 rounded border-2 border-border hover:border-primary transition-colors flex-shrink-0"
+                    className="mt-0.5 w-5 h-5 rounded-full border-2 border-text-muted/30 hover:border-primary hover:bg-primary/10 transition-all flex-shrink-0"
                   />
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {assignment.subject && (
-                        <span className="text-xs font-medium text-text-muted">{assignment.subject}</span>
-                      )}
-                      {assignment.aiCaptured && (
-                        <span className="text-xs px-1.5 py-0.5 bg-accent/20 text-accent rounded">AI</span>
-                      )}
-                    </div>
-                    <h3 className="font-medium text-text-primary">{assignment.title}</h3>
-                    <div className="flex items-center gap-3 mt-2 text-sm text-text-secondary">
+                    {/* Title & Subject */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-medium text-text-primary leading-snug">{assignment.title}</h3>
+                        {assignment.subject && (
+                          <span className="inline-block mt-1.5 text-xs font-medium text-text-muted bg-surface-base px-2 py-0.5 rounded-md">
+                            {assignment.subject}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Due Date Badge */}
                       {assignment.dueDate && (
-                        <span className={getDaysUntilDue(assignment.dueDate) === 'Overdue' ? 'text-error' : ''}>
+                        <span className={`flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-lg ${
+                          getDaysUntilDue(assignment.dueDate) === 'Overdue'
+                            ? 'bg-error/10 text-error'
+                            : getDaysUntilDue(assignment.dueDate) === 'Today'
+                            ? 'bg-accent-warm/10 text-accent-warm'
+                            : 'bg-surface-base text-text-secondary'
+                        }`}>
                           {getDaysUntilDue(assignment.dueDate)}
                         </span>
                       )}
-                      {assignment.timeEstimate && <span>{assignment.timeEstimate}</span>}
                     </div>
+
+                    {/* Meta & Time */}
+                    {assignment.timeEstimate && (
+                      <p className="text-sm text-text-muted mt-2">{assignment.timeEstimate}</p>
+                    )}
 
                     {/* Subtasks */}
                     {subtasksByAssignment[assignment.id]?.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-border">
+                      <div className="mt-4 pt-4 border-t border-border">
                         <button
                           onClick={() => setExpandedAssignments(prev => {
                             const next = new Set(prev)
                             next.has(assignment.id) ? next.delete(assignment.id) : next.add(assignment.id)
                             return next
                           })}
-                          className="text-sm text-text-secondary hover:text-text-primary flex items-center gap-1"
+                          className="text-sm text-text-secondary hover:text-text-primary flex items-center gap-2 transition-colors"
                         >
-                          <span>Subtasks ({subtasksByAssignment[assignment.id].filter(s => s.completed).length}/{subtasksByAssignment[assignment.id].length})</span>
-                          <svg className={`w-4 h-4 transition-transform ${expandedAssignments.has(assignment.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="text-xs text-text-muted">
+                            {subtasksByAssignment[assignment.id].filter(s => s.completed).length}/{subtasksByAssignment[assignment.id].length}
+                          </span>
+                          <span>subtasks</span>
+                          <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${expandedAssignments.has(assignment.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </button>
+
                         {expandedAssignments.has(assignment.id) && (
-                          <div className="mt-2 space-y-2">
+                          <div className="mt-3 space-y-2">
                             {subtasksByAssignment[assignment.id].map((subtask) => (
-                              <div key={subtask.id} className="flex items-center gap-2 pl-1">
+                              <div key={subtask.id} className="flex items-center gap-3">
                                 <button
                                   onClick={() => handleToggleSubtask(subtask)}
-                                  className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${
-                                    subtask.completed ? 'bg-success border-success' : 'border-border'
+                                  className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition-all ${
+                                    subtask.completed
+                                      ? 'bg-success text-white'
+                                      : 'border border-text-muted/30 hover:border-success'
                                   }`}
                                 >
                                   {subtask.completed && (
-                                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                     </svg>
                                   )}
                                 </button>
-                                <span className={`text-sm ${subtask.completed ? 'text-text-muted line-through' : 'text-text-primary'}`}>
+                                <span className={`text-sm ${subtask.completed ? 'text-text-muted line-through' : 'text-text-secondary'}`}>
                                   {subtask.title}
                                 </span>
                               </div>
@@ -419,24 +460,24 @@ const Dashboard = ({ onOpenScanner }) => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => handleGenerateBreakdown(assignment)}
                       disabled={generatingBreakdown}
-                      className="p-2 text-text-muted hover:text-accent transition-colors"
+                      className="p-2 text-text-muted hover:text-accent-cool hover:bg-accent-cool/10 rounded-lg transition-all"
                       title="AI Breakdown"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </button>
                     {assignment.source !== 'canvas' && (
                       <button
                         onClick={() => handleDeleteAssignment(assignment.id, assignment.source)}
-                        className="p-2 text-text-muted hover:text-error transition-colors"
+                        className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-all"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
                     )}
@@ -448,110 +489,91 @@ const Dashboard = ({ onOpenScanner }) => {
         )}
 
         {/* Completed Section */}
-        {recentAssignments.filter(a => a.completed).length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-sm font-medium text-text-muted mb-3">Completed</h3>
+        {completedAssignments.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-border">
+            <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-4">Completed</h3>
             <div className="space-y-2">
-              {recentAssignments.filter(a => a.completed).map((assignment) => (
+              {completedAssignments.slice(0, 5).map((assignment) => (
                 <div
                   key={assignment.id}
-                  className="bg-surface-elevated/50 rounded-lg p-3 border border-border flex items-center gap-3"
+                  className="flex items-center gap-3 py-2 group"
                 >
                   <button
                     onClick={() => handleToggleComplete(assignment.id, assignment.completed)}
-                    className="w-5 h-5 rounded bg-success flex items-center justify-center flex-shrink-0"
+                    className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 hover:bg-success/30 transition-colors"
                   >
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                     </svg>
                   </button>
-                  <span className="text-text-muted line-through">{assignment.title}</span>
+                  <span className="text-text-muted line-through text-sm">{assignment.title}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
-
-      {/* Stats Toggle */}
-      <button
-        onClick={() => setShowStats(!showStats)}
-        className="w-full p-3 bg-surface-elevated rounded-xl border border-border text-text-secondary hover:text-text-primary flex items-center justify-center gap-2 transition-colors"
-      >
-        <span>{showStats ? 'Hide' : 'Show'} Stats</span>
-        <svg className={`w-4 h-4 transition-transform ${showStats ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {showStats && (
-        <div className="grid grid-cols-2 gap-4 animate-fade-in">
-          <div className="bg-surface-elevated rounded-xl p-4 border border-border">
-            <div className="text-3xl font-bold text-primary">{completedCount}</div>
-            <div className="text-sm text-text-muted">Completed</div>
-          </div>
-          <div className="bg-surface-elevated rounded-xl p-4 border border-border">
-            <div className="text-3xl font-bold text-warning">{pendingCount}</div>
-            <div className="text-sm text-text-muted">Pending</div>
-          </div>
-        </div>
-      )}
+      </section>
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-surface-elevated rounded-xl p-6 max-w-md w-full border border-border animate-scale-in">
-            <h3 className="text-xl font-bold text-text-primary mb-4">Add Assignment</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-surface-elevated rounded-3xl p-6 md:p-8 max-w-md w-full animate-scale-in">
+            <h3 className="text-xl font-semibold text-text-primary mb-6">New Task</h3>
             <div className="space-y-4">
               <input
                 type="text"
                 value={newAssignment.title}
                 onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
-                placeholder="Title"
-                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+                placeholder="What needs to be done?"
+                className="input"
+                autoFocus
               />
               <input
                 type="text"
                 value={newAssignment.subject}
                 onChange={(e) => setNewAssignment({ ...newAssignment, subject: e.target.value })}
-                placeholder="Subject"
-                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+                placeholder="Subject (optional)"
+                className="input"
               />
-              <input
-                type="date"
-                value={newAssignment.dueDate}
-                onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
-                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary focus:outline-none focus:border-primary"
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="date"
+                  value={newAssignment.dueDate}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, dueDate: e.target.value })}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="input"
+                  title="Due date"
+                />
+                <input
+                  type="text"
+                  value={newAssignment.timeEstimate}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, timeEstimate: e.target.value })}
+                  placeholder="Time (e.g., 1h)"
+                  className="input"
+                />
+              </div>
               <select
                 value={newAssignment.priority}
                 onChange={(e) => setNewAssignment({ ...newAssignment, priority: e.target.value })}
-                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary focus:outline-none focus:border-primary"
+                className="input"
               >
-                <option value="low">Low Priority</option>
-                <option value="medium">Medium Priority</option>
-                <option value="high">High Priority</option>
+                <option value="low">Low priority</option>
+                <option value="medium">Medium priority</option>
+                <option value="high">High priority</option>
               </select>
-              <input
-                type="text"
-                value={newAssignment.timeEstimate}
-                onChange={(e) => setNewAssignment({ ...newAssignment, timeEstimate: e.target.value })}
-                placeholder="Time estimate (e.g., 1h 30m)"
-                className="w-full px-4 py-2.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
-              />
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3 mt-8">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 py-2.5 bg-surface-base border border-border text-text-primary rounded-lg hover:bg-surface-overlay transition-colors"
+                className="flex-1 py-3 bg-surface-overlay text-text-secondary rounded-xl hover:bg-surface-overlay/80 transition-colors font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateAssignment}
-                className="flex-1 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
+                className="flex-1 py-3 bg-primary text-text-inverse rounded-xl hover:bg-primary-hover transition-colors font-medium"
               >
-                Add
+                Add Task
               </button>
             </div>
           </div>
@@ -560,37 +582,52 @@ const Dashboard = ({ onOpenScanner }) => {
 
       {/* Breakdown Modal */}
       {breakdownModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-surface-elevated rounded-xl p-6 max-w-lg w-full border border-border animate-scale-in max-h-[80vh] overflow-y-auto">
-            <div className="flex items-start justify-between mb-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-surface-elevated rounded-3xl p-6 md:p-8 max-w-lg w-full animate-scale-in max-h-[80vh] overflow-y-auto">
+            <div className="flex items-start justify-between mb-6">
               <div>
-                <h3 className="text-xl font-bold text-text-primary">AI Breakdown</h3>
-                <p className="text-sm text-text-muted">{breakdownModal.assignment.title}</p>
+                <h3 className="text-xl font-semibold text-text-primary">Break it down</h3>
+                <p className="text-sm text-text-muted mt-1">{breakdownModal.assignment.title}</p>
               </div>
-              <button onClick={() => setBreakdownModal(null)} className="p-2 text-text-muted hover:text-text-primary">
+              <button
+                onClick={() => setBreakdownModal(null)}
+                className="p-2 text-text-muted hover:text-text-primary hover:bg-surface-overlay rounded-lg transition-colors"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="space-y-3 mb-6">
+
+            <div className="space-y-3 mb-8">
               {breakdownModal.suggestions.map((s, i) => (
-                <div key={i} className="p-3 bg-surface-base rounded-lg border border-border">
+                <div key={i} className="p-4 bg-surface-base rounded-xl">
                   <div className="flex items-start gap-3">
-                    <span className="w-6 h-6 rounded bg-primary/20 text-primary text-sm font-medium flex items-center justify-center">{i + 1}</span>
+                    <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs font-medium flex items-center justify-center flex-shrink-0">
+                      {i + 1}
+                    </span>
                     <div>
                       <div className="font-medium text-text-primary">{s.title}</div>
-                      {s.description && <div className="text-sm text-text-muted mt-1">{s.description}</div>}
+                      {s.description && (
+                        <div className="text-sm text-text-muted mt-1">{s.description}</div>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+
             <div className="flex gap-3">
-              <button onClick={() => setBreakdownModal(null)} className="flex-1 py-2.5 bg-surface-base border border-border text-text-primary rounded-lg">
+              <button
+                onClick={() => setBreakdownModal(null)}
+                className="flex-1 py-3 bg-surface-overlay text-text-secondary rounded-xl hover:bg-surface-overlay/80 transition-colors font-medium"
+              >
                 Cancel
               </button>
-              <button onClick={handleAddAllSubtasks} className="flex-1 py-2.5 bg-primary text-white rounded-lg">
+              <button
+                onClick={handleAddAllSubtasks}
+                className="flex-1 py-3 bg-primary text-text-inverse rounded-xl hover:bg-primary-hover transition-colors font-medium"
+              >
                 Add All
               </button>
             </div>

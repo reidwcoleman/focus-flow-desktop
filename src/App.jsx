@@ -19,7 +19,7 @@ function App() {
   const [profile, setProfile] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [dashboardKey, setDashboardKey] = useState(0)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -62,7 +62,6 @@ function App() {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed))
   }, [sidebarCollapsed])
 
-  // Consolidated 5-tab navigation
   const tabs = [
     { id: 'dashboard', label: 'Home', icon: 'home' },
     { id: 'planner', label: 'Plan', icon: 'calendar' },
@@ -73,7 +72,7 @@ function App() {
 
   const getIcon = (icon, isActive) => {
     const className = "w-5 h-5"
-    const strokeWidth = isActive ? 2.5 : 2
+    const strokeWidth = isActive ? 2 : 1.5
 
     const icons = {
       home: (
@@ -116,8 +115,8 @@ function App() {
     return (
       <div className="min-h-screen bg-surface-base flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-4 border-3 border-border border-t-primary rounded-full animate-spin"></div>
-          <p className="text-text-secondary">Loading...</p>
+          <div className="w-10 h-10 mx-auto mb-4 border-2 border-border border-t-primary rounded-full animate-spin"></div>
+          <p className="text-text-muted text-sm">Loading...</p>
         </div>
       </div>
     )
@@ -142,30 +141,38 @@ function App() {
         )}
 
         {/* Sidebar - Desktop */}
-        <aside className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'w-16' : 'w-56'} bg-surface-elevated border-r border-border fixed left-0 top-0 bottom-0 z-40 transition-all duration-200`}>
+        <aside
+          className={`hidden md:flex md:flex-col ${sidebarCollapsed ? 'w-18' : 'w-60'} bg-surface-base fixed left-0 top-0 bottom-0 z-40 transition-all duration-300 ease-gentle`}
+          onMouseEnter={() => setSidebarCollapsed(false)}
+          onMouseLeave={() => setSidebarCollapsed(true)}
+        >
           {/* Logo */}
-          <div className="h-16 flex items-center justify-center border-b border-border">
-            {sidebarCollapsed ? (
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-white font-bold text-sm">FF</span>
+          <div className="h-18 flex items-center justify-center">
+            <div className={`flex items-center gap-3 transition-all duration-300 ${sidebarCollapsed ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`}>
+              {!sidebarCollapsed && (
+                <span className="text-xl font-semibold text-text-primary tracking-tight">Focus Flow</span>
+              )}
+            </div>
+            {sidebarCollapsed && (
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <span className="text-primary font-semibold text-sm">FF</span>
               </div>
-            ) : (
-              <h1 className="text-xl font-bold text-primary">Focus Flow</h1>
             )}
           </div>
 
-          {/* User */}
+          {/* User Avatar */}
           {user && (
-            <div className="p-3 border-b border-border">
-              <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
-                <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm flex-shrink-0">
+            <div className={`px-3 py-4 ${sidebarCollapsed ? 'flex justify-center' : ''}`}>
+              <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3 px-2'}`}>
+                <div className="w-9 h-9 rounded-xl bg-accent-warm/15 flex items-center justify-center text-accent-warm font-medium text-sm flex-shrink-0">
                   {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                 </div>
                 {!sidebarCollapsed && (
-                  <div className="min-w-0">
+                  <div className="min-w-0 transition-opacity duration-200">
                     <p className="text-sm font-medium text-text-primary truncate">
                       {profile?.full_name || user.email?.split('@')[0]}
                     </p>
+                    <p className="text-xs text-text-muted truncate">{user.email}</p>
                   </div>
                 )}
               </div>
@@ -173,18 +180,20 @@ function App() {
           )}
 
           {/* Nav Items */}
-          <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 py-2 space-y-1">
             {/* Scan Button */}
             <button
               onClick={() => setShowScanner(true)}
-              className={`w-full ${sidebarCollapsed ? 'p-2.5 justify-center' : 'px-3 py-2.5'} rounded-lg bg-primary hover:bg-primary-hover text-white flex items-center gap-3 transition-all font-medium`}
+              className={`w-full ${sidebarCollapsed ? 'p-3 justify-center' : 'px-3 py-3'} rounded-xl bg-primary/10 hover:bg-primary/15 text-primary flex items-center gap-3 transition-all duration-200 group`}
               title="Scan"
             >
-              {getIcon('camera', true)}
-              {!sidebarCollapsed && <span className="text-sm">Scan</span>}
+              <div className="w-5 h-5 flex items-center justify-center">
+                {getIcon('camera', false)}
+              </div>
+              {!sidebarCollapsed && <span className="text-sm font-medium">Scan</span>}
             </button>
 
-            <div className="h-3" />
+            <div className="h-4" />
 
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id
@@ -192,60 +201,53 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full ${sidebarCollapsed ? 'p-2.5 justify-center' : 'px-3 py-2.5'} rounded-lg flex items-center gap-3 transition-all ${
+                  className={`w-full ${sidebarCollapsed ? 'p-3 justify-center' : 'px-3 py-3'} rounded-xl flex items-center gap-3 transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-text-secondary hover:bg-surface-overlay hover:text-text-primary'
+                      ? 'bg-surface-elevated text-text-primary'
+                      : 'text-text-muted hover:bg-surface-elevated/50 hover:text-text-secondary'
                   }`}
                   title={sidebarCollapsed ? tab.label : undefined}
                 >
-                  {getIcon(tab.icon, isActive)}
-                  {!sidebarCollapsed && <span className="text-sm">{tab.label}</span>}
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    {getIcon(tab.icon, isActive)}
+                  </div>
+                  {!sidebarCollapsed && (
+                    <span className={`text-sm ${isActive ? 'font-medium' : ''}`}>{tab.label}</span>
+                  )}
                 </button>
               )
             })}
           </nav>
 
-          {/* Collapse Toggle */}
-          <div className="p-2 border-t border-border">
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className={`w-full ${sidebarCollapsed ? 'p-2.5 justify-center' : 'px-3 py-2.5'} rounded-lg flex items-center gap-3 text-text-muted hover:text-text-secondary hover:bg-surface-overlay transition-all`}
-            >
-              <svg className={`w-5 h-5 transition-transform duration-200 ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              {!sidebarCollapsed && <span className="text-sm">Collapse</span>}
-            </button>
-          </div>
+          {/* Bottom spacer */}
+          <div className="h-6" />
         </aside>
 
         {/* Main Content */}
-        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-56'} transition-all duration-300`}>
-          {/* Scrollable content wrapper */}
+        <main className={`flex-1 ${sidebarCollapsed ? 'md:ml-18' : 'md:ml-60'} transition-all duration-300 ease-gentle`}>
           <div className="h-screen overflow-y-auto overflow-x-hidden pb-20 md:pb-0">
             {activeTab === 'dashboard' && (
-              <div key="dashboard" className="animate-fadeIn">
+              <div key="dashboard" className="animate-fade-in">
                 <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} />
               </div>
             )}
             {activeTab === 'planner' && (
-              <div key="planner" className="animate-fadeIn">
+              <div key="planner" className="animate-fade-in">
                 <Planner />
               </div>
             )}
             {activeTab === 'study' && (
-              <div key="study" className="animate-fadeIn">
+              <div key="study" className="animate-fade-in">
                 <StudyHub />
               </div>
             )}
             {activeTab === 'tutor' && (
-              <div key="tutor" className="animate-fadeIn h-[calc(100vh-5rem)] md:h-screen">
+              <div key="tutor" className="animate-fade-in h-[calc(100vh-5rem)] md:h-screen">
                 <AITutor />
               </div>
             )}
             {activeTab === 'account' && (
-              <div key="account" className="animate-fadeIn">
+              <div key="account" className="animate-fade-in">
                 <Account />
               </div>
             )}
@@ -253,7 +255,7 @@ function App() {
         </main>
 
         {/* Bottom Nav - Mobile */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-border z-50 safe-area-pb">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-elevated/95 backdrop-blur-lg border-t border-border z-50 safe-area-pb">
           <div className="grid grid-cols-6 h-16">
             {/* First 2 tabs */}
             {tabs.slice(0, 2).map((tab) => {
@@ -277,7 +279,7 @@ function App() {
               onClick={() => setShowScanner(true)}
               className="col-span-2 flex items-center justify-center"
             >
-              <div className="w-14 h-14 -mt-4 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 active:scale-95 transition-transform">
+              <div className="w-14 h-14 -mt-5 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 active:scale-95 transition-transform">
                 {getIcon('camera', true)}
               </div>
             </button>
