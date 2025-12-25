@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import canvasService from '../services/canvasService'
 import { toast } from './Toast'
+import { confirmDialog } from './ConfirmDialog'
 
 const CanvasHub = () => {
   const [courses, setCourses] = useState([])
@@ -15,6 +16,7 @@ const CanvasHub = () => {
   const [deleting, setDeleting] = useState(null) // Track which item is being deleted
   const [blockedCourses, setBlockedCourses] = useState([]) // Deleted/blocked courses
   const [recovering, setRecovering] = useState(null) // Track which course is being recovered
+  const [cleaning, setCleaning] = useState(false) // Track cleanup in progress
 
   useEffect(() => {
     loadCanvasData()
@@ -128,6 +130,30 @@ const CanvasHub = () => {
     }
   }
 
+  const handleCleanup = async () => {
+    const confirmed = await confirmDialog(
+      'Clean Up Assignments',
+      'This will delete all completed assignments and assignments older than 2 weeks. Continue?'
+    )
+    if (!confirmed) return
+
+    setCleaning(true)
+    try {
+      const result = await canvasService.cleanupAssignments()
+      if (result.deleted > 0) {
+        toast.success(`Cleaned up ${result.deleted} assignments (${result.completed} completed, ${result.old} old)`)
+        await loadCanvasData() // Refresh view
+      } else {
+        toast.info('No assignments to clean up')
+      }
+    } catch (err) {
+      console.error('Failed to clean up:', err)
+      toast.error(`Failed to clean up: ${err.message}`)
+    } finally {
+      setCleaning(false)
+    }
+  }
+
   const formatDate = (dateString) => {
     if (!dateString) return 'No due date'
     const date = new Date(dateString)
@@ -200,25 +226,46 @@ const CanvasHub = () => {
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-dark-text-primary tracking-tight">Canvas LMS</h2>
-            <button
-              onClick={handleSync}
-              disabled={syncing}
-              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold rounded-lg hover: transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              {syncing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Syncing...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  <span>Sync to App</span>
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCleanup}
+                disabled={cleaning || syncing}
+                className="flex items-center gap-2 px-3 py-2 bg-error/10 text-error border border-error/20 font-semibold rounded-lg hover:bg-error/20 transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {cleaning ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin"></div>
+                    <span>Cleaning...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Clean Up</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleSync}
+                disabled={syncing || cleaning}
+                className="flex items-center gap-2 px-3 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {syncing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Syncing...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Sync</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
           <div className="space-y-1">
             <p className="text-dark-text-secondary text-sm">

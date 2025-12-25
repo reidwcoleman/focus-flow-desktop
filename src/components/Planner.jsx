@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import calendarService from '../services/calendarService'
 import activityParserService from '../services/activityParserService'
 import canvasService from '../services/canvasService'
+import assignmentsService from '../services/assignmentsService'
 import { confirmDialog } from './ConfirmDialog'
 import { toast } from './Toast'
 
@@ -12,6 +13,11 @@ const Planner = () => {
   const [loading, setLoading] = useState(false)
   const [aiInput, setAiInput] = useState('')
   const [aiProcessing, setAiProcessing] = useState(false)
+  const [showAssignments, setShowAssignments] = useState(() => {
+    const saved = localStorage.getItem('plannerShowAssignments')
+    return saved !== null ? JSON.parse(saved) : false
+  })
+  const [assignments, setAssignments] = useState([])
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December']
@@ -20,6 +26,22 @@ const Planner = () => {
   useEffect(() => {
     loadActivities()
   }, [currentDate])
+
+  useEffect(() => {
+    localStorage.setItem('plannerShowAssignments', JSON.stringify(showAssignments))
+    if (showAssignments) {
+      loadAssignments()
+    }
+  }, [showAssignments])
+
+  const loadAssignments = async () => {
+    try {
+      const data = await assignmentsService.getUpcomingAssignments()
+      setAssignments(data.map(a => assignmentsService.toAppFormat(a)))
+    } catch (err) {
+      console.error('Failed to load assignments:', err)
+    }
+  }
 
   const loadActivities = async () => {
     setLoading(true)
@@ -111,6 +133,24 @@ const Planner = () => {
     return activities.filter(a => a.activity_date === dateStr)
   }
 
+  const getAssignmentsForDay = (day) => {
+    if (!day || !showAssignments) return []
+    const dateStr = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+      .toISOString().split('T')[0]
+    return assignments
+      .filter(a => a.dueDate === dateStr && !a.completed)
+      .map(a => ({
+        id: a.id,
+        title: a.title,
+        activity_type: 'assignment',
+        subject: a.subject,
+        is_completed: a.completed,
+        isAssignment: true,
+        priority: a.priority,
+        dueDate: a.dueDate
+      }))
+  }
+
   const isToday = (day) => {
     const today = new Date()
     return day && currentDate.getFullYear() === today.getFullYear() &&
@@ -158,8 +198,25 @@ const Planner = () => {
     <div className="min-h-screen p-6 md:p-8 lg:p-10 max-w-6xl mx-auto">
       {/* Header */}
       <header className="mb-8 animate-fade-up">
-        <h1 className="text-3xl font-semibold text-text-primary tracking-tight">Planner</h1>
-        <p className="text-text-secondary mt-1">Schedule your study sessions</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-text-primary tracking-tight">Planner</h1>
+            <p className="text-text-secondary mt-1">Schedule your study sessions</p>
+          </div>
+          <button
+            onClick={() => setShowAssignments(!showAssignments)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+              showAssignments
+                ? 'bg-accent-warm/20 text-accent-warm border border-accent-warm/30'
+                : 'bg-surface-elevated text-text-muted hover:text-text-secondary border border-border'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span>{showAssignments ? 'Hide' : 'Show'} Assignments</span>
+          </button>
+        </div>
       </header>
 
       {/* Quick Add */}
@@ -228,7 +285,9 @@ const Planner = () => {
             <div className="grid grid-cols-7 gap-1">
               {getDaysInMonth().map((day, index) => {
                 const dayActivities = getActivitiesForDay(day)
+                const dayAssignments = getAssignmentsForDay(day)
                 const activityCount = dayActivities.length
+                const assignmentCount = dayAssignments.length
                 const hasIncomplete = dayActivities.some(a => !a.is_completed)
 
                 return (
@@ -246,11 +305,20 @@ const Planner = () => {
                     {day && (
                       <>
                         <span>{day}</span>
-                        {activityCount > 0 && (
-                          <div className={`absolute bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${
-                            isSelected(day) ? 'bg-white' :
-                            hasIncomplete ? 'bg-primary' : 'bg-success'
-                          }`} />
+                        {(activityCount > 0 || assignmentCount > 0) && (
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5">
+                            {activityCount > 0 && (
+                              <div className={`w-1 h-1 rounded-full ${
+                                isSelected(day) ? 'bg-white' :
+                                hasIncomplete ? 'bg-primary' : 'bg-success'
+                              }`} />
+                            )}
+                            {assignmentCount > 0 && (
+                              <div className={`w-1 h-1 rounded-full ${
+                                isSelected(day) ? 'bg-white' : 'bg-accent-warm'
+                              }`} />
+                            )}
+                          </div>
                         )}
                       </>
                     )}

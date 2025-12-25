@@ -29,6 +29,10 @@ const Dashboard = ({ onOpenScanner }) => {
   const [expandedAssignments, setExpandedAssignments] = useState(new Set())
   const [breakdownModal, setBreakdownModal] = useState(null)
   const [generatingBreakdown, setGeneratingBreakdown] = useState(false)
+  const [focusTask, setFocusTask] = useState(null)
+  const [focusTime, setFocusTime] = useState(0)
+  const [focusActive, setFocusActive] = useState(false)
+  const [focusPaused, setFocusPaused] = useState(false)
   const [dailyGoal, setDailyGoal] = useState(() => {
     const saved = localStorage.getItem('dailyStudyGoal')
     return saved ? parseInt(saved) : 120 // Default 2 hours
@@ -51,6 +55,17 @@ const Dashboard = ({ onOpenScanner }) => {
     loadAssignments()
     loadProductivityStats()
   }, [])
+
+  // Focus timer countdown
+  useEffect(() => {
+    let interval = null
+    if (focusActive && !focusPaused) {
+      interval = setInterval(() => {
+        setFocusTime(t => t + 1)
+      }, 1000)
+    }
+    return () => clearInterval(interval)
+  }, [focusActive, focusPaused])
 
   const loadProductivityStats = async () => {
     try {
@@ -344,6 +359,47 @@ const Dashboard = ({ onOpenScanner }) => {
     return remaining > 0 ? `${hours}h ${remaining}m` : `${hours}h`
   }
 
+  const formatFocusTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${String(secs).padStart(2, '0')}`
+  }
+
+  const startFocus = (assignment) => {
+    setFocusTask(assignment)
+    setFocusTime(0)
+    setFocusActive(true)
+    setFocusPaused(false)
+  }
+
+  const stopFocus = async () => {
+    if (focusTask && focusTime > 0) {
+      // Add to today's study time
+      const minutesStudied = Math.round(focusTime / 60)
+      setTodayMinutes(prev => prev + minutesStudied)
+
+      // Record activity
+      try {
+        const today = new Date().toISOString().split('T')[0]
+        await calendarService.createActivity({
+          title: `Studied: ${focusTask.title}`,
+          activity_type: 'study',
+          activity_date: today,
+          duration_minutes: minutesStudied,
+          subject: focusTask.subject || 'General',
+          is_completed: true
+        })
+        toast.success(`Logged ${minutesStudied}m studying ${focusTask.title}`)
+      } catch (err) {
+        console.error('Failed to log study session:', err)
+      }
+    }
+    setFocusTask(null)
+    setFocusTime(0)
+    setFocusActive(false)
+    setFocusPaused(false)
+  }
+
   const dailyProgress = Math.min(100, Math.round((todayMinutes / dailyGoal) * 100))
 
   const recentAssignments = filterRecentAssignments(assignments)
@@ -388,6 +444,68 @@ const Dashboard = ({ onOpenScanner }) => {
           </button>
         </div>
       </header>
+
+      {/* Active Focus Timer */}
+      {focusTask && (
+        <div className="mb-6 animate-fade-up">
+          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center ${focusActive && !focusPaused ? 'animate-pulse' : ''}`}>
+                  <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs text-primary font-medium uppercase tracking-wider">
+                    {focusActive && !focusPaused ? 'Focusing on' : focusPaused ? 'Paused' : 'Focus Session'}
+                  </p>
+                  <h3 className="font-semibold text-text-primary">{focusTask.title}</h3>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <span className="text-3xl font-mono font-bold text-primary tabular-nums">
+                  {formatFocusTime(focusTime)}
+                </span>
+
+                <div className="flex gap-2">
+                  {focusActive && !focusPaused ? (
+                    <button
+                      onClick={() => setFocusPaused(true)}
+                      className="p-2.5 bg-surface-elevated hover:bg-surface-overlay rounded-xl transition-colors"
+                      title="Pause"
+                    >
+                      <svg className="w-5 h-5 text-text-secondary" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                      </svg>
+                    </button>
+                  ) : focusPaused ? (
+                    <button
+                      onClick={() => setFocusPaused(false)}
+                      className="p-2.5 bg-primary/20 hover:bg-primary/30 rounded-xl transition-colors"
+                      title="Resume"
+                    >
+                      <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </button>
+                  ) : null}
+                  <button
+                    onClick={stopFocus}
+                    className="p-2.5 bg-error/10 hover:bg-error/20 rounded-xl transition-colors"
+                    title="Stop & Save"
+                  >
+                    <svg className="w-5 h-5 text-error" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 6h12v12H6z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Productivity Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6 animate-fade-up stagger-1">
@@ -674,6 +792,16 @@ const Dashboard = ({ onOpenScanner }) => {
 
                   {/* Actions */}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => startFocus(assignment)}
+                      disabled={focusTask !== null}
+                      className="p-2 text-text-muted hover:text-primary hover:bg-primary/10 rounded-lg transition-all disabled:opacity-30"
+                      title="Start Focus"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
                     <button
                       onClick={() => handleGenerateBreakdown(assignment)}
                       disabled={generatingBreakdown}

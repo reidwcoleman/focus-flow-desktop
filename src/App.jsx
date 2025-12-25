@@ -297,20 +297,20 @@ function App() {
 
         {/* Bottom Nav - Mobile */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-elevated/95 backdrop-blur-lg border-t border-border z-50 safe-area-pb">
-          <div className="grid grid-cols-6 h-16">
-            {/* First 2 tabs */}
-            {tabs.slice(0, 2).map((tab) => {
+          <div className="grid grid-cols-7 h-16">
+            {/* First 3 tabs */}
+            {tabs.slice(0, 3).map((tab) => {
               const isActive = activeTab === tab.id
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex flex-col items-center justify-center gap-1 transition-colors ${
+                  className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
                     isActive ? 'text-primary' : 'text-text-muted'
                   }`}
                 >
                   {getIcon(tab.icon, isActive)}
-                  <span className="text-[10px] font-medium">{tab.label}</span>
+                  <span className="text-[9px] font-medium">{tab.label}</span>
                 </button>
               )
             })}
@@ -318,26 +318,26 @@ function App() {
             {/* Center Scan Button */}
             <button
               onClick={() => setShowScanner(true)}
-              className="col-span-2 flex items-center justify-center"
+              className="flex items-center justify-center"
             >
-              <div className="w-14 h-14 -mt-5 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+              <div className="w-12 h-12 -mt-4 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 active:scale-95 transition-transform">
                 {getIcon('camera', true)}
               </div>
             </button>
 
-            {/* Last 2 tabs */}
-            {tabs.slice(3, 5).map((tab) => {
+            {/* Last 3 tabs */}
+            {tabs.slice(3, 6).map((tab) => {
               const isActive = activeTab === tab.id
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex flex-col items-center justify-center gap-1 transition-colors ${
+                  className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
                     isActive ? 'text-primary' : 'text-text-muted'
                   }`}
                 >
                   {getIcon(tab.icon, isActive)}
-                  <span className="text-[10px] font-medium">{tab.label}</span>
+                  <span className="text-[9px] font-medium">{tab.label}</span>
                 </button>
               )
             })}

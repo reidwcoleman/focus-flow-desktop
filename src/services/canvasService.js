@@ -823,6 +823,51 @@ export const canvasService = {
 
     console.log(`✅ Unblocked course ${courseId}`)
   },
+
+  // Clean up assignments: delete completed OR older than 2 weeks
+  async cleanupAssignments() {
+    const { user } = await authService.getCurrentUser()
+    if (!user) return { deleted: 0 }
+
+    const twoWeeksAgo = new Date()
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+    const cutoffDate = twoWeeksAgo.toISOString().split('T')[0]
+
+    console.log(`🧹 Cleaning up completed and old assignments (before ${cutoffDate})...`)
+
+    // Delete completed assignments
+    const { data: completedData, error: completedError } = await supabase
+      .from('assignments')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('completed', true)
+      .select('id')
+
+    if (completedError) {
+      console.error('Failed to delete completed assignments:', completedError)
+    }
+
+    const completedCount = completedData?.length || 0
+
+    // Delete old assignments (older than 2 weeks)
+    const { data: oldData, error: oldError } = await supabase
+      .from('assignments')
+      .delete()
+      .eq('user_id', user.id)
+      .lt('due_date', cutoffDate)
+      .select('id')
+
+    if (oldError) {
+      console.error('Failed to delete old assignments:', oldError)
+    }
+
+    const oldCount = oldData?.length || 0
+    const totalDeleted = completedCount + oldCount
+
+    console.log(`✅ Cleaned up ${totalDeleted} assignments (${completedCount} completed, ${oldCount} old)`)
+
+    return { deleted: totalDeleted, completed: completedCount, old: oldCount }
+  },
 }
 
 export default canvasService
