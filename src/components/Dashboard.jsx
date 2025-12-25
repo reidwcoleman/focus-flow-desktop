@@ -596,7 +596,7 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
       </div>
 
       {/* Focus Recommendation */}
-      {getTopPriority() && (
+      {getTopPriority() && !focusTask && (
         <div className="mb-6 animate-fade-up stagger-1">
           <div className={`p-4 rounded-2xl ${getDeadlineRisk(getTopPriority()).bg} border border-${getDeadlineRisk(getTopPriority()).color.replace('text-', '')}/20`}>
             <div className="flex items-center gap-3">
@@ -607,15 +607,25 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
               </div>
               <div className="flex-1 min-w-0">
                 <span className={`text-xs font-medium ${getDeadlineRisk(getTopPriority()).color} uppercase tracking-wider`}>
-                  Focus Now
+                  Recommended
                 </span>
                 <h3 className="font-medium text-text-primary truncate">{getTopPriority().title}</h3>
               </div>
               {getTopPriority().dueDate && (
-                <span className={`text-sm font-medium ${getDeadlineRisk(getTopPriority()).color}`}>
+                <span className={`text-sm font-medium ${getDeadlineRisk(getTopPriority()).color} mr-2`}>
                   {getDaysUntilDue(getTopPriority().dueDate)}
                 </span>
               )}
+              <button
+                onClick={() => startFocus(getTopPriority())}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-medium hover:bg-primary-hover transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Start Focus
+              </button>
             </div>
           </div>
         </div>
@@ -914,37 +924,47 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-2">
+                    {/* Focus Button - Always visible */}
                     <button
                       onClick={() => startFocus(assignment)}
                       disabled={focusTask !== null}
-                      className="p-2 text-text-muted hover:text-primary hover:bg-primary/10 rounded-lg transition-all disabled:opacity-30"
-                      title="Start Focus"
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium text-sm transition-all ${
+                        focusTask !== null
+                          ? 'bg-surface-base text-text-muted opacity-50'
+                          : 'bg-primary/10 text-primary hover:bg-primary/20'
+                      }`}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
+                      Focus
                     </button>
-                    <button
-                      onClick={() => handleGenerateBreakdown(assignment)}
-                      disabled={generatingBreakdown}
-                      className="p-2 text-text-muted hover:text-accent-cool hover:bg-accent-cool/10 rounded-lg transition-all"
-                      title="AI Breakdown"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </button>
-                    {assignment.source !== 'canvas' && (
+
+                    {/* Other actions - show on hover */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => handleDeleteAssignment(assignment.id, assignment.source)}
-                        className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-all"
+                        onClick={() => handleGenerateBreakdown(assignment)}
+                        disabled={generatingBreakdown}
+                        className="p-2 text-text-muted hover:text-accent-cool hover:bg-accent-cool/10 rounded-lg transition-all"
+                        title="AI Breakdown"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </button>
-                    )}
+                      {assignment.source !== 'canvas' && (
+                        <button
+                          onClick={() => handleDeleteAssignment(assignment.id, assignment.source)}
+                          className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-all"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                     </div>
                   </div>
