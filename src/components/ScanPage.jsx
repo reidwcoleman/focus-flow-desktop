@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import visionService from '../services/visionService'
 import { useStudy } from '../contexts/StudyContext'
 import assignmentsService from '../services/assignmentsService'
@@ -15,8 +15,64 @@ const ScanPage = () => {
   const [processingStep, setProcessingStep] = useState('')
   const [error, setError] = useState(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [cameraActive, setCameraActive] = useState(false)
+  const [cameraError, setCameraError] = useState(null)
 
   const fileInputRef = useRef(null)
+  const videoRef = useRef(null)
+  const canvasRef = useRef(null)
+  const streamRef = useRef(null)
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [])
+
+  const startCamera = async () => {
+    setCameraError(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+      })
+      streamRef.current = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
+      setCameraActive(true)
+    } catch (err) {
+      console.error('Camera error:', err)
+      setCameraError('Could not access camera. Please check permissions.')
+    }
+  }
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
+    }
+    setCameraActive(false)
+  }
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return
+
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(video, 0, 0)
+
+    const imageData = canvas.toDataURL('image/jpeg', 0.9)
+    stopCamera()
+    setCapturedImage(imageData)
+    processImage(imageData)
+  }
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0]
@@ -119,11 +175,13 @@ const ScanPage = () => {
   }
 
   const resetScan = () => {
+    stopCamera()
     setCapturedImage(null)
     setAssignmentData(null)
     setNotesData(null)
     setFlashcardsData(null)
     setError(null)
+    setCameraError(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -160,9 +218,45 @@ const ScanPage = () => {
         ))}
       </div>
 
-      {/* Upload Area */}
-      {!capturedImage && !isProcessing && (
+      {/* Hidden canvas for capturing */}
+      <canvas ref={canvasRef} className="hidden" />
+
+      {/* Camera View */}
+      {cameraActive && !capturedImage && !isProcessing && (
         <div className="animate-fade-up">
+          <div className="relative rounded-2xl overflow-hidden bg-black">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full aspect-[4/3] object-cover"
+            />
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+              <button
+                onClick={stopCamera}
+                className="w-12 h-12 rounded-full bg-surface-elevated/90 backdrop-blur text-text-primary flex items-center justify-center hover:bg-surface-overlay transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <button
+                onClick={capturePhoto}
+                className="w-16 h-16 rounded-full bg-white flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
+              >
+                <div className="w-12 h-12 rounded-full border-4 border-primary" />
+              </button>
+              <div className="w-12 h-12" /> {/* Spacer for symmetry */}
+            </div>
+          </div>
+          <p className="text-center text-text-muted text-sm mt-3">Position your document and tap to capture</p>
+        </div>
+      )}
+
+      {/* Upload Area */}
+      {!capturedImage && !isProcessing && !cameraActive && (
+        <div className="animate-fade-up space-y-4">
           <input
             type="file"
             ref={fileInputRef}
@@ -170,20 +264,49 @@ const ScanPage = () => {
             accept="image/*"
             className="hidden"
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full p-12 rounded-2xl border-2 border-dashed border-border hover:border-primary/50 bg-surface-elevated hover:bg-surface-overlay transition-all group"
-          >
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-text-primary font-medium mb-1">Upload an image</p>
-              <p className="text-text-muted text-sm">Click to browse or drag and drop</p>
+
+          {/* Camera Error */}
+          {cameraError && (
+            <div className="bg-error/10 border border-error/20 rounded-xl p-3 text-center">
+              <p className="text-error text-sm">{cameraError}</p>
             </div>
-          </button>
+          )}
+
+          {/* Two-button layout */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Take Photo Button */}
+            <button
+              onClick={startCamera}
+              className="p-8 rounded-2xl border-2 border-dashed border-border hover:border-primary/50 bg-surface-elevated hover:bg-surface-overlay transition-all group"
+            >
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <p className="text-text-primary font-medium mb-1">Take Photo</p>
+                <p className="text-text-muted text-xs">Use your camera</p>
+              </div>
+            </button>
+
+            {/* Upload File Button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="p-8 rounded-2xl border-2 border-dashed border-border hover:border-primary/50 bg-surface-elevated hover:bg-surface-overlay transition-all group"
+            >
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-text-primary font-medium mb-1">Upload Image</p>
+                <p className="text-text-muted text-xs">Browse files</p>
+              </div>
+            </button>
+          </div>
         </div>
       )}
 
