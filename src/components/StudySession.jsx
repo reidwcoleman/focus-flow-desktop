@@ -1,146 +1,105 @@
 /**
  * StudySession Component
- * Interactive flashcard study mode with swipe gestures and SM-2 spaced repetition
+ * Polished desktop flashcard study mode with keyboard controls and elegant UI
  */
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useStudy } from '../contexts/StudyContext'
 import FlashCard from './FlashCard'
 
 const StudySession = ({ deckId, cards, onComplete, onExit }) => {
   const { recordCardReview } = useStudy()
 
-  // Use activeCards to allow resetting session with missed cards
   const [activeCards, setActiveCards] = useState(cards)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [sessionStats, setSessionStats] = useState({
-    needsWork: 0,
-    mastered: 0
-  })
+  const [sessionStats, setSessionStats] = useState({ needsWork: 0, mastered: 0 })
   const [missedCards, setMissedCards] = useState([])
   const [showComplete, setShowComplete] = useState(false)
-  const [dragOffset, setDragOffset] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
-  const [showConfetti, setShowConfetti] = useState(false)
-  const [cardExiting, setCardExiting] = useState(null)
-  const [cardEntering, setCardEntering] = useState(false)
-  const [swipeDirection, setSwipeDirection] = useState(null) // 'left' | 'right' | null
-  const [swipeIntensity, setSwipeIntensity] = useState(0) // 0-1 based on threshold
+  const [cardResults, setCardResults] = useState([])
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [exitDirection, setExitDirection] = useState(null)
 
   // Session timing
   const [sessionStartTime] = useState(Date.now())
   const [cardStartTime, setCardStartTime] = useState(Date.now())
   const [cardTimes, setCardTimes] = useState([])
 
-  // Track results for each card for color-coded progress bar
-  const [cardResults, setCardResults] = useState([])
-
-  const dragStartX = useRef(0)
-  const cardRef = useRef(null)
-
   const currentCard = activeCards[currentIndex]
-  const progress = ((currentIndex + 1) / activeCards.length) * 100
 
-  // Touch/Mouse event handlers for swipe gestures
-  const handleDragStart = (clientX) => {
-    setIsDragging(true)
-    dragStartX.current = clientX
-  }
+  // Keyboard controls
+  const handleRating = useCallback((rating) => {
+    if (isTransitioning) return
 
-  const handleDragMove = (clientX) => {
-    if (!isDragging) return
-    const diff = clientX - dragStartX.current
-    setDragOffset(diff)
-
-    // Calculate swipe intensity for visual feedback
-    const intensity = Math.min(Math.abs(diff) / 100, 1)
-    setSwipeIntensity(intensity)
-    setSwipeDirection(diff > 20 ? 'right' : diff < -20 ? 'left' : null)
-  }
-
-  const handleDragEnd = () => {
-    setIsDragging(false)
-    setSwipeDirection(null)
-    setSwipeIntensity(0)
-
-    // Swipe threshold
-    const threshold = 100
-
-    if (Math.abs(dragOffset) > threshold) {
-      // Trigger exit animation
-      setCardExiting(dragOffset > 0 ? 'right' : 'left')
-
-      // Wait for animation, then handle rating
-      setTimeout(() => {
-        if (dragOffset > 0) {
-          // Swipe right - Mastered (rating 5)
-          handleRating(5)
-        } else {
-          // Swipe left - Needs Work (rating 2)
-          handleRating(2)
-        }
-        setCardExiting(null)
-        setCardEntering(true)
-        setTimeout(() => setCardEntering(false), 300)
-      }, 300)
-    }
-
-    setDragOffset(0)
-  }
-
-  const handleRating = (rating) => {
-    // Track card timing
     const cardTime = Date.now() - cardStartTime
     setCardTimes(prev => [...prev, cardTime])
     setCardStartTime(Date.now())
 
-    // Record the review with SM-2 algorithm
     recordCardReview(currentCard.id, rating)
 
-    // Track missed cards for review
     if (rating <= 2) {
       setMissedCards(prev => [...prev, currentCard])
     }
 
-    // Track card result for progress bar (mastered=green, needsWork=amber)
-    setCardResults(prev => [...prev, rating >= 5 ? 'mastered' : 'needsWork'])
+    setCardResults(prev => [...prev, rating >= 4 ? 'mastered' : 'needsWork'])
 
-    // Update streak
-    if (rating >= 5) {
+    if (rating >= 4) {
       const newStreak = streak + 1
       setStreak(newStreak)
-      if (newStreak > bestStreak) {
-        setBestStreak(newStreak)
-      }
-
-      // Trigger confetti on milestones (5, 10, 15, 20...)
-      if (newStreak % 5 === 0) {
-        setShowConfetti(true)
-        setTimeout(() => setShowConfetti(false), 3000)
-      }
+      if (newStreak > bestStreak) setBestStreak(newStreak)
     } else {
       setStreak(0)
     }
 
-    // Update stats - simplified to two categories
     setSessionStats(prev => ({
-      ...prev,
       needsWork: prev.needsWork + (rating <= 2 ? 1 : 0),
-      mastered: prev.mastered + (rating >= 5 ? 1 : 0)
+      mastered: prev.mastered + (rating >= 4 ? 1 : 0)
     }))
 
-    // Move to next card or complete
-    if (currentIndex < activeCards.length - 1) {
-      setCurrentIndex(currentIndex + 1)
-    } else {
-      setShowComplete(true)
+    setIsTransitioning(true)
+    setExitDirection(rating >= 4 ? 'right' : 'left')
+
+    setTimeout(() => {
+      if (currentIndex < activeCards.length - 1) {
+        setCurrentIndex(currentIndex + 1)
+      } else {
+        setShowComplete(true)
+      }
+      setExitDirection(null)
+      setIsTransitioning(false)
+    }, 300)
+  }, [isTransitioning, cardStartTime, currentCard, currentIndex, activeCards.length, streak, bestStreak, recordCardReview])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (showComplete || isTransitioning) return
+
+      switch (e.code) {
+        case 'ArrowLeft':
+        case 'KeyA':
+        case 'Digit1':
+          e.preventDefault()
+          handleRating(2)
+          break
+        case 'ArrowRight':
+        case 'KeyD':
+        case 'Digit2':
+          e.preventDefault()
+          handleRating(5)
+          break
+        case 'Escape':
+          e.preventDefault()
+          onExit()
+          break
+      }
     }
-  }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleRating, showComplete, isTransitioning, onExit])
 
   const reviewMissedCards = () => {
-    // Reset session with only the missed cards
     if (missedCards.length > 0) {
       setActiveCards([...missedCards])
       setCurrentIndex(0)
@@ -149,143 +108,116 @@ const StudySession = ({ deckId, cards, onComplete, onExit }) => {
       setShowComplete(false)
       setStreak(0)
       setCardStartTime(Date.now())
-      setCardResults([]) // Reset progress bar results
+      setCardResults([])
     }
   }
 
-  const accuracy = activeCards.length > 0 ? Math.round((sessionStats.mastered / activeCards.length) * 100) : 0
+  const accuracy = activeCards.length > 0
+    ? Math.round((sessionStats.mastered / activeCards.length) * 100)
+    : 0
 
-  // Calculate session metrics
   const sessionDuration = Date.now() - sessionStartTime
   const sessionMinutes = Math.floor(sessionDuration / 60000)
   const sessionSeconds = Math.floor((sessionDuration % 60000) / 1000)
-  const avgCardTime = cardTimes.length > 0 ? Math.round(cardTimes.reduce((a, b) => a + b, 0) / cardTimes.length / 1000) : 0
-  const cardsPerMinute = sessionDuration > 0 ? Math.round((cards.length / sessionDuration) * 60000 * 10) / 10 : 0
+  const avgCardTime = cardTimes.length > 0
+    ? Math.round(cardTimes.reduce((a, b) => a + b, 0) / cardTimes.length / 1000)
+    : 0
 
+  // Completion Screen
   if (!currentCard || showComplete) {
     return (
-      <div className="fixed inset-0 md:left-72 lg:left-80 xl:left-96 z-50 bg-dark-bg flex items-center justify-center p-6 md:p-8 lg:p-10">
-        <div className="max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl w-full bg-dark-bg-secondary rounded-3xl p-8 md:p-10 lg:p-12 xl:p-14 shadow-dark-soft-xl border border-dark-border-glow">
-          {/* Circular Accuracy Indicator */}
-          <div className="text-center mb-8 md:mb-10 lg:mb-12 animate-opal-card-enter">
-            <h2 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-dark-text-primary mb-6 md:mb-8 lg:mb-10">Session Complete!</h2>
+      <div className="fixed inset-0 z-50 bg-surface-base flex items-center justify-center p-6 animate-fade-in">
+        <div className="w-full max-w-2xl">
+          {/* Success Card */}
+          <div className="bg-surface-elevated rounded-3xl p-8 lg:p-12 border border-border animate-scale-in">
+            {/* Header */}
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
+                <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-semibold text-text-primary mb-2">Session Complete</h2>
+              <p className="text-text-secondary">{activeCards.length} cards reviewed</p>
+            </div>
 
-            {/* Circular Progress Ring */}
-            <div className="relative w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72 mx-auto mb-6 md:mb-8 lg:mb-10">
-              <svg className="w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72 transform -rotate-90" viewBox="0 0 200 200">
-                {/* Background circle */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="85"
-                  fill="none"
-                  stroke="#e5e7eb"
-                  strokeWidth="16"
-                />
-                {/* Accuracy arc */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="85"
-                  fill="none"
-                  stroke={accuracy >= 80 ? '#10b981' : accuracy >= 60 ? '#f59e0b' : '#f97316'}
-                  strokeWidth="16"
-                  strokeDasharray={`${(accuracy / 100) * 534} 534`}
-                  strokeLinecap="round"
-                  className="transition-all duration-1000 ease-out"
-                  style={{
-                    filter: 'drop-shadow(0 0 8px rgba(124, 92, 255, 0.3))'
-                  }}
-                />
-              </svg>
-              {/* Center text */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className={`text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold ${accuracy >= 80 ? 'text-green-600' : accuracy >= 60 ? 'text-amber-600' : 'text-orange-600'}`}>
-                  {accuracy}%
+            {/* Accuracy Ring */}
+            <div className="flex justify-center mb-10">
+              <div className="relative w-40 h-40">
+                <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 160 160">
+                  <circle
+                    cx="80"
+                    cy="80"
+                    r="70"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    className="text-surface-overlay"
+                  />
+                  <circle
+                    cx="80"
+                    cy="80"
+                    r="70"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    strokeDasharray={`${(accuracy / 100) * 440} 440`}
+                    strokeLinecap="round"
+                    className={accuracy >= 80 ? 'text-success' : accuracy >= 60 ? 'text-warning' : 'text-error'}
+                    style={{ transition: 'stroke-dasharray 1s ease-out' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className={`text-4xl font-bold ${accuracy >= 80 ? 'text-success' : accuracy >= 60 ? 'text-warning' : 'text-error'}`}>
+                    {accuracy}%
+                  </span>
+                  <span className="text-sm text-text-muted">Accuracy</span>
                 </div>
-                <div className="text-sm md:text-base lg:text-lg xl:text-xl text-dark-text-secondary font-semibold mt-1 md:mt-2 lg:mt-3">Accuracy</div>
               </div>
             </div>
 
-            {/* Mastered vs Needs Work */}
-            <div className="flex items-center justify-center gap-6 md:gap-8 mb-2">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-green-500"></div>
-                <span className="text-sm md:text-base text-dark-text-secondary">
-                  <span className="font-bold text-green-500">{sessionStats.mastered}</span> Mastered
-                </span>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+              <div className="bg-surface-overlay rounded-2xl p-4 text-center">
+                <div className="text-2xl font-bold text-success">{sessionStats.mastered}</div>
+                <div className="text-xs text-text-muted mt-1">Mastered</div>
               </div>
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-amber-500"></div>
-                <span className="text-sm md:text-base text-dark-text-secondary">
-                  <span className="font-bold text-amber-500">{sessionStats.needsWork}</span> Needs Work
-                </span>
+              <div className="bg-surface-overlay rounded-2xl p-4 text-center">
+                <div className="text-2xl font-bold text-warning">{sessionStats.needsWork}</div>
+                <div className="text-xs text-text-muted mt-1">Needs Work</div>
               </div>
-            </div>
-          </div>
-
-          {/* Simplified 3-Stat Row with Staggered Animation */}
-          <div className="grid grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
-            {/* Duration */}
-            <div
-              className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 rounded-xl p-4 md:p-5 text-center animate-opal-card-enter border border-blue-500/20"
-              style={{ animationDelay: '0.1s' }}
-            >
-              <div className="text-xs md:text-sm text-blue-400 font-bold uppercase tracking-wide mb-1 md:mb-2">Duration</div>
-              <div className="text-xl md:text-3xl font-bold text-blue-300">
-                {sessionMinutes}:{sessionSeconds.toString().padStart(2, '0')}
+              <div className="bg-surface-overlay rounded-2xl p-4 text-center">
+                <div className="text-2xl font-bold text-accent-cool">
+                  {sessionMinutes}:{sessionSeconds.toString().padStart(2, '0')}
+                </div>
+                <div className="text-xs text-text-muted mt-1">Duration</div>
+              </div>
+              <div className="bg-surface-overlay rounded-2xl p-4 text-center">
+                <div className="text-2xl font-bold text-accent-warm">{bestStreak}</div>
+                <div className="text-xs text-text-muted mt-1">Best Streak</div>
               </div>
             </div>
 
-            {/* Avg/Card */}
-            <div
-              className="bg-gradient-to-br from-indigo-900/20 to-indigo-800/20 rounded-xl p-4 md:p-5 text-center animate-opal-card-enter border border-indigo-500/20"
-              style={{ animationDelay: '0.2s' }}
-            >
-              <div className="text-xs md:text-sm text-indigo-400 font-bold uppercase tracking-wide mb-1 md:mb-2">Avg/Card</div>
-              <div className="text-xl md:text-3xl font-bold text-indigo-300">{avgCardTime}s</div>
-            </div>
-
-            {/* Best Streak */}
-            <div
-              className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-xl p-4 md:p-5 text-center animate-opal-card-enter border border-purple-500/20"
-              style={{ animationDelay: '0.3s' }}
-            >
-              <div className="text-xs md:text-sm text-purple-400 font-bold uppercase tracking-wide mb-1 md:mb-2">Best 🔥</div>
-              <div className="text-xl md:text-3xl font-bold text-purple-300">{bestStreak || 0}</div>
-            </div>
-          </div>
-
-          {/* Total Cards */}
-          <div
-            className="bg-dark-bg-tertiary rounded-xl p-3 md:p-4 text-center mb-6 md:mb-8 animate-opal-card-enter border border-dark-border-subtle"
-            style={{ animationDelay: '0.4s' }}
-          >
-            <span className="text-dark-text-secondary text-sm md:text-base">
-              <span className="font-bold text-dark-text-primary">{cards.length}</span> cards reviewed
-            </span>
-          </div>
-
-          {/* Actions */}
-          <div
-            className="space-y-3 md:space-y-4 animate-opal-card-enter"
-            style={{ animationDelay: '0.5s' }}
-          >
-            {missedCards.length > 0 && (
+            {/* Actions */}
+            <div className="space-y-3">
+              {missedCards.length > 0 && (
+                <button
+                  onClick={reviewMissedCards}
+                  className="w-full py-4 bg-warning/10 hover:bg-warning/20 text-warning font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Review {missedCards.length} Missed Card{missedCards.length !== 1 ? 's' : ''}
+                </button>
+              )}
               <button
-                onClick={reviewMissedCards}
-                className="w-full py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold text-sm md:text-base rounded-xl shadow-soft-lg hover:shadow-soft-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                onClick={onComplete || onExit}
+                className="w-full py-4 bg-primary hover:bg-primary-hover text-text-inverse font-medium rounded-xl transition-colors"
               >
-                <span>↻</span>
-                <span>Review {missedCards.length} Missed Card{missedCards.length !== 1 ? 's' : ''}</span>
+                {missedCards.length > 0 ? 'Finish Later' : 'Done'}
               </button>
-            )}
-            <button
-              onClick={onComplete || onExit}
-              className="w-full py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-sm md:text-base rounded-xl shadow-glow-lg hover:shadow-glow transition-all active:scale-95"
-            >
-              {missedCards.length > 0 ? 'Finish Later' : 'Done'}
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -293,254 +225,121 @@ const StudySession = ({ deckId, cards, onComplete, onExit }) => {
   }
 
   return (
-    <div className="fixed inset-0 md:left-72 lg:left-80 xl:left-96 z-50 bg-dark-bg">
-      {/* Confetti Celebration */}
-      {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute animate-confetti"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: '-10px',
-                width: '10px',
-                height: '10px',
-                backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'][Math.floor(Math.random() * 5)],
-                borderRadius: Math.random() > 0.5 ? '50%' : '0',
-                animationDelay: `${Math.random() * 0.5}s`,
-                animationDuration: `${2 + Math.random() * 2}s`,
-                transform: `rotate(${Math.random() * 360}deg)`
-              }}
-            />
-          ))}
-        </div>
-      )}
-
+    <div className="fixed inset-0 z-50 bg-surface-base flex flex-col">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-dark-bg-secondary/80 backdrop-blur-md border-b border-dark-border-glow safe-area-inset-top">
-        <div className="max-w-md md:max-w-4xl lg:max-w-6xl mx-auto px-5 md:px-8 py-4 md:py-5">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
+      <header className="flex-shrink-0 border-b border-border bg-surface-base/95 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
             <button
               onClick={onExit}
-              className="w-10 h-10 md:w-12 md:h-12 rounded-full hover:bg-dark-bg-tertiary flex items-center justify-center transition-all active:scale-95"
+              className="p-2 -ml-2 rounded-xl hover:bg-surface-overlay text-text-muted hover:text-text-primary transition-colors"
             >
-              <svg className="w-6 h-6 md:w-7 md:h-7 text-dark-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            {/* Streak Display */}
+            {/* Streak */}
             {streak > 0 && (
-              <div className="px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 shadow-soft animate-pulse-soft">
-                <div className="flex items-center gap-1.5 md:gap-2">
-                  <span className="text-lg md:text-xl">🔥</span>
-                  <span className="text-white font-bold text-sm md:text-base">{streak}</span>
-                </div>
+              <div className="px-4 py-2 rounded-full bg-accent-warm/10 animate-scale-in">
+                <span className="text-accent-warm font-semibold flex items-center gap-2">
+                  <span>🔥</span>
+                  <span>{streak}</span>
+                </span>
               </div>
             )}
 
-            <div className="text-sm md:text-base font-semibold text-dark-text-primary">
-              {currentIndex + 1} / {cards.length}
+            <div className="text-sm font-medium text-text-secondary">
+              {currentIndex + 1} / {activeCards.length}
             </div>
-            <div className="w-10 md:w-12" /> {/* Spacer */}
           </div>
 
-          {/* Color-Coded Segmented Progress Bar */}
-          <div className="flex gap-0.5">
+          {/* Progress Bar */}
+          <div className="flex gap-1">
             {activeCards.map((_, index) => {
-              const isCompleted = index < currentIndex
-              const isCurrent = index === currentIndex
-              const isPending = index > currentIndex
-
-              // Determine segment color
-              let segmentClass = 'bg-neutral-200' // Default for pending cards
-              if (isCompleted && cardResults[index] === 'mastered') {
-                segmentClass = 'bg-green-500'
-              } else if (isCompleted && cardResults[index] === 'needsWork') {
-                segmentClass = 'bg-amber-500'
-              } else if (isCurrent) {
-                segmentClass = 'bg-primary-500 animate-pulse'
+              let color = 'bg-surface-overlay'
+              if (index < currentIndex) {
+                color = cardResults[index] === 'mastered' ? 'bg-success' : 'bg-warning'
+              } else if (index === currentIndex) {
+                color = 'bg-primary animate-pulse-soft'
               }
-
               return (
                 <div
                   key={index}
-                  className={`h-2 flex-1 rounded-full transition-all duration-300 ${segmentClass}`}
-                  style={{
-                    minWidth: '4px',
-                    boxShadow: isCurrent ? '0 0 8px rgba(124, 92, 255, 0.6)' : 'none'
-                  }}
+                  className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${color}`}
                 />
               )
             })}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Flashcard */}
-      <div className="h-full flex items-center justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-40 sm:pb-44 md:pb-48 lg:pb-52">
+      {/* Main Card Area */}
+      <main className="flex-1 flex items-center justify-center p-6 lg:p-12 overflow-hidden">
         <div
-          ref={cardRef}
-          className={`w-full max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl transition-all ${cardEntering ? 'duration-300' : 'duration-200'}`}
+          className="w-full max-w-4xl transition-all duration-300"
           style={{
-            transform: cardExiting
-              ? `translateX(${cardExiting === 'right' ? '150%' : '-150%'}) rotate(${cardExiting === 'right' ? '30deg' : '-30deg'})`
-              : cardEntering
-              ? 'translateX(0) rotate(0deg) scale(0.9)'
-              : `translateX(${dragOffset}px) rotate(${dragOffset * 0.05}deg)`,
-            opacity: cardExiting ? 0 : cardEntering ? 1 : isDragging ? 0.9 : 1,
-            background: swipeDirection === 'right'
-              ? `rgba(16, 185, 129, ${swipeIntensity * 0.12})` // green tint for mastered
-              : swipeDirection === 'left'
-              ? `rgba(245, 158, 11, ${swipeIntensity * 0.12})` // amber tint for needs work
-              : 'transparent',
-            borderRadius: '1.5rem',
-            border: swipeDirection
-              ? `3px solid ${swipeDirection === 'right'
-                  ? `rgba(16, 185, 129, ${swipeIntensity * 0.6})`
-                  : `rgba(245, 158, 11, ${swipeIntensity * 0.6})`}`
-              : '3px solid transparent',
-            transition: isDragging ? 'none' : 'background 0.15s, border 0.15s'
-          }}
-          onTouchStart={(e) => !cardExiting && handleDragStart(e.touches[0].clientX)}
-          onTouchMove={(e) => !cardExiting && handleDragMove(e.touches[0].clientX)}
-          onTouchEnd={handleDragEnd}
-          onMouseDown={(e) => !cardExiting && handleDragStart(e.clientX)}
-          onMouseMove={(e) => !cardExiting && isDragging && handleDragMove(e.clientX)}
-          onMouseUp={handleDragEnd}
-          onMouseLeave={() => {
-            if (isDragging) {
-              setIsDragging(false)
-              setDragOffset(0)
-            }
+            transform: exitDirection
+              ? `translateX(${exitDirection === 'right' ? '120%' : '-120%'}) rotate(${exitDirection === 'right' ? '10deg' : '-10deg'})`
+              : 'translateX(0) rotate(0)',
+            opacity: exitDirection ? 0 : 1
           }}
         >
-          {/* Swipe feedback icons overlay */}
-          <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
-            {/* Mastered checkmark - appears on right swipe */}
-            <div
-              className="absolute w-20 h-20 rounded-full bg-green-500/90 flex items-center justify-center shadow-lg backdrop-blur-sm"
-              style={{
-                opacity: swipeDirection === 'right' ? swipeIntensity : 0,
-                transform: `scale(${swipeDirection === 'right' ? 0.7 + swipeIntensity * 0.5 : 0.5})`,
-                transition: 'opacity 0.12s ease-out, transform 0.12s ease-out'
-              }}
-            >
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-
-            {/* Needs work retry icon - appears on left swipe */}
-            <div
-              className="absolute w-20 h-20 rounded-full bg-amber-500/90 flex items-center justify-center shadow-lg backdrop-blur-sm"
-              style={{
-                opacity: swipeDirection === 'left' ? swipeIntensity : 0,
-                transform: `scale(${swipeDirection === 'left' ? 0.7 + swipeIntensity * 0.5 : 0.5})`,
-                transition: 'opacity 0.12s ease-out, transform 0.12s ease-out'
-              }}
-            >
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
-          </div>
-
           <FlashCard card={currentCard} showDifficulty={true} />
         </div>
+      </main>
 
-        {/* Swipe Indicators */}
-        {isDragging && (
-          <>
-            {/* Right Swipe - Mastered */}
-            <div
-              className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-200"
-              style={{
-                opacity: dragOffset > 50 ? 1 : 0,
-                transform: `translateY(-50%) scale(${dragOffset > 100 ? 1.1 : 1})`
-              }}
-            >
-              <div className="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl font-bold shadow-soft-lg flex items-center gap-2">
-                <span className="text-2xl">✓</span>
-                <span>Mastered</span>
-              </div>
-            </div>
-
-            {/* Left Swipe - Needs Work */}
-            <div
-              className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-200"
-              style={{
-                opacity: dragOffset < -50 ? 1 : 0,
-                transform: `translateY(-50%) scale(${dragOffset < -100 ? 1.1 : 1})`
-              }}
-            >
-              <div className="px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-2xl font-bold shadow-soft-lg flex items-center gap-2">
-                <span>Needs Work</span>
-                <span className="text-2xl">↻</span>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Action Buttons - Desktop-friendly click interface */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark-bg via-dark-bg/95 to-transparent safe-area-inset-bottom">
-        <div className="max-w-md md:max-w-4xl lg:max-w-6xl mx-auto px-5 md:px-8 py-6 md:py-8 lg:py-10">
-          <div className="flex items-center justify-center gap-4 md:gap-6">
+      {/* Bottom Controls */}
+      <footer className="flex-shrink-0 border-t border-border bg-surface-base/95 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto px-6 py-6">
+          <div className="flex items-center gap-4">
             {/* Needs Work Button */}
             <button
-              onClick={() => {
-                setCardExiting('left')
-                setTimeout(() => {
-                  handleRating(2)
-                  setCardExiting(null)
-                  setCardEntering(true)
-                  setTimeout(() => setCardEntering(false), 300)
-                }, 300)
-              }}
-              disabled={cardExiting !== null}
-              className="flex-1 max-w-xs py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm md:text-base lg:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleRating(2)}
+              disabled={isTransitioning}
+              className="flex-1 group relative py-4 px-6 bg-surface-elevated hover:bg-warning/10 border border-border hover:border-warning/30 rounded-2xl transition-all disabled:opacity-50"
             >
-              <div className="flex items-center justify-center gap-2 md:gap-3">
-                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span>Needs Work</span>
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-warning/10 group-hover:bg-warning/20 flex items-center justify-center transition-colors">
+                  <svg className="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-text-primary">Needs Work</div>
+                  <div className="text-xs text-text-muted">← or A</div>
+                </div>
               </div>
             </button>
 
             {/* Mastered Button */}
             <button
-              onClick={() => {
-                setCardExiting('right')
-                setTimeout(() => {
-                  handleRating(5)
-                  setCardExiting(null)
-                  setCardEntering(true)
-                  setTimeout(() => setCardEntering(false), 300)
-                }, 300)
-              }}
-              disabled={cardExiting !== null}
-              className="flex-1 max-w-xs py-4 md:py-5 px-6 md:px-8 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold text-sm md:text-base lg:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleRating(5)}
+              disabled={isTransitioning}
+              className="flex-1 group relative py-4 px-6 bg-surface-elevated hover:bg-success/10 border border-border hover:border-success/30 rounded-2xl transition-all disabled:opacity-50"
             >
-              <div className="flex items-center justify-center gap-2 md:gap-3">
-                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Mastered</span>
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-success/10 group-hover:bg-success/20 flex items-center justify-center transition-colors">
+                  <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-text-primary">Mastered</div>
+                  <div className="text-xs text-text-muted">→ or D</div>
+                </div>
               </div>
             </button>
           </div>
 
-          {/* Optional: Show swipe hint on mobile */}
-          <div className="mt-4 text-center md:hidden">
-            <p className="text-xs text-dark-text-muted">
-              Tip: You can also swipe left/right on mobile
+          {/* Keyboard Hint */}
+          <div className="mt-4 text-center">
+            <p className="text-xs text-text-muted">
+              Press <kbd className="px-1.5 py-0.5 bg-surface-overlay rounded text-text-secondary">Space</kbd> to flip the card
             </p>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }

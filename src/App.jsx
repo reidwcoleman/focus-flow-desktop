@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard'
 import AITutor from './components/AITutor'
 import Planner from './components/Planner'
 import Scanner from './components/Scanner'
+import ScanPage from './components/ScanPage'
 import StudyHub from './components/StudyHub'
 import Account from './components/Account'
 import CanvasHub from './components/CanvasHub'
@@ -224,12 +225,12 @@ function App() {
           <nav className="flex-1 px-3 py-2 space-y-1">
             {/* Scan Button */}
             <button
-              onClick={() => setShowScanner(true)}
-              className={`w-full ${sidebarCollapsed ? 'p-3 justify-center' : 'px-3 py-3'} rounded-xl bg-primary/10 hover:bg-primary/15 text-primary flex items-center gap-3 transition-all duration-200 group`}
+              onClick={() => setActiveTab('scan')}
+              className={`w-full ${sidebarCollapsed ? 'p-3 justify-center' : 'px-3 py-3'} rounded-xl ${activeTab === 'scan' ? 'bg-primary/20 text-primary' : 'bg-primary/10 hover:bg-primary/15 text-primary'} flex items-center gap-3 transition-all duration-200 group`}
               title="Scan"
             >
               <div className="w-5 h-5 flex items-center justify-center">
-                {getIcon('camera', false)}
+                {getIcon('camera', activeTab === 'scan')}
               </div>
               {!sidebarCollapsed && <span className="text-sm font-medium">Scan</span>}
             </button>
@@ -297,6 +298,11 @@ function App() {
                 <Dashboard key={dashboardKey} onOpenScanner={() => setShowScanner(true)} focusTimerProps={focusTimerProps} />
               </div>
             )}
+            {activeTab === 'scan' && (
+              <div key="scan" className="animate-fade-in">
+                <ScanPage />
+              </div>
+            )}
             {activeTab === 'planner' && (
               <div key="planner" className="animate-fade-in">
                 <Planner />
@@ -347,16 +353,20 @@ function App() {
 
             {/* Center Scan Button */}
             <button
-              onClick={() => setShowScanner(true)}
+              onClick={() => setActiveTab('scan')}
               className="flex items-center justify-center"
             >
-              <div className="w-12 h-12 -mt-4 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+              <div className={`w-12 h-12 -mt-4 rounded-xl flex items-center justify-center shadow-lg active:scale-95 transition-transform ${
+                activeTab === 'scan'
+                  ? 'bg-primary text-white shadow-primary/30'
+                  : 'bg-primary text-white shadow-primary/20'
+              }`}>
                 {getIcon('camera', true)}
               </div>
             </button>
 
             {/* Last 3 tabs */}
-            {tabs.slice(3, 6).map((tab) => {
+            {tabs.slice(3).map((tab) => {
               const isActive = activeTab === tab.id
               return (
                 <button

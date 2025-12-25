@@ -612,8 +612,19 @@ export const canvasService = {
       return []
     }
 
+    // Filter out any non-English courses that might have been synced before the filter was added
+    const filteredData = (data || []).filter(course => {
+      const hasNonLatinName = this._containsNonLatin(course.name)
+      const hasNonLatinCode = this._containsNonLatin(course.course_code)
+      if (hasNonLatinName || hasNonLatinCode) {
+        console.log(`🚫 Filtering out non-English course from display: ${course.name}`)
+        return false
+      }
+      return true
+    })
+
     // Transform to match UI format
-    return (data || []).map(course => ({
+    return filteredData.map(course => ({
       id: course.canvas_course_id,
       name: course.name,
       course_code: course.course_code,
