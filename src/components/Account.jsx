@@ -13,6 +13,7 @@ export default function Account() {
   const [isEditingCanvas, setIsEditingCanvas] = useState(false)
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     loadUserData()
@@ -78,6 +79,22 @@ export default function Account() {
       toast.error('Connection failed. Check your credentials.')
     } finally {
       setTesting(false)
+    }
+  }
+
+  const handleSyncCanvas = async () => {
+    setSyncing(true)
+    try {
+      const result = await canvasService.syncToDatabase()
+      if (result.success) {
+        toast.success(result.synced > 0 ? `Synced ${result.synced} assignments from Canvas` : 'All assignments up to date')
+      } else {
+        throw new Error('Sync failed')
+      }
+    } catch (err) {
+      toast.error('Failed to sync Canvas assignments')
+    } finally {
+      setSyncing(false)
     }
   }
 
