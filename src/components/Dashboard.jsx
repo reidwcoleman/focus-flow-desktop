@@ -651,46 +651,48 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
 
       {/* AI Quick Add Input */}
       <div className="mb-8 animate-fade-up stagger-2">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-accent-cool/10 rounded-lg">
-            <svg className="w-3.5 h-3.5 text-accent-cool" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <span className="text-xs font-medium text-accent-cool">AI-Powered</span>
+        <div className="bg-surface-elevated rounded-2xl border border-border p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-accent-cool/10 rounded-lg">
+              <svg className="w-3.5 h-3.5 text-accent-cool" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span className="text-xs font-medium text-accent-cool">AI-Powered</span>
+            </div>
+            <span className="text-xs text-text-muted">Just type naturally - AI will parse dates, subjects & priority</span>
           </div>
-          <span className="text-xs text-text-muted">Just type naturally - AI will parse dates, subjects & priority</span>
-        </div>
-        <div className="relative group">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-            </svg>
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={aiInput}
+              onChange={(e) => setAiInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAiCreateAssignment()}
+              placeholder="Math homework chapter 5 due Friday, high priority..."
+              className="w-full bg-surface-base border border-border rounded-xl pl-12 pr-24 py-3.5 text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+              disabled={aiProcessing}
+            />
+            <button
+              onClick={handleAiCreateAssignment}
+              disabled={aiProcessing || !aiInput.trim()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium text-sm transition-all disabled:opacity-30 disabled:bg-primary"
+            >
+              {aiProcessing ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add
+                </>
+              )}
+            </button>
           </div>
-          <input
-            type="text"
-            value={aiInput}
-            onChange={(e) => setAiInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleAiCreateAssignment()}
-            placeholder="Math homework chapter 5 due Friday, high priority..."
-            className="input pl-12 pr-24 py-4 text-base"
-            disabled={aiProcessing}
-          />
-          <button
-            onClick={handleAiCreateAssignment}
-            disabled={aiProcessing || !aiInput.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium text-sm transition-all disabled:opacity-30 disabled:bg-primary"
-          >
-            {aiProcessing ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Add
-              </>
-            )}
-          </button>
         </div>
       </div>
 

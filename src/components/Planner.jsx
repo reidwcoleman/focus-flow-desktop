@@ -221,46 +221,48 @@ const Planner = () => {
 
       {/* AI Quick Add */}
       <div className="mb-8 animate-fade-up stagger-1">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-accent-cool/10 rounded-lg">
-            <svg className="w-3.5 h-3.5 text-accent-cool" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <span className="text-xs font-medium text-accent-cool">AI-Powered</span>
+        <div className="bg-surface-elevated rounded-2xl border border-border p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-accent-cool/10 rounded-lg">
+              <svg className="w-3.5 h-3.5 text-accent-cool" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span className="text-xs font-medium text-accent-cool">AI-Powered</span>
+            </div>
+            <span className="text-xs text-text-muted">Type naturally - AI parses times, dates & recurring schedules</span>
           </div>
-          <span className="text-xs text-text-muted">Type naturally - AI parses times, dates & recurring schedules</span>
-        </div>
-        <div className="relative">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={aiInput}
+              onChange={(e) => setAiInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAiCreate()}
+              placeholder="Study Math 3-5pm tomorrow, Physics class every Monday 9am..."
+              className="w-full bg-surface-base border border-border rounded-xl pl-12 pr-28 py-3.5 text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
+              disabled={aiProcessing}
+            />
+            <button
+              onClick={handleAiCreate}
+              disabled={aiProcessing || !aiInput.trim()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium text-sm transition-all disabled:opacity-30 disabled:bg-primary"
+            >
+              {aiProcessing ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Schedule
+                </>
+              )}
+            </button>
           </div>
-          <input
-            type="text"
-            value={aiInput}
-            onChange={(e) => setAiInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleAiCreate()}
-            placeholder="Study Math 3-5pm tomorrow, Physics class every Monday 9am..."
-            className="input pl-12 pr-28 py-4"
-            disabled={aiProcessing}
-          />
-          <button
-            onClick={handleAiCreate}
-            disabled={aiProcessing || !aiInput.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium text-sm transition-all disabled:opacity-30 disabled:bg-primary"
-          >
-            {aiProcessing ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Schedule
-              </>
-            )}
-          </button>
         </div>
       </div>
 
