@@ -62,20 +62,13 @@ serve(async (req) => {
     let cleanBase64 = base64Image
 
     // Check if it's a data URL and extract type
-    const dataUrlMatch = base64Image.match(/^data:image\/(\w+);base64,(.+)$/)
+    const dataUrlMatch = base64Image.match(/^data:image\/([^;]+);base64,(.+)$/)
     if (dataUrlMatch) {
       imageType = dataUrlMatch[1]
       cleanBase64 = dataUrlMatch[2]
-    } else {
-      // If no data URL prefix, clean any whitespace/newlines
-      cleanBase64 = base64Image.replace(/\s/g, '')
     }
 
-    // Validate base64 - ensure it's valid
-    if (!/^[A-Za-z0-9+/=]+$/.test(cleanBase64)) {
-      throw new Error('Invalid base64 image data')
-    }
-
+    // Build the image URL
     const imageUrl = `data:image/${imageType};base64,${cleanBase64}`
     console.log('📤 Calling Groq Vision API for user:', user.id, 'Image type:', imageType, 'Base64 length:', cleanBase64.length)
 

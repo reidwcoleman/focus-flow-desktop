@@ -84,6 +84,90 @@ const StudyHub = () => {
     setActiveQuizSession(fullQuiz)
   }
 
+  // Note creation handlers
+  const handleCreateNote = async () => {
+    if (!newNote.title.trim()) {
+      toast.error('Please enter a title')
+      return
+    }
+    if (!newNote.content.trim()) {
+      toast.error('Please enter some content')
+      return
+    }
+    setSavingNote(true)
+    try {
+      await addNote({
+        title: newNote.title.trim(),
+        content: newNote.content.trim(),
+        subject: newNote.subject.trim() || 'General'
+      })
+      toast.success('Note created!')
+      setNewNote({ title: '', content: '', subject: '' })
+      setShowNoteCreator(false)
+      await loadNotes()
+    } catch (err) {
+      toast.error('Failed to create note')
+    } finally {
+      setSavingNote(false)
+    }
+  }
+
+  // Flashcard deck creation handlers
+  const handleAddCard = () => {
+    setNewCards([...newCards, { front: '', back: '', hint: '' }])
+  }
+
+  const handleRemoveCard = (index) => {
+    if (newCards.length > 1) {
+      setNewCards(newCards.filter((_, i) => i !== index))
+    }
+  }
+
+  const handleCardChange = (index, field, value) => {
+    const updated = [...newCards]
+    updated[index][field] = value
+    setNewCards(updated)
+  }
+
+  const handleCreateDeck = async () => {
+    if (!newDeck.title.trim()) {
+      toast.error('Please enter a deck title')
+      return
+    }
+    const validCards = newCards.filter(c => c.front.trim() && c.back.trim())
+    if (validCards.length === 0) {
+      toast.error('Please add at least one card with front and back')
+      return
+    }
+    setSavingDeck(true)
+    try {
+      const deck = await addDeck({
+        title: newDeck.title.trim(),
+        subject: newDeck.subject.trim() || 'General'
+      })
+      if (deck) {
+        for (const card of validCards) {
+          await addCard({
+            deckId: deck.id,
+            front: card.front.trim(),
+            back: card.back.trim(),
+            hint: card.hint.trim() || null,
+            difficulty: 'medium'
+          })
+        }
+        toast.success(`Created deck with ${validCards.length} cards!`)
+        setNewDeck({ title: '', subject: '' })
+        setNewCards([{ front: '', back: '', hint: '' }])
+        setShowDeckCreator(false)
+        await loadFlashcards()
+      }
+    } catch (err) {
+      toast.error('Failed to create deck')
+    } finally {
+      setSavingDeck(false)
+    }
+  }
+
   // Study session view
   if (studySession) {
     return (
@@ -115,6 +199,235 @@ const StudyHub = () => {
         onBack={() => setShowQuizCreator(false)}
         onStartQuiz={(quiz) => { setShowQuizCreator(false); setActiveQuizSession(quiz) }}
       />
+    )
+  }
+
+  // Note creator view
+  if (showNoteCreator) {
+    return (
+      <div className="min-h-screen bg-surface-base p-6 lg:p-8">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowNoteCreator(false)}
+              className="w-10 h-10 rounded-xl bg-surface-elevated border border-border flex items-center justify-center hover:bg-surface-overlay transition-colors group"
+            >
+              <svg className="w-5 h-5 text-text-muted group-hover:text-text-primary group-hover:-translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <h1 className="text-2xl font-semibold text-text-primary">Create Note</h1>
+              <p className="text-text-muted">Add a new study note</p>
+            </div>
+          </div>
+
+          <div className="bg-surface-elevated rounded-2xl border border-border p-6 space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-text-primary">Title</label>
+                <input
+                  type="text"
+                  value={newNote.title}
+                  onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
+                  placeholder="Note title..."
+                  className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-text-primary">Subject</label>
+                <input
+                  type="text"
+                  value={newNote.subject}
+                  onChange={(e) => setNewNote({ ...newNote, subject: e.target.value })}
+                  placeholder="e.g., Chemistry, History..."
+                  className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-text-primary">Content</label>
+              <textarea
+                value={newNote.content}
+                onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                placeholder="Write your note content here..."
+                rows={12}
+                className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary resize-none focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleCreateNote}
+                disabled={savingNote}
+                className="flex-1 py-3 px-6 bg-primary hover:bg-primary-hover text-text-inverse font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {savingNote ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Create Note
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowNoteCreator(false)}
+                className="px-6 py-3 bg-surface-base border border-border text-text-primary font-medium rounded-xl hover:bg-surface-overlay transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Deck creator view
+  if (showDeckCreator) {
+    return (
+      <div className="min-h-screen bg-surface-base p-6 lg:p-8">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowDeckCreator(false)}
+              className="w-10 h-10 rounded-xl bg-surface-elevated border border-border flex items-center justify-center hover:bg-surface-overlay transition-colors group"
+            >
+              <svg className="w-5 h-5 text-text-muted group-hover:text-text-primary group-hover:-translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <h1 className="text-2xl font-semibold text-text-primary">Create Flashcard Deck</h1>
+              <p className="text-text-muted">Add a new deck with cards</p>
+            </div>
+          </div>
+
+          <div className="bg-surface-elevated rounded-2xl border border-border p-6 space-y-5">
+            {/* Deck info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-text-primary">Deck Title</label>
+                <input
+                  type="text"
+                  value={newDeck.title}
+                  onChange={(e) => setNewDeck({ ...newDeck, title: e.target.value })}
+                  placeholder="Deck title..."
+                  className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary focus:outline-none focus:border-accent-cool/50 focus:ring-1 focus:ring-accent-cool/20 transition-all"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-text-primary">Subject</label>
+                <input
+                  type="text"
+                  value={newDeck.subject}
+                  onChange={(e) => setNewDeck({ ...newDeck, subject: e.target.value })}
+                  placeholder="e.g., Biology, Math..."
+                  className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary focus:outline-none focus:border-accent-cool/50 focus:ring-1 focus:ring-accent-cool/20 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Cards */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-text-primary">Cards ({newCards.length})</label>
+                <button
+                  onClick={handleAddCard}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-accent-cool/10 text-accent-cool font-medium rounded-lg hover:bg-accent-cool/20 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add Card
+                </button>
+              </div>
+
+              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {newCards.map((card, index) => (
+                  <div key={index} className="bg-surface-base rounded-xl border border-border p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-text-muted">Card {index + 1}</span>
+                      {newCards.length > 1 && (
+                        <button
+                          onClick={() => handleRemoveCard(index)}
+                          className="p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <input
+                          type="text"
+                          value={card.front}
+                          onChange={(e) => handleCardChange(index, 'front', e.target.value)}
+                          placeholder="Front (question)..."
+                          className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          value={card.back}
+                          onChange={(e) => handleCardChange(index, 'back', e.target.value)}
+                          placeholder="Back (answer)..."
+                          className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
+                        />
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={card.hint}
+                      onChange={(e) => handleCardChange(index, 'hint', e.target.value)}
+                      placeholder="Hint (optional)..."
+                      className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleCreateDeck}
+                disabled={savingDeck}
+                className="flex-1 py-3 px-6 bg-accent-cool hover:bg-accent-cool/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {savingDeck ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Create Deck
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowDeckCreator(false)}
+                className="px-6 py-3 bg-surface-base border border-border text-text-primary font-medium rounded-xl hover:bg-surface-overlay transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     )
   }
 
