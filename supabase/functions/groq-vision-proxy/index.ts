@@ -57,10 +57,27 @@ serve(async (req) => {
       throw new Error('Missing prompt or base64Image')
     }
 
-    // Clean base64 image (remove data URL prefix if present)
-    const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, '')
+    // Detect image type and clean base64
+    let imageType = 'jpeg'
+    let cleanBase64 = base64Image
 
-    console.log('📤 Calling Groq Vision API for user:', user.id)
+    // Check if it's a data URL and extract type
+    const dataUrlMatch = base64Image.match(/^data:image\/(\w+);base64,(.+)$/)
+    if (dataUrlMatch) {
+      imageType = dataUrlMatch[1]
+      cleanBase64 = dataUrlMatch[2]
+    } else {
+      // If no data URL prefix, clean any whitespace/newlines
+      cleanBase64 = base64Image.replace(/\s/g, '')
+    }
+
+    // Validate base64 - ensure it's valid
+    if (!/^[A-Za-z0-9+/=]+$/.test(cleanBase64)) {
+      throw new Error('Invalid base64 image data')
+    }
+
+    const imageUrl = `data:image/${imageType};base64,${cleanBase64}`
+    console.log('📤 Calling Groq Vision API for user:', user.id, 'Image type:', imageType, 'Base64 length:', cleanBase64.length)
 
     // Call Groq Vision API
     const groqResponse = await fetch(GROQ_CONFIG.endpoint, {
@@ -82,7 +99,7 @@ serve(async (req) => {
               {
                 type: 'image_url',
                 image_url: {
-                  url: `data:image/jpeg;base64,${cleanBase64}`
+                  url: imageUrl
                 }
               }
             ]
