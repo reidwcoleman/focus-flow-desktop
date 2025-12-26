@@ -15,7 +15,7 @@ const corsHeaders = {
 const GROQ_CONFIG = {
   apiKey: Deno.env.get('GROQ_API_KEY') || '',
   endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-  model: 'meta-llama/llama-4-scout-17b-16e-instruct', // Groq Llama 4 vision model
+  model: 'llama-4-scout-17b-16e-instruct', // Groq Llama 4 vision model
   maxTokens: 2000,
   temperature: 0.2,
 }
