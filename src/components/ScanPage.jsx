@@ -346,10 +346,32 @@ const ScanPage = () => {
 
       {/* Processing State */}
       {isProcessing && (
-        <div className="text-center py-16 animate-fade-up">
-          <div className="w-12 h-12 mx-auto mb-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-text-primary font-medium">{processingStep}</p>
-          <p className="text-text-muted text-sm mt-1">This may take a moment...</p>
+        <div className="animate-fade-up">
+          {/* Show captured image during processing */}
+          {capturedImage && (
+            <div className="mb-6">
+              <div className="relative rounded-2xl overflow-hidden border border-border">
+                <img
+                  src={capturedImage}
+                  alt="Processing"
+                  className="w-full max-h-[400px] object-contain bg-surface-base"
+                />
+                {/* Processing overlay */}
+                <div className="absolute inset-0 bg-surface-base/80 backdrop-blur-sm flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 mb-4 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  <p className="text-text-primary font-semibold text-lg">{processingStep}</p>
+                  <p className="text-text-muted text-sm mt-1">Analyzing your image...</p>
+                </div>
+              </div>
+            </div>
+          )}
+          {!capturedImage && (
+            <div className="text-center py-16">
+              <div className="w-12 h-12 mx-auto mb-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+              <p className="text-text-primary font-medium">{processingStep}</p>
+              <p className="text-text-muted text-sm mt-1">This may take a moment...</p>
+            </div>
+          )}
         </div>
       )}
 
