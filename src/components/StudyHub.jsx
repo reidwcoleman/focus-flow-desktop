@@ -442,97 +442,80 @@ const StudyHub = () => {
                 ))}
               </div>
             )}
+          </div>
+        )}
 
-            {/* Quizzes Section */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-success/15 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                  </div>
-                  <h2 className="text-xl font-semibold text-text-primary">Quizzes</h2>
+        {/* Quizzes Tab */}
+        {activeTab === 'quizzes' && (
+          <div className="animate-fade-in">
+            {quizzesLoading ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="w-10 h-10 border-2 border-success/30 border-t-success rounded-full animate-spin" />
+                <p className="text-text-muted mt-4">Loading quizzes...</p>
+              </div>
+            ) : quizzes.length === 0 ? (
+              <div className="bg-surface-elevated rounded-2xl border border-border p-12 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
                 </div>
+                <h3 className="text-xl font-semibold text-text-primary mb-2">No quizzes yet</h3>
+                <p className="text-text-muted max-w-sm mx-auto mb-6">
+                  Create your first quiz by uploading study materials
+                </p>
                 <button
                   onClick={() => setShowQuizCreator(true)}
-                  className="group flex items-center gap-2 px-4 py-2 bg-success/10 hover:bg-success/20 text-success font-medium rounded-xl transition-all hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-success hover:bg-success/90 text-white font-medium rounded-xl transition-all"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  Create Quiz
-                  <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  Create Your First Quiz
                 </button>
               </div>
-
-              {quizzes.length > 0 ? (
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {quizzes.map((quiz, index) => (
-                    <button
-                      key={quiz.id}
-                      onClick={() => startQuiz(quiz)}
-                      className="group text-left bg-surface-elevated rounded-2xl p-5 border border-border hover:border-success/30 transition-all hover:-translate-y-0.5 animate-fade-up"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-success/15 group-hover:bg-success/25 flex items-center justify-center flex-shrink-0 transition-colors">
-                          <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                          </svg>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-text-primary truncate group-hover:text-success transition-colors">{quiz.title}</h3>
-                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            <span className="text-xs font-medium text-success">{quiz.subject}</span>
-                            <span className="w-1 h-1 rounded-full bg-border" />
-                            <span className="text-xs text-text-muted">{quiz.questionCount} questions</span>
-                            {quiz.bestScore && (
-                              <>
-                                <span className="w-1 h-1 rounded-full bg-border" />
-                                <span className="text-xs text-text-muted">Best: {Math.round(quiz.bestScore)}%</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex items-center justify-end">
-                        <span className="text-xs text-text-muted group-hover:text-success transition-colors flex items-center gap-1">
-                          Start quiz
-                          <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                          </svg>
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="bg-surface-elevated rounded-2xl border border-border p-12 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-text-primary mb-2">No quizzes yet</h3>
-                  <p className="text-text-muted max-w-sm mx-auto mb-6">
-                    Create your first quiz by uploading study materials
-                  </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {quizzes.map((quiz, index) => (
                   <button
-                    onClick={() => setShowQuizCreator(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-success hover:bg-success/90 text-white font-medium rounded-xl transition-all"
+                    key={quiz.id}
+                    onClick={() => startQuiz(quiz)}
+                    className="group text-left bg-surface-elevated rounded-2xl p-5 border border-border hover:border-success/30 transition-all hover:-translate-y-0.5 animate-fade-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Create Your First Quiz
+                    <div className="flex items-start gap-4">
+                      <div className="w-11 h-11 rounded-xl bg-success/15 group-hover:bg-success/25 flex items-center justify-center flex-shrink-0 transition-colors">
+                        <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-text-primary truncate group-hover:text-success transition-colors">{quiz.title}</h3>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className="text-xs font-medium text-success">{quiz.subject}</span>
+                          <span className="w-1 h-1 rounded-full bg-border" />
+                          <span className="text-xs text-text-muted">{quiz.questionCount} questions</span>
+                          {quiz.bestScore && (
+                            <>
+                              <span className="w-1 h-1 rounded-full bg-border" />
+                              <span className="text-xs text-text-muted">Best: {Math.round(quiz.bestScore)}%</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-end">
+                      <span className="text-xs text-text-muted group-hover:text-success transition-colors flex items-center gap-1">
+                        Start quiz
+                        <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        </svg>
+                      </span>
+                    </div>
                   </button>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
