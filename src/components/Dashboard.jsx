@@ -70,29 +70,46 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
 
   const loadProductivityStats = async () => {
     try {
-      // Load today's study minutes from activities
+      // Load activities from current and previous month to handle cross-month streaks
       const today = new Date()
-      const activities = await calendarService.getActivitiesForMonth(today.getFullYear(), today.getMonth())
+      const currentMonthActivities = await calendarService.getActivitiesForMonth(today.getFullYear(), today.getMonth())
+      const prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+      const prevMonthActivities = await calendarService.getActivitiesForMonth(prevMonth.getFullYear(), prevMonth.getMonth())
+      const allActivities = [...currentMonthActivities, ...prevMonthActivities]
+
+      // Calculate today's study minutes
       const todayStr = today.toISOString().split('T')[0]
-      const todayActivities = activities.filter(a => a.activity_date === todayStr && a.is_completed)
+      const todayActivities = allActivities.filter(a => a.activity_date === todayStr && a.is_completed)
       const minutes = todayActivities.reduce((sum, a) => sum + (a.duration_minutes || 0), 0)
       setTodayMinutes(minutes)
 
-      // Calculate study streak
+      // Calculate study streak (consecutive days with completed activities)
       let streak = 0
       const checkDate = new Date()
-      for (let i = 0; i < 30; i++) {
+
+      // Check if today has activities - if not, start from yesterday (day isn't over yet)
+      const todayHasActivity = allActivities.some(a => a.activity_date === todayStr && a.is_completed)
+      if (!todayHasActivity) {
+        checkDate.setDate(checkDate.getDate() - 1)
+      }
+
+      // Count consecutive days with completed activities
+      for (let i = 0; i < 60; i++) {
         const dateStr = checkDate.toISOString().split('T')[0]
-        const dayActivities = activities.filter(a => a.activity_date === dateStr && a.is_completed)
+        const dayActivities = allActivities.filter(a => a.activity_date === dateStr && a.is_completed)
         if (dayActivities.length > 0) {
           streak++
           checkDate.setDate(checkDate.getDate() - 1)
-        } else if (i > 0) {
-          break
         } else {
-          checkDate.setDate(checkDate.getDate() - 1)
+          break
         }
       }
+
+      // Add today to streak if it has activities
+      if (todayHasActivity) {
+        streak++
+      }
+
       setStudyStreak(streak)
 
       // Calculate weekly completion stats
@@ -632,29 +649,46 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
         </div>
       )}
 
-      {/* Quick Add Input */}
+      {/* AI Quick Add Input */}
       <div className="mb-8 animate-fade-up stagger-2">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-accent-cool/10 rounded-lg">
+            <svg className="w-3.5 h-3.5 text-accent-cool" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span className="text-xs font-medium text-accent-cool">AI-Powered</span>
+          </div>
+          <span className="text-xs text-text-muted">Just type naturally - AI will parse dates, subjects & priority</span>
+        </div>
         <div className="relative group">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
           <input
             type="text"
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAiCreateAssignment()}
-            placeholder="Add a task... (e.g., Math homework due Friday)"
-            className="input pr-14 py-4 text-base"
+            placeholder="Math homework chapter 5 due Friday, high priority..."
+            className="input pl-12 pr-24 py-4 text-base"
             disabled={aiProcessing}
           />
           <button
             onClick={handleAiCreateAssignment}
             disabled={aiProcessing || !aiInput.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-all disabled:opacity-30 disabled:hover:bg-primary/10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium text-sm transition-all disabled:opacity-30 disabled:bg-primary"
           >
             {aiProcessing ? (
-              <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add
+              </>
             )}
           </button>
         </div>
