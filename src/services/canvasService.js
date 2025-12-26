@@ -420,9 +420,24 @@ export const canvasService = {
 
       console.log(`📝 Syncing ${filteredAssignments.length} assignments (${canvasAssignments.length - filteredAssignments.length} from blocked courses)...`)
 
-      // Prepare all assignment data
+      // Get existing completed Canvas assignments to preserve their status
+      const { data: existingCompleted } = await supabase
+        .from('assignments')
+        .select('canvas_assignment_id, completed')
+        .eq('user_id', userId)
+        .eq('source', 'canvas')
+        .eq('completed', true)
+
+      // Create a Set of completed Canvas assignment IDs for quick lookup
+      const completedCanvasIds = new Set(
+        (existingCompleted || []).map(a => a.canvas_assignment_id)
+      )
+      console.log(`✅ Found ${completedCanvasIds.size} completed Canvas assignments to preserve`)
+
+      // Prepare all assignment data, preserving completed status
       const assignmentDataArray = filteredAssignments.map(assignment => {
         const canvasId = parseInt(assignment.id.replace('canvas-', ''))
+        const isCompleted = completedCanvasIds.has(canvasId)
 
         return {
           user_id: userId,
@@ -441,7 +456,10 @@ export const canvasService = {
           grade_received: assignment.grade || null,
           score_received: assignment.score || null,
           canvas_url: assignment.htmlUrl || null,
-          time_estimate: this.estimateTime(assignment.points)
+          time_estimate: this.estimateTime(assignment.points),
+          // Preserve completed status if already marked complete
+          completed: isCompleted,
+          progress: isCompleted ? 100 : 0
         }
       })
 
@@ -458,7 +476,7 @@ export const canvasService = {
         return { synced: 0, total: filteredAssignments.length, error: error.message }
       }
 
-      console.log(`✅ Successfully synced ${filteredAssignments.length} assignments`)
+      console.log(`✅ Successfully synced ${filteredAssignments.length} assignments (${completedCanvasIds.size} preserved as completed)`)
       return { synced: filteredAssignments.length, total: filteredAssignments.length }
     } catch (error) {
       console.error('Failed to sync assignments:', error)

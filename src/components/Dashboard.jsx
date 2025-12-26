@@ -112,14 +112,19 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
 
       setStudyStreak(streak)
 
-      // Calculate weekly completion stats
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      const { data: allAssignments } = await assignmentsService.getUpcomingAssignments()
-      const weekAssignments = allAssignments?.filter(a => {
-        const created = new Date(a.created_at)
-        return created >= weekAgo
-      }) || []
+      // Calculate weekly completion stats (assignments due this week)
+      const weekStart = new Date()
+      weekStart.setHours(0, 0, 0, 0)
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekEnd.getDate() + 7)
+
+      // Get ALL assignments (including completed ones)
+      const { data: allAssignments } = await assignmentsService.getAssignments()
+      const weekAssignments = (allAssignments || []).filter(a => {
+        if (!a.due_date) return false
+        const dueDate = new Date(a.due_date)
+        return dueDate >= weekStart && dueDate <= weekEnd
+      })
       setWeeklyStats({
         completed: weekAssignments.filter(a => a.completed).length,
         total: weekAssignments.length
@@ -272,6 +277,9 @@ const Dashboard = ({ onOpenScanner, focusTimerProps }) => {
       setAssignments(prev => prev.map(a =>
         a.id === assignmentId ? { ...a, completed: newStatus, progress: newStatus ? 100 : 0 } : a
       ))
+
+      // Update weekly stats after completion change
+      await loadProductivityStats()
     } catch (error) {
       toast.error('Failed to update')
       await loadAssignments()
