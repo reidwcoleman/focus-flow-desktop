@@ -324,16 +324,15 @@ const Planner = () => {
                     {day && (
                       <>
                         <span>{day}</span>
-                        {(activityCount > 0 || assignmentCount > 0) && (
+                        {(hasIncomplete || assignmentCount > 0) && (
                           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5">
-                            {activityCount > 0 && (
-                              <div className={`w-1 h-1 rounded-full ${
-                                isSelected(day) ? 'bg-white' :
-                                hasIncomplete ? 'bg-primary' : 'bg-success'
+                            {hasIncomplete && (
+                              <div className={`w-1.5 h-1.5 rounded-full ${
+                                isSelected(day) ? 'bg-white' : 'bg-primary'
                               }`} />
                             )}
                             {assignmentCount > 0 && (
-                              <div className={`w-1 h-1 rounded-full ${
+                              <div className={`w-1.5 h-1.5 rounded-full ${
                                 isSelected(day) ? 'bg-white' : 'bg-accent-warm'
                               }`} />
                             )}
