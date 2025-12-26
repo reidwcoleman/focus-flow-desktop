@@ -408,9 +408,11 @@ const QuizSession = ({ quiz, onComplete, onExit }) => {
             {getQuestionType(currentQuestion) === 'multiple_choice' && (
               <div className="space-y-3">
                 {currentQuestion.options.map((option, index) => (
-                  <label
+                  <button
                     key={index}
-                    className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    type="button"
+                    onClick={() => handleAnswer(index.toString())}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all text-left ${
                       answers[currentQuestion.id] === index.toString()
                         ? 'border-primary bg-primary/10'
                         : 'border-border hover:border-primary/50 hover:bg-surface-overlay'
@@ -429,7 +431,7 @@ const QuizSession = ({ quiz, onComplete, onExit }) => {
                     <span className="text-text-muted text-sm font-medium">
                       {String.fromCharCode(65 + index)}
                     </span>
-                  </label>
+                  </button>
                 ))}
               </div>
             )}

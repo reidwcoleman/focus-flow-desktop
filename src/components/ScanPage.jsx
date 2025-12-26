@@ -468,6 +468,20 @@ const ScanPage = () => {
       {/* Results - Notes */}
       {notesData && !isProcessing && (
         <div className="animate-fade-up">
+          {/* Show captured image prominently */}
+          {capturedImage && (
+            <div className="mb-6">
+              <p className="text-xs text-text-muted mb-2 font-medium uppercase tracking-wide">Scanned Image</p>
+              <div className="rounded-2xl overflow-hidden border border-border bg-surface-base">
+                <img
+                  src={capturedImage}
+                  alt="Scanned notes"
+                  className="w-full max-h-[300px] object-contain"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Document-style notes card */}
           <div className="bg-surface-elevated rounded-2xl border border-border overflow-hidden shadow-lg shadow-black/5">
             {/* Header with gradient accent */}
@@ -502,6 +516,11 @@ const ScanPage = () => {
                     <span className="text-xs text-text-muted">
                       {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
+                    {notesData.confidence && (
+                      <span className="px-2 py-0.5 rounded-full bg-success/15 text-success text-xs font-medium">
+                        {Math.round(notesData.confidence * 100)}% confidence
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -555,79 +574,68 @@ const ScanPage = () => {
               </div>
             </div>
           </div>
-
-          {/* Scanned image thumbnail */}
-          {capturedImage && (
-            <div className="mt-4 flex items-center gap-3 p-3 bg-surface-elevated rounded-xl border border-border">
-              <img
-                src={capturedImage}
-                alt="Source"
-                className="w-16 h-16 rounded-lg object-cover border border-border"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary">Source Image</p>
-                <p className="text-xs text-text-muted">Original scan used for extraction</p>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
       {/* Results - Flashcards */}
       {flashcardsData && !isProcessing && (
-        <div className="bg-surface-elevated rounded-2xl p-6 border border-border animate-fade-up">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-accent-cool/10 flex items-center justify-center">
-              <span className="text-xl">🎴</span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-text-primary">Flashcards Generated</h3>
-              <p className="text-xs text-text-muted">{flashcardsData.cards?.length || 0} cards created</p>
-            </div>
-          </div>
-
-          <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
-            {flashcardsData.cards?.slice(0, 5).map((card, i) => (
-              <div key={i} className="p-3 bg-surface-base rounded-lg">
-                <p className="text-xs text-text-muted mb-1">Card {i + 1}</p>
-                <p className="text-text-primary text-sm font-medium">{card.front}</p>
-                <p className="text-text-secondary text-sm mt-1">{card.back}</p>
+        <div className="animate-fade-up">
+          {/* Show captured image prominently */}
+          {capturedImage && (
+            <div className="mb-6">
+              <p className="text-xs text-text-muted mb-2 font-medium uppercase tracking-wide">Scanned Image</p>
+              <div className="rounded-2xl overflow-hidden border border-border bg-surface-base">
+                <img
+                  src={capturedImage}
+                  alt="Scanned textbook"
+                  className="w-full max-h-[300px] object-contain"
+                />
               </div>
-            ))}
-            {flashcardsData.cards?.length > 5 && (
-              <p className="text-center text-text-muted text-sm py-2">
-                +{flashcardsData.cards.length - 5} more cards
-              </p>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="flex gap-3">
-            <button
-              onClick={resetScan}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-surface-base text-text-secondary font-medium hover:bg-surface-overlay transition-colors"
-            >
-              Scan Another
-            </button>
-            <button
-              onClick={handleSaveFlashcards}
-              disabled={isSaving || !flashcardsData.cards?.length}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-accent-cool text-white font-medium hover:opacity-90 transition-colors disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : 'Save Deck'}
-            </button>
-          </div>
-        </div>
-      )}
+          <div className="bg-surface-elevated rounded-2xl p-6 border border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-accent-cool/10 flex items-center justify-center">
+                <span className="text-xl">🎴</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-text-primary">Flashcards Generated</h3>
+                <p className="text-xs text-text-muted">{flashcardsData.cards?.length || 0} cards created</p>
+              </div>
+            </div>
 
-      {/* Image Preview - only for homework and flashcards */}
-      {capturedImage && !isProcessing && !notesData && (
-        <div className="mt-6 animate-fade-up">
-          <p className="text-xs text-text-muted mb-2">Scanned Image</p>
-          <img
-            src={capturedImage}
-            alt="Scanned"
-            className="w-full max-w-md rounded-xl border border-border"
-          />
+            <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
+              {flashcardsData.cards?.slice(0, 5).map((card, i) => (
+                <div key={i} className="p-3 bg-surface-base rounded-lg">
+                  <p className="text-xs text-text-muted mb-1">Card {i + 1}</p>
+                  <p className="text-text-primary text-sm font-medium">{card.front}</p>
+                  <p className="text-text-secondary text-sm mt-1">{card.back}</p>
+                </div>
+              ))}
+              {flashcardsData.cards?.length > 5 && (
+                <p className="text-center text-text-muted text-sm py-2">
+                  +{flashcardsData.cards.length - 5} more cards
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={resetScan}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-surface-base text-text-secondary font-medium hover:bg-surface-overlay transition-colors"
+              >
+                Scan Another
+              </button>
+              <button
+                onClick={handleSaveFlashcards}
+                disabled={isSaving || !flashcardsData.cards?.length}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-accent-cool text-white font-medium hover:opacity-90 transition-colors disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Deck'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

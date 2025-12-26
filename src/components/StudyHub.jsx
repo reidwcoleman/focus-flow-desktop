@@ -9,13 +9,14 @@ import StudySession from './StudySession'
 import QuizSession from './QuizSession'
 import QuizCreator from './QuizCreator'
 import { confirmDialog } from './ConfirmDialog'
+import { toast } from './Toast'
 
 const StudyHub = () => {
   const {
     notes, notesLoading, decks, flashcardsLoading, quizzes, quizzesLoading,
     getDueCards, getCardsByDeck, getNotesStats, getFlashcardsStats,
     refreshNotes, deleteNote: deleteNoteContext, deleteDeck, loadFlashcards,
-    getQuizById, loadQuizzes
+    getQuizById, loadQuizzes, addNote, addDeck, addCard, loadNotes
   } = useStudy()
 
   const [activeTab, setActiveTab] = useState('notes')
@@ -25,6 +26,17 @@ const StudyHub = () => {
   const [dueCards, setDueCards] = useState([])
   const [stats, setStats] = useState({ notes: 0, decks: 0, due: 0 })
   const [showQuizCreator, setShowQuizCreator] = useState(false)
+
+  // Note creation state
+  const [showNoteCreator, setShowNoteCreator] = useState(false)
+  const [newNote, setNewNote] = useState({ title: '', content: '', subject: '' })
+  const [savingNote, setSavingNote] = useState(false)
+
+  // Flashcard creation state
+  const [showDeckCreator, setShowDeckCreator] = useState(false)
+  const [newDeck, setNewDeck] = useState({ title: '', subject: '' })
+  const [newCards, setNewCards] = useState([{ front: '', back: '', hint: '' }])
+  const [savingDeck, setSavingDeck] = useState(false)
 
   useEffect(() => {
     const loadStats = async () => {
