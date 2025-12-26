@@ -390,56 +390,77 @@ const ScanPage = () => {
 
       {/* Results - Homework */}
       {assignmentData && !isProcessing && (
-        <div className="bg-surface-elevated rounded-2xl p-6 border border-border animate-fade-up">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <span className="text-xl">📝</span>
+        <div className="animate-fade-up">
+          {/* Show captured image */}
+          {capturedImage && (
+            <div className="mb-6">
+              <p className="text-xs text-text-muted mb-2 font-medium uppercase tracking-wide">Scanned Image</p>
+              <div className="rounded-2xl overflow-hidden border border-border bg-surface-base">
+                <img
+                  src={capturedImage}
+                  alt="Scanned homework"
+                  className="w-full max-h-[300px] object-contain"
+                />
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-text-primary">Assignment Detected</h3>
-              <p className="text-xs text-text-muted">Review and save to your tasks</p>
-            </div>
-          </div>
+          )}
 
-          <div className="space-y-3 mb-6">
-            <div className="p-3 bg-surface-base rounded-lg">
-              <p className="text-xs text-text-muted mb-1">Title</p>
-              <p className="text-text-primary font-medium">{assignmentData.title || 'Untitled'}</p>
+          <div className="bg-surface-elevated rounded-2xl p-6 border border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <span className="text-xl">📝</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-text-primary">Assignment Detected</h3>
+                <p className="text-xs text-text-muted">Review and save to your tasks</p>
+              </div>
+              {assignmentData.confidence && (
+                <span className="ml-auto px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-medium">
+                  {Math.round(assignmentData.confidence * 100)}% match
+                </span>
+              )}
             </div>
-            {assignmentData.subject && (
-              <div className="p-3 bg-surface-base rounded-lg">
-                <p className="text-xs text-text-muted mb-1">Subject</p>
-                <p className="text-text-primary">{assignmentData.subject}</p>
-              </div>
-            )}
-            {assignmentData.dueDate && (
-              <div className="p-3 bg-surface-base rounded-lg">
-                <p className="text-xs text-text-muted mb-1">Due Date</p>
-                <p className="text-text-primary">{assignmentData.dueDate}</p>
-              </div>
-            )}
-            {assignmentData.description && (
-              <div className="p-3 bg-surface-base rounded-lg">
-                <p className="text-xs text-text-muted mb-1">Description</p>
-                <p className="text-text-secondary text-sm">{assignmentData.description}</p>
-              </div>
-            )}
-          </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={resetScan}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-surface-base text-text-secondary font-medium hover:bg-surface-overlay transition-colors"
-            >
-              Scan Another
-            </button>
-            <button
-              onClick={handleSaveAssignment}
-              disabled={isSaving}
-              className="flex-1 py-2.5 px-4 rounded-xl bg-primary text-white font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : 'Save Assignment'}
-            </button>
+            <div className="space-y-3 mb-6">
+              <div className="p-3 bg-surface-base rounded-lg">
+                <p className="text-xs text-text-muted mb-1">Title</p>
+                <p className="text-text-primary font-medium">{assignmentData.title || 'Untitled'}</p>
+              </div>
+              {assignmentData.subject && (
+                <div className="p-3 bg-surface-base rounded-lg">
+                  <p className="text-xs text-text-muted mb-1">Subject</p>
+                  <p className="text-text-primary">{assignmentData.subject}</p>
+                </div>
+              )}
+              {assignmentData.dueDate && (
+                <div className="p-3 bg-surface-base rounded-lg">
+                  <p className="text-xs text-text-muted mb-1">Due Date</p>
+                  <p className="text-text-primary">{assignmentData.dueDate}</p>
+                </div>
+              )}
+              {assignmentData.description && (
+                <div className="p-3 bg-surface-base rounded-lg">
+                  <p className="text-xs text-text-muted mb-1">Description</p>
+                  <p className="text-text-secondary text-sm">{assignmentData.description}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={resetScan}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-surface-base text-text-secondary font-medium hover:bg-surface-overlay transition-colors"
+              >
+                Scan Another
+              </button>
+              <button
+                onClick={handleSaveAssignment}
+                disabled={isSaving}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-primary text-white font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Assignment'}
+              </button>
+            </div>
           </div>
         </div>
       )}
