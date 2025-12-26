@@ -10,6 +10,7 @@ import QuizSession from './QuizSession'
 import QuizCreator from './QuizCreator'
 import { confirmDialog } from './ConfirmDialog'
 import { toast } from './Toast'
+import studyGenerationService from '../services/studyGenerationService'
 
 const StudyHub = () => {
   const {
@@ -31,12 +32,18 @@ const StudyHub = () => {
   const [showNoteCreator, setShowNoteCreator] = useState(false)
   const [newNote, setNewNote] = useState({ title: '', content: '', subject: '' })
   const [savingNote, setSavingNote] = useState(false)
+  const [noteCreatorMode, setNoteCreatorMode] = useState('manual') // 'manual' or 'ai'
+  const [aiNoteInput, setAiNoteInput] = useState('')
+  const [generatingNote, setGeneratingNote] = useState(false)
 
   // Flashcard creation state
   const [showDeckCreator, setShowDeckCreator] = useState(false)
   const [newDeck, setNewDeck] = useState({ title: '', subject: '' })
   const [newCards, setNewCards] = useState([{ front: '', back: '', hint: '' }])
   const [savingDeck, setSavingDeck] = useState(false)
+  const [deckCreatorMode, setDeckCreatorMode] = useState('manual') // 'manual' or 'ai'
+  const [aiDeckInput, setAiDeckInput] = useState('')
+  const [generatingDeck, setGeneratingDeck] = useState(false)
 
   useEffect(() => {
     const loadStats = async () => {
@@ -168,6 +175,59 @@ const StudyHub = () => {
     }
   }
 
+  // AI Note Generation
+  const handleGenerateNote = async () => {
+    if (!aiNoteInput.trim()) {
+      toast.error('Please enter a topic or paste content')
+      return
+    }
+    setGeneratingNote(true)
+    try {
+      const note = await studyGenerationService.generateAndSaveNotes(aiNoteInput.trim(), {
+        title: newNote.title.trim() || undefined,
+        subject: newNote.subject.trim() || undefined
+      })
+      toast.success('Note generated!')
+      setAiNoteInput('')
+      setNewNote({ title: '', content: '', subject: '' })
+      setNoteCreatorMode('manual')
+      setShowNoteCreator(false)
+      await loadNotes()
+    } catch (err) {
+      console.error('AI note generation failed:', err)
+      toast.error('Failed to generate note. Try again.')
+    } finally {
+      setGeneratingNote(false)
+    }
+  }
+
+  // AI Flashcard Generation
+  const handleGenerateDeck = async () => {
+    if (!aiDeckInput.trim()) {
+      toast.error('Please enter a topic or paste content')
+      return
+    }
+    setGeneratingDeck(true)
+    try {
+      const result = await studyGenerationService.generateAndSaveFlashcards(aiDeckInput.trim(), {
+        title: newDeck.title.trim() || undefined,
+        subject: newDeck.subject.trim() || undefined,
+        cardCount: 20
+      })
+      toast.success(`Generated deck with ${result.cardCount} cards!`)
+      setAiDeckInput('')
+      setNewDeck({ title: '', subject: '' })
+      setDeckCreatorMode('manual')
+      setShowDeckCreator(false)
+      await loadFlashcards()
+    } catch (err) {
+      console.error('AI deck generation failed:', err)
+      toast.error('Failed to generate flashcards. Try again.')
+    } finally {
+      setGeneratingDeck(false)
+    }
+  }
+
   // Study session view
   if (studySession) {
     return (
@@ -209,7 +269,7 @@ const StudyHub = () => {
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setShowNoteCreator(false)}
+              onClick={() => { setShowNoteCreator(false); setNoteCreatorMode('manual') }}
               className="w-10 h-10 rounded-xl bg-surface-elevated border border-border flex items-center justify-center hover:bg-surface-overlay transition-colors group"
             >
               <svg className="w-5 h-5 text-text-muted group-hover:text-text-primary group-hover:-translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,10 +282,41 @@ const StudyHub = () => {
             </div>
           </div>
 
+          {/* Mode Toggle */}
+          <div className="bg-surface-elevated rounded-xl p-1.5 border border-border inline-flex">
+            <button
+              onClick={() => setNoteCreatorMode('manual')}
+              className={`px-5 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                noteCreatorMode === 'manual'
+                  ? 'bg-primary text-text-inverse shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Write Manually
+            </button>
+            <button
+              onClick={() => setNoteCreatorMode('ai')}
+              className={`px-5 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                noteCreatorMode === 'ai'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Generate with AI
+            </button>
+          </div>
+
           <div className="bg-surface-elevated rounded-2xl border border-border p-6 space-y-5">
+            {/* Title and Subject (both modes) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-primary">Title</label>
+                <label className="text-sm font-medium text-text-primary">Title {noteCreatorMode === 'ai' && <span className="text-text-muted">(optional)</span>}</label>
                 <input
                   type="text"
                   value={newNote.title}
@@ -235,7 +326,7 @@ const StudyHub = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-primary">Subject</label>
+                <label className="text-sm font-medium text-text-primary">Subject {noteCreatorMode === 'ai' && <span className="text-text-muted">(optional)</span>}</label>
                 <input
                   type="text"
                   value={newNote.subject}
@@ -246,39 +337,90 @@ const StudyHub = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-text-primary">Content</label>
-              <textarea
-                value={newNote.content}
-                onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
-                placeholder="Write your note content here..."
-                rows={12}
-                className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary resize-none focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
-              />
-            </div>
+            {/* Manual Mode Content */}
+            {noteCreatorMode === 'manual' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-text-primary">Content</label>
+                <textarea
+                  value={newNote.content}
+                  onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                  placeholder="Write your note content here..."
+                  rows={12}
+                  className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary resize-none focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                />
+              </div>
+            )}
 
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={handleCreateNote}
-                disabled={savingNote}
-                className="flex-1 py-3 px-6 bg-primary hover:bg-primary-hover text-text-inverse font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {savingNote ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            {/* AI Mode Content */}
+            {noteCreatorMode === 'ai' && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
-                    Create Note
-                  </>
-                )}
-              </button>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-text-primary">Topic or Content</label>
+                    <p className="text-xs text-text-muted">Enter a topic or paste text to generate comprehensive notes</p>
+                  </div>
+                </div>
+                <textarea
+                  value={aiNoteInput}
+                  onChange={(e) => setAiNoteInput(e.target.value)}
+                  placeholder="Enter a topic like 'Photosynthesis' or paste content from your textbook, lecture slides, or any study material..."
+                  rows={10}
+                  className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary resize-none focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
+                />
+                <p className="text-xs text-text-muted">AI will generate structured notes with key points, definitions, and summaries</p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-2">
+              {noteCreatorMode === 'manual' ? (
+                <button
+                  onClick={handleCreateNote}
+                  disabled={savingNote}
+                  className="flex-1 py-3 px-6 bg-primary hover:bg-primary-hover text-text-inverse font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {savingNote ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Create Note
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleGenerateNote}
+                  disabled={generatingNote}
+                  className="flex-1 py-3 px-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {generatingNote ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      Generate Note
+                    </>
+                  )}
+                </button>
+              )}
               <button
-                onClick={() => setShowNoteCreator(false)}
+                onClick={() => { setShowNoteCreator(false); setNoteCreatorMode('manual') }}
                 className="px-6 py-3 bg-surface-base border border-border text-text-primary font-medium rounded-xl hover:bg-surface-overlay transition-all"
               >
                 Cancel
@@ -297,7 +439,7 @@ const StudyHub = () => {
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => setShowDeckCreator(false)}
+              onClick={() => { setShowDeckCreator(false); setDeckCreatorMode('manual') }}
               className="w-10 h-10 rounded-xl bg-surface-elevated border border-border flex items-center justify-center hover:bg-surface-overlay transition-colors group"
             >
               <svg className="w-5 h-5 text-text-muted group-hover:text-text-primary group-hover:-translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,11 +452,41 @@ const StudyHub = () => {
             </div>
           </div>
 
+          {/* Mode Toggle */}
+          <div className="bg-surface-elevated rounded-xl p-1.5 border border-border inline-flex">
+            <button
+              onClick={() => setDeckCreatorMode('manual')}
+              className={`px-5 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                deckCreatorMode === 'manual'
+                  ? 'bg-accent-cool text-white shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Create Manually
+            </button>
+            <button
+              onClick={() => setDeckCreatorMode('ai')}
+              className={`px-5 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                deckCreatorMode === 'ai'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Generate with AI
+            </button>
+          </div>
+
           <div className="bg-surface-elevated rounded-2xl border border-border p-6 space-y-5">
-            {/* Deck info */}
+            {/* Deck info (both modes) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-primary">Deck Title</label>
+                <label className="text-sm font-medium text-text-primary">Deck Title {deckCreatorMode === 'ai' && <span className="text-text-muted">(optional)</span>}</label>
                 <input
                   type="text"
                   value={newDeck.title}
@@ -324,7 +496,7 @@ const StudyHub = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-text-primary">Subject</label>
+                <label className="text-sm font-medium text-text-primary">Subject {deckCreatorMode === 'ai' && <span className="text-text-muted">(optional)</span>}</label>
                 <input
                   type="text"
                   value={newDeck.subject}
@@ -335,91 +507,141 @@ const StudyHub = () => {
               </div>
             </div>
 
-            {/* Cards */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-text-primary">Cards ({newCards.length})</label>
-                <button
-                  onClick={handleAddCard}
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-accent-cool/10 text-accent-cool font-medium rounded-lg hover:bg-accent-cool/20 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Add Card
-                </button>
-              </div>
-
-              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                {newCards.map((card, index) => (
-                  <div key={index} className="bg-surface-base rounded-xl border border-border p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-text-muted">Card {index + 1}</span>
-                      {newCards.length > 1 && (
-                        <button
-                          onClick={() => handleRemoveCard(index)}
-                          className="p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-colors"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <input
-                          type="text"
-                          value={card.front}
-                          onChange={(e) => handleCardChange(index, 'front', e.target.value)}
-                          placeholder="Front (question)..."
-                          className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
-                        />
-                      </div>
-                      <div>
-                        <input
-                          type="text"
-                          value={card.back}
-                          onChange={(e) => handleCardChange(index, 'back', e.target.value)}
-                          placeholder="Back (answer)..."
-                          className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
-                        />
-                      </div>
-                    </div>
-                    <input
-                      type="text"
-                      value={card.hint}
-                      onChange={(e) => handleCardChange(index, 'hint', e.target.value)}
-                      placeholder="Hint (optional)..."
-                      className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={handleCreateDeck}
-                disabled={savingDeck}
-                className="flex-1 py-3 px-6 bg-accent-cool hover:bg-accent-cool/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {savingDeck ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            {/* Manual Mode - Cards */}
+            {deckCreatorMode === 'manual' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-text-primary">Cards ({newCards.length})</label>
+                  <button
+                    onClick={handleAddCard}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-accent-cool/10 text-accent-cool font-medium rounded-lg hover:bg-accent-cool/20 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    Create Deck
-                  </>
-                )}
-              </button>
+                    Add Card
+                  </button>
+                </div>
+
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                  {newCards.map((card, index) => (
+                    <div key={index} className="bg-surface-base rounded-xl border border-border p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-text-muted">Card {index + 1}</span>
+                        {newCards.length > 1 && (
+                          <button
+                            onClick={() => handleRemoveCard(index)}
+                            className="p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <input
+                            type="text"
+                            value={card.front}
+                            onChange={(e) => handleCardChange(index, 'front', e.target.value)}
+                            placeholder="Front (question)..."
+                            className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={card.back}
+                            onChange={(e) => handleCardChange(index, 'back', e.target.value)}
+                            placeholder="Back (answer)..."
+                            className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
+                          />
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        value={card.hint}
+                        onChange={(e) => handleCardChange(index, 'hint', e.target.value)}
+                        placeholder="Hint (optional)..."
+                        className="w-full px-3 py-2 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm focus:outline-none focus:border-accent-cool/50 transition-all"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* AI Mode Content */}
+            {deckCreatorMode === 'ai' && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-text-primary">Topic or Content</label>
+                    <p className="text-xs text-text-muted">Enter a topic or paste text to generate flashcards</p>
+                  </div>
+                </div>
+                <textarea
+                  value={aiDeckInput}
+                  onChange={(e) => setAiDeckInput(e.target.value)}
+                  placeholder="Enter a topic like 'Cell Biology' or paste content from your textbook, notes, or any study material..."
+                  rows={10}
+                  className="w-full px-4 py-3 bg-surface-base border border-border rounded-xl text-text-primary resize-none focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all"
+                />
+                <p className="text-xs text-text-muted">AI will generate ~20 flashcards with questions, answers, and hints</p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-2">
+              {deckCreatorMode === 'manual' ? (
+                <button
+                  onClick={handleCreateDeck}
+                  disabled={savingDeck}
+                  className="flex-1 py-3 px-6 bg-accent-cool hover:bg-accent-cool/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {savingDeck ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Create Deck
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleGenerateDeck}
+                  disabled={generatingDeck}
+                  className="flex-1 py-3 px-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {generatingDeck ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      Generate Flashcards
+                    </>
+                  )}
+                </button>
+              )}
               <button
-                onClick={() => setShowDeckCreator(false)}
+                onClick={() => { setShowDeckCreator(false); setDeckCreatorMode('manual') }}
                 className="px-6 py-3 bg-surface-base border border-border text-text-primary font-medium rounded-xl hover:bg-surface-overlay transition-all"
               >
                 Cancel
