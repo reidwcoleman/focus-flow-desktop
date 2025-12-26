@@ -36,8 +36,9 @@ const Planner = () => {
 
   const loadAssignments = async () => {
     try {
-      const data = await assignmentsService.getUpcomingAssignments()
-      setAssignments(data.map(a => assignmentsService.toAppFormat(a)))
+      const { data, error } = await assignmentsService.getUpcomingAssignments()
+      if (error) throw error
+      setAssignments(assignmentsService.toAppFormatBatch(data))
     } catch (err) {
       console.error('Failed to load assignments:', err)
     }

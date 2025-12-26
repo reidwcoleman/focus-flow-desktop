@@ -560,7 +560,7 @@ HCl (hydrochloric acid), H₂SO₄ (sulfuric acid), CH₃COOH (acetic acid)`
   getStatus() {
     return {
       isConfigured: this.isConfigured,
-      model: VISION_CONFIG.visionModel,
+      model: 'llama-3.2-90b-vision-preview',
       provider: 'Groq'
     }
   }

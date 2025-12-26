@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { useStudy } from '../contexts/StudyContext'
 import StudySession from './StudySession'
 import QuizSession from './QuizSession'
+import QuizCreator from './QuizCreator'
 import { confirmDialog } from './ConfirmDialog'
 
 const StudyHub = () => {
@@ -23,6 +24,7 @@ const StudyHub = () => {
   const [selectedNote, setSelectedNote] = useState(null)
   const [dueCards, setDueCards] = useState([])
   const [stats, setStats] = useState({ notes: 0, decks: 0, due: 0 })
+  const [showQuizCreator, setShowQuizCreator] = useState(false)
 
   useEffect(() => {
     const loadStats = async () => {
@@ -89,6 +91,17 @@ const StudyHub = () => {
         quiz={activeQuizSession}
         onComplete={() => { setActiveQuizSession(null); loadQuizzes() }}
         onExit={() => setActiveQuizSession(null)}
+      />
+    )
+  }
+
+  // Quiz creator view
+  if (showQuizCreator) {
+    return (
+      <QuizCreator
+        onComplete={() => { setShowQuizCreator(false); loadQuizzes() }}
+        onBack={() => setShowQuizCreator(false)}
+        onStartQuiz={(quiz) => { setShowQuizCreator(false); setActiveQuizSession(quiz) }}
       />
     )
   }
@@ -396,9 +409,9 @@ const StudyHub = () => {
             )}
 
             {/* Quizzes Section */}
-            {quizzes.length > 0 && (
-              <div>
-                <div className="flex items-center gap-3 mb-4">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-success/15 flex items-center justify-center">
                     <svg className="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -406,6 +419,21 @@ const StudyHub = () => {
                   </div>
                   <h2 className="text-xl font-semibold text-text-primary">Quizzes</h2>
                 </div>
+                <button
+                  onClick={() => setShowQuizCreator(true)}
+                  className="group flex items-center gap-2 px-4 py-2 bg-success/10 hover:bg-success/20 text-success font-medium rounded-xl transition-all hover:-translate-y-0.5"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Create Quiz
+                  <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              {quizzes.length > 0 ? (
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {quizzes.map((quiz, index) => (
@@ -447,8 +475,29 @@ const StudyHub = () => {
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="bg-surface-elevated rounded-2xl border border-border p-12 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-text-primary mb-2">No quizzes yet</h3>
+                  <p className="text-text-muted max-w-sm mx-auto mb-6">
+                    Create your first quiz by uploading study materials
+                  </p>
+                  <button
+                    onClick={() => setShowQuizCreator(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-success hover:bg-success/90 text-white font-medium rounded-xl transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Create Your First Quiz
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
