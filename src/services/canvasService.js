@@ -495,10 +495,17 @@ export const canvasService = {
         !blockedCourseIds.includes(grade.courseId)
       )
 
-      console.log(`📊 Syncing ${filteredGrades.length} course grades (${grades.length - filteredGrades.length} from blocked courses)...`)
+      // Deduplicate grades by courseId (keep last occurrence)
+      const uniqueGradesMap = new Map()
+      for (const grade of filteredGrades) {
+        uniqueGradesMap.set(grade.courseId, grade)
+      }
+      const uniqueGrades = Array.from(uniqueGradesMap.values())
+
+      console.log(`📊 Syncing ${uniqueGrades.length} course grades (${grades.length - filteredGrades.length} from blocked courses)...`)
 
       // Prepare all grade data
-      const gradeDataArray = filteredGrades.map(grade => ({
+      const gradeDataArray = uniqueGrades.map(grade => ({
         user_id: userId,
         canvas_course_id: grade.courseId,
         course_name: grade.courseName,
@@ -520,11 +527,11 @@ export const canvasService = {
 
       if (error) {
         console.error('Failed to sync grades:', error)
-        return { synced: 0, total: filteredGrades.length, error: error.message }
+        return { synced: 0, total: uniqueGrades.length, error: error.message }
       }
 
-      console.log(`✅ Successfully synced ${filteredGrades.length} grades`)
-      return { synced: filteredGrades.length, total: filteredGrades.length }
+      console.log(`✅ Successfully synced ${uniqueGrades.length} grades`)
+      return { synced: uniqueGrades.length, total: uniqueGrades.length }
     } catch (error) {
       console.error('Failed to sync grades:', error)
       return { synced: 0, error: error.message }
