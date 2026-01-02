@@ -1,6 +1,6 @@
 /**
  * AITutor Component
- * Refined scholar's study aesthetic - warm, intellectual, premium chat experience
+ * Premium minimalist chat interface - Linear/Apple inspired
  */
 
 import { useState, useEffect, useRef } from 'react'
@@ -30,8 +30,8 @@ const AITutor = () => {
   const fileInputRef = useRef(null)
 
   const quickSuggestions = [
-    { icon: '📅', label: 'Add Assignment', prompt: 'I need to add an assignment to my planner', featured: true },
-    { icon: '✅', label: 'Add Task', prompt: 'Add a task to my to-do list', featured: true },
+    { icon: '📅', label: 'Add Assignment', prompt: 'I need to add an assignment to my planner' },
+    { icon: '✅', label: 'Add Task', prompt: 'Add a task to my to-do list' },
     { icon: '📐', label: 'Math Help', prompt: 'Help me solve a math problem' },
     { icon: '📝', label: 'Essay Review', prompt: 'Review my essay and give feedback' },
   ]
@@ -159,9 +159,9 @@ const AITutor = () => {
 
   const formatMessage = (content) => {
     return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-text-primary">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code class="px-1.5 py-0.5 rounded-md bg-surface-base/80 text-primary font-mono text-[0.85em]">$1</code>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-medium">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+      .replace(/`(.*?)`/g, '<code class="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[0.9em] font-mono">$1</code>')
       .replace(/\n/g, '<br>')
   }
 
@@ -187,40 +187,39 @@ const AITutor = () => {
   const isNewConversation = messages.length === 1 && messages[0].role === 'assistant'
 
   return (
-    <div className="h-full flex bg-surface-base">
-      {/* History Sidebar */}
+    <div className="h-full flex bg-gradient-to-b from-surface-base to-surface-base/95">
+      {/* History Sidebar - Glass Panel */}
       <div
-        className={`flex-shrink-0 bg-surface-elevated/50 transition-all duration-300 ease-gentle overflow-hidden ${
-          showHistory ? 'w-80' : 'w-0'
+        className={`flex-shrink-0 transition-all duration-500 ease-out overflow-hidden ${
+          showHistory ? 'w-72' : 'w-0'
         }`}
       >
-        <div className="w-80 h-full flex flex-col">
+        <div className="w-72 h-full flex flex-col bg-surface-elevated/40 backdrop-blur-xl">
           {/* Sidebar Header */}
-          <div className="flex-shrink-0 p-4">
+          <div className="flex-shrink-0 p-5 pb-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-text-primary">Conversations</h2>
+              <h2 className="text-sm font-semibold text-text-primary tracking-tight">History</h2>
               <button
                 onClick={() => setShowHistory(false)}
-                className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-overlay transition-colors"
+                className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
           </div>
 
           {/* Sidebar Content */}
-          <div className="flex-1 overflow-y-auto p-3">
+          <div className="flex-1 overflow-y-auto px-3 pb-3">
             {chatHistory.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="w-12 h-12 rounded-xl bg-surface-overlay flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-center py-12 px-4">
+                <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
-                <p className="text-sm text-text-muted">No conversations yet</p>
-                <p className="text-xs text-text-muted mt-1">Start chatting to save history</p>
+                <p className="text-xs text-text-muted">No conversations yet</p>
               </div>
             ) : (
               <div className="space-y-1">
@@ -229,27 +228,31 @@ const AITutor = () => {
                     key={chat.id}
                     className={`group relative rounded-xl transition-all duration-200 ${
                       currentChatId === chat.id
-                        ? 'bg-primary/10 ring-1 ring-primary/20'
-                        : 'hover:bg-surface-overlay'
+                        ? 'bg-primary/10'
+                        : 'hover:bg-black/5 dark:hover:bg-white/5'
                     }`}
-                    style={{ animationDelay: `${index * 30}ms` }}
+                    style={{
+                      animation: 'fadeSlideIn 0.3s ease-out forwards',
+                      animationDelay: `${index * 40}ms`,
+                      opacity: 0
+                    }}
                   >
                     <button
                       onClick={() => loadChat(chat.id)}
                       className="w-full p-3 text-left"
                     >
-                      <p className="text-sm font-medium text-text-primary truncate pr-8">
+                      <p className="text-sm text-text-primary truncate pr-6 font-medium">
                         {chat.title}
                       </p>
-                      <p className="text-xs text-text-muted mt-1">
+                      <p className="text-xs text-text-muted mt-0.5">
                         {formatDate(chat.updatedAt)}
                       </p>
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteChat(chat.id) }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 opacity-0 group-hover:opacity-100 transition-all"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
@@ -263,12 +266,12 @@ const AITutor = () => {
           <div className="flex-shrink-0 p-3">
             <button
               onClick={startNewChat}
-              className="w-full py-2.5 px-4 bg-primary hover:bg-primary-hover text-text-inverse rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 bg-primary hover:bg-primary-hover text-white rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 active:scale-[0.98]"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              New Conversation
+              New Chat
             </button>
           </div>
         </div>
@@ -276,51 +279,45 @@ const AITutor = () => {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="flex-shrink-0 bg-transparent">
-          <div className="max-w-4xl mx-auto px-6 py-4">
+        {/* Minimal Header */}
+        <header className="flex-shrink-0">
+          <div className="max-w-3xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setShowHistory(!showHistory)}
-                  className={`p-2.5 rounded-xl transition-all ${
+                  className={`p-2 rounded-xl transition-all duration-200 ${
                     showHistory
                       ? 'bg-primary/10 text-primary'
-                      : 'text-text-muted hover:text-text-primary hover:bg-surface-overlay'
+                      : 'text-text-muted hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/5'
                   }`}
-                  title="Chat History"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h7" />
                   </svg>
                 </button>
 
-                <div className="flex items-center gap-3">
-                  {/* AI Avatar */}
+                <div className="flex items-center gap-2.5">
                   <div className="relative">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent-mint flex items-center justify-center shadow-lg shadow-primary/20">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary via-primary to-accent-mint flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full border-2 border-surface-elevated" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-surface-base" />
                   </div>
-
-                  <div>
-                    <h1 className="text-lg font-semibold text-text-primary">AI Tutor</h1>
-                    <p className="text-xs text-text-muted">Always here to help</p>
-                  </div>
+                  <span className="text-sm font-semibold text-text-primary">AI Tutor</span>
                 </div>
               </div>
 
               <button
                 onClick={startNewChat}
-                className="px-4 py-2 rounded-xl bg-surface-overlay hover:bg-surface-overlay/80 text-text-secondary hover:text-text-primary transition-all flex items-center gap-2 text-sm font-medium"
+                className="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200"
+                title="New Chat"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
                 </svg>
-                New Chat
               </button>
             </div>
           </div>
@@ -328,29 +325,25 @@ const AITutor = () => {
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto px-6 py-6">
-            {/* Quick Suggestions for New Chat */}
+          <div className="max-w-3xl mx-auto px-6 py-4">
+            {/* Quick Suggestions */}
             {isNewConversation && (
-              <div className="mb-8 animate-fade-in">
-                <p className="text-sm text-text-muted mb-4 text-center">Quick start with a topic:</p>
-                <div className="flex flex-wrap justify-center gap-2">
+              <div className="mb-10 mt-8">
+                <p className="text-xs text-text-muted mb-4 text-center uppercase tracking-wider font-medium">Quick Start</p>
+                <div className="grid grid-cols-2 gap-2">
                   {quickSuggestions.map((suggestion, index) => (
                     <button
                       key={index}
                       onClick={() => handleSend(suggestion.prompt)}
-                      className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm group ${
-                        suggestion.featured
-                          ? 'bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50'
-                          : 'bg-surface-elevated hover:bg-surface-overlay border border-border hover:border-primary/30'
-                      }`}
-                      style={{ animationDelay: `${index * 50}ms` }}
+                      className="group p-4 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] border border-black/[0.04] dark:border-white/[0.04] hover:border-primary/20 transition-all duration-300 text-left"
+                      style={{
+                        animation: 'fadeSlideUp 0.4s ease-out forwards',
+                        animationDelay: `${index * 80}ms`,
+                        opacity: 0
+                      }}
                     >
-                      <span className="text-lg">{suggestion.icon}</span>
-                      <span className={`transition-colors ${
-                        suggestion.featured
-                          ? 'text-primary font-medium'
-                          : 'text-text-secondary group-hover:text-text-primary'
-                      }`}>
+                      <span className="text-xl mb-2 block">{suggestion.icon}</span>
+                      <span className="text-sm font-medium text-text-primary group-hover:text-primary transition-colors">
                         {suggestion.label}
                       </span>
                     </button>
@@ -364,25 +357,21 @@ const AITutor = () => {
               {messages.map((message, index) => (
                 <div
                   key={message.id}
-                  className={`flex gap-4 animate-fade-up ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
-                  style={{ animationDelay: `${index * 30}ms` }}
+                  className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
+                  style={{
+                    animation: 'fadeSlideUp 0.4s ease-out forwards',
+                    animationDelay: `${Math.min(index * 50, 200)}ms`,
+                    opacity: 0
+                  }}
                   onMouseEnter={() => setHoveredMessage(message.id)}
                   onMouseLeave={() => setHoveredMessage(null)}
                 >
                   {/* Avatar */}
-                  {message.role === 'assistant' ? (
-                    <div className="flex-shrink-0">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent-mint flex items-center justify-center shadow-md shadow-primary/10">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex-shrink-0">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-cool to-accent-rose flex items-center justify-center shadow-md">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  {message.role === 'assistant' && (
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent-mint flex items-center justify-center">
+                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
                     </div>
@@ -391,12 +380,12 @@ const AITutor = () => {
                   {/* Message Bubble */}
                   <div className={`flex-1 max-w-[85%] ${message.role === 'user' ? 'flex flex-col items-end' : ''}`}>
                     <div
-                      className={`relative rounded-2xl px-5 py-4 ${
+                      className={`relative rounded-2xl px-4 py-3 ${
                         message.role === 'user'
-                          ? 'bg-gradient-to-br from-primary to-primary-hover text-white shadow-lg shadow-primary/20'
+                          ? 'bg-gradient-to-br from-primary to-blue-600 text-white shadow-lg shadow-primary/20'
                           : message.isError
-                          ? 'bg-error/10 text-text-primary'
-                          : 'bg-surface-elevated/80 text-text-primary'
+                          ? 'bg-red-50 dark:bg-red-900/20 text-text-primary border border-red-200 dark:border-red-800/30'
+                          : 'bg-black/[0.03] dark:bg-white/[0.05] text-text-primary'
                       }`}
                     >
                       {/* Image */}
@@ -404,20 +393,20 @@ const AITutor = () => {
                         <img
                           src={message.image}
                           alt="Uploaded"
-                          className="max-w-full h-auto rounded-xl mb-3 shadow-md"
+                          className="max-w-full h-auto rounded-xl mb-3"
                         />
                       )}
 
                       {/* Content */}
                       <div
-                        className={`text-sm leading-relaxed ${message.role === 'user' ? 'text-white' : ''}`}
+                        className={`text-[14px] leading-relaxed ${message.role === 'user' ? 'text-white' : 'text-text-primary'}`}
                         dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
                       />
 
-                      {/* Timestamp on hover */}
+                      {/* Timestamp */}
                       <div
-                        className={`absolute -bottom-5 text-xs text-text-muted transition-all duration-200 ${
-                          hoveredMessage === message.id ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'
+                        className={`absolute -bottom-5 text-[10px] text-text-muted transition-all duration-300 ${
+                          hoveredMessage === message.id ? 'opacity-100' : 'opacity-0'
                         } ${message.role === 'user' ? 'right-0' : 'left-0'}`}
                       >
                         {formatTime(message.timestamp)}
@@ -429,44 +418,44 @@ const AITutor = () => {
 
               {/* Typing Indicator */}
               {isLoading && (
-                <div className="flex gap-4 animate-fade-in">
-                  <div className="flex-shrink-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent-mint flex items-center justify-center shadow-md shadow-primary/10">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                <div className="flex gap-3" style={{ animation: 'fadeSlideUp 0.3s ease-out forwards' }}>
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent-mint flex items-center justify-center">
+                      <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
                   </div>
-                  <div className="bg-surface-elevated/80 rounded-2xl px-5 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDuration: '1s' }} />
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDuration: '1s', animationDelay: '0.2s' }} />
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDuration: '1s', animationDelay: '0.4s' }} />
+                  <div className="bg-black/[0.03] dark:bg-white/[0.05] rounded-2xl px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                   </div>
                 </div>
               )}
 
-              <div ref={messagesEndRef} className="h-4" />
+              <div ref={messagesEndRef} className="h-6" />
             </div>
           </div>
         </div>
 
-        {/* Input Area */}
-        <div className="flex-shrink-0 bg-transparent">
-          <div className="max-w-4xl mx-auto px-6 py-4">
+        {/* Input Area - Floating Glass Bar */}
+        <div className="flex-shrink-0 pb-6 pt-2">
+          <div className="max-w-3xl mx-auto px-6">
             {/* Image Preview */}
             {uploadedImage && (
-              <div className="mb-3 animate-scale-in">
-                <div className="inline-flex items-start gap-2 p-2 bg-surface-elevated rounded-xl border border-border">
+              <div className="mb-3" style={{ animation: 'scaleIn 0.2s ease-out forwards' }}>
+                <div className="inline-flex items-start gap-2 p-2 bg-black/[0.03] dark:bg-white/[0.05] rounded-xl">
                   <img
                     src={uploadedImage}
                     alt="Preview"
-                    className="h-20 rounded-lg object-cover"
+                    className="h-16 rounded-lg object-cover"
                   />
                   <button
                     onClick={() => setUploadedImage(null)}
-                    className="p-1 rounded-lg bg-surface-overlay hover:bg-error/20 text-text-muted hover:text-error transition-colors"
+                    className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-text-muted hover:text-error transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -477,8 +466,8 @@ const AITutor = () => {
             )}
 
             {/* Input Container */}
-            <div className="relative bg-surface-elevated/80 rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-              <div className="flex items-end gap-2 p-2">
+            <div className="relative bg-black/[0.03] dark:bg-white/[0.05] rounded-2xl transition-all duration-300 focus-within:bg-black/[0.05] dark:focus-within:bg-white/[0.08] focus-within:ring-2 focus-within:ring-primary/20">
+              <div className="flex items-end gap-1 p-1.5">
                 {/* File Upload */}
                 <input
                   type="file"
@@ -489,8 +478,7 @@ const AITutor = () => {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-shrink-0 p-2.5 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-overlay transition-colors"
-                  title="Upload image"
+                  className="flex-shrink-0 p-2.5 rounded-xl text-text-muted hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -508,16 +496,16 @@ const AITutor = () => {
                       handleSend()
                     }
                   }}
-                  placeholder="Ask me anything..."
+                  placeholder="Message AI Tutor..."
                   rows={1}
-                  className="flex-1 px-2 py-2.5 bg-transparent text-text-primary placeholder:text-text-muted focus:outline-none resize-none text-sm leading-relaxed"
+                  className="flex-1 px-2 py-2.5 bg-transparent text-text-primary placeholder:text-text-muted/60 focus:outline-none resize-none text-[14px] leading-relaxed"
                 />
 
                 {/* Send Button */}
                 <button
                   onClick={() => handleSend()}
                   disabled={(!inputValue.trim() && !uploadedImage) || isLoading}
-                  className="flex-shrink-0 p-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
+                  className="flex-shrink-0 p-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/30"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
@@ -527,12 +515,46 @@ const AITutor = () => {
             </div>
 
             {/* Hint */}
-            <p className="text-xs text-text-muted text-center mt-3">
-              Press <kbd className="px-1.5 py-0.5 bg-surface-elevated rounded text-text-secondary font-mono text-[10px]">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-surface-elevated rounded text-text-secondary font-mono text-[10px]">Shift + Enter</kbd> for new line
+            <p className="text-[10px] text-text-muted/60 text-center mt-2.5">
+              <kbd className="px-1 py-0.5 bg-black/5 dark:bg-white/5 rounded text-[9px] font-medium">Enter</kbd> to send · <kbd className="px-1 py-0.5 bg-black/5 dark:bg-white/5 rounded text-[9px] font-medium">Shift + Enter</kbd> for new line
             </p>
           </div>
         </div>
       </div>
+
+      {/* Animations */}
+      <style>{`
+        @keyframes fadeSlideUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   )
 }
