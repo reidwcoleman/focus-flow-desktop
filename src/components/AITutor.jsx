@@ -190,13 +190,13 @@ const AITutor = () => {
     <div className="h-full flex bg-surface-base">
       {/* History Sidebar */}
       <div
-        className={`flex-shrink-0 border-r border-border bg-surface-elevated transition-all duration-300 ease-gentle overflow-hidden ${
+        className={`flex-shrink-0 bg-surface-elevated/50 transition-all duration-300 ease-gentle overflow-hidden ${
           showHistory ? 'w-80' : 'w-0'
         }`}
       >
         <div className="w-80 h-full flex flex-col">
           {/* Sidebar Header */}
-          <div className="flex-shrink-0 p-4 border-b border-border">
+          <div className="flex-shrink-0 p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-text-primary">Conversations</h2>
               <button
@@ -260,7 +260,7 @@ const AITutor = () => {
           </div>
 
           {/* New Chat Button */}
-          <div className="flex-shrink-0 p-3 border-t border-border">
+          <div className="flex-shrink-0 p-3">
             <button
               onClick={startNewChat}
               className="w-full py-2.5 px-4 bg-primary hover:bg-primary-hover text-text-inverse rounded-xl font-medium transition-all flex items-center justify-center gap-2"
@@ -277,7 +277,7 @@ const AITutor = () => {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex-shrink-0 border-b border-border bg-surface-elevated/80 backdrop-blur-sm">
+        <header className="flex-shrink-0 bg-transparent">
           <div className="max-w-4xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -395,8 +395,8 @@ const AITutor = () => {
                         message.role === 'user'
                           ? 'bg-gradient-to-br from-primary to-primary-hover text-white shadow-lg shadow-primary/20'
                           : message.isError
-                          ? 'bg-error/10 border border-error/20 text-text-primary'
-                          : 'bg-surface-elevated border border-border text-text-primary shadow-soft'
+                          ? 'bg-error/10 text-text-primary'
+                          : 'bg-surface-elevated/80 text-text-primary'
                       }`}
                     >
                       {/* Image */}
@@ -437,7 +437,7 @@ const AITutor = () => {
                       </svg>
                     </div>
                   </div>
-                  <div className="bg-surface-elevated border border-border rounded-2xl px-5 py-4 shadow-soft">
+                  <div className="bg-surface-elevated/80 rounded-2xl px-5 py-4">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDuration: '1s' }} />
                       <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDuration: '1s', animationDelay: '0.2s' }} />
@@ -453,7 +453,7 @@ const AITutor = () => {
         </div>
 
         {/* Input Area */}
-        <div className="flex-shrink-0 border-t border-border bg-surface-base">
+        <div className="flex-shrink-0 bg-transparent">
           <div className="max-w-4xl mx-auto px-6 py-4">
             {/* Image Preview */}
             {uploadedImage && (
@@ -477,7 +477,7 @@ const AITutor = () => {
             )}
 
             {/* Input Container */}
-            <div className="relative bg-surface-elevated rounded-2xl border border-border focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/10 transition-all shadow-soft">
+            <div className="relative bg-surface-elevated/80 rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 transition-all">
               <div className="flex items-end gap-2 p-2">
                 {/* File Upload */}
                 <input
